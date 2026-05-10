@@ -1,46 +1,11 @@
 /**
  * Shared helpers for Playwright E2E tests.
- * Handles: TOTP code generation, test server seeding, and page setup.
+ * Handles: test server seeding via SMS OTP flow, and page setup.
  */
 import { createHmac } from 'node:crypto'
 
 export const API = 'http://localhost:9876'
 const INBOUND_WEBHOOK_SECRET = 'hermes-e2e-inbound-secret'
-
-// ── TOTP (RFC 6238) ───────────────────────────────────────────────────────────
-
-function base32Decode(str) {
-  const ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
-  const s = str.toUpperCase().replace(/[^A-Z2-7]/g, '')
-  const bytes = []
-  let bits = 0, val = 0
-  for (const ch of s) {
-    const idx = ALPHA.indexOf(ch)
-    if (idx < 0) continue
-    val = (val << 5) | idx
-    bits += 5
-    if (bits >= 8) { bytes.push((val >>> (bits - 8)) & 0xff); bits -= 8 }
-  }
-  return Buffer.from(bytes)
-}
-
-/** Returns the current 6-digit TOTP code for the given base32 secret. */
-export function totpCode(secret) {
-  const counter = Math.floor(Date.now() / 1000 / 30)
-  const key = base32Decode(secret)
-  const msg = Buffer.alloc(8)
-  msg.writeUInt32BE(Math.floor(counter / 0x100000000), 0)
-  msg.writeUInt32BE(counter >>> 0, 4)
-  const hmac = createHmac('sha1', key).update(msg).digest()
-  const offset = hmac[19] & 0xf
-  const code = (
-    ((hmac[offset]     & 0x7f) << 24) |
-    ((hmac[offset + 1] & 0xff) << 16) |
-    ((hmac[offset + 2] & 0xff) << 8)  |
-     (hmac[offset + 3] & 0xff)
-  ) % 1_000_000
-  return String(code).padStart(6, '0')
-}
 
 // ── Unique test email ─────────────────────────────────────────────────────────
 
@@ -56,7 +21,8 @@ export function uniqueEmail() {
 async function post(path, data) {
   const headers = { 'Content-Type': 'application/json' }
   if (path === '/inbound/webhook') {
-    headers['X-Hermes-Signature'] = createHmac('sha256', INBOUND_WEBHOOK_SECRET).update(JSON.stringify(data ?? {})).digest('hex')
+    const body = JSON.stringify(data ?? {})
+    headers['X-Hermes-Signature'] = createHmac('sha256', INBOUND_WEBHOOK_SECRET).update(body).digest('hex')
   }
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
@@ -69,30 +35,14 @@ async function post(path, data) {
 
 /**
  * Creates a user in the test backend.
- * @param {string} email
- * @param {{ phones?: string[], domains?: string[], role?: string }} opts
  */
 export async function seedUser(email, { phones = ['+14165550100'], domains = ['example.com'], role = 'admin' } = {}) {
   await post('/test/seed/user', { email, phones, domains, role })
 }
 
 /**
- * Creates a TOTP device for a user. Returns the device secret so the
- * test can generate valid codes with totpCode(secret).
- * @param {string} email
- * @param {string} [name]
- * @returns {Promise<{ deviceId: string, secret: string }>}
- */
-export async function seedDevice(email, name = 'Test Device') {
-  return post('/test/seed/device', { email, name })
-}
-
-/**
- * Creates an OTP session with a known code (no SMS sent).
- * Returns { sessionId, code } so the test can submit the correct code.
- * @param {string} email
- * @param {string} [phone]
- * @returns {Promise<{ sessionId: string, code: string }>}
+ * Seeds an OTP session with a known code (no SMS sent).
+ * Returns { sessionId, code } for the SMS confirm step.
  */
 export async function seedOtp(email, phone = '+14165550100') {
   return post('/test/seed/otp', { email, phone })
@@ -117,6 +67,35 @@ export async function seedDomain(token, domain = 'example.com') {
 
 export async function deliverEmail({ recipient, sender = 'sender@other.com', subject, body = '', messageId }) {
   return post('/inbound/webhook', { recipient, sender, subject, body, messageId })
+}
+
+// ── Auth flow (SMS OTP) ──────────────────────────────────────────────────────
+
+/**
+ * Seeds a passkey device for a user (bypasses WebAuthn ceremony).
+ * Only works in test mode — required for E2E tests in headless CI.
+ */
+export async function seedDevice(email, name = 'E2E Test Device') {
+  return post('/test/seed/device', { email, name })
+}
+
+/**
+ * Gets a JWT for a user via the SMS OTP login flow.
+ * Seeds a passkey device first so the SMS confirm returns a JWT.
+ */
+export async function getToken(email, phone = '+14165550100') {
+  // Seed a device so the user passes the has-device check
+  await seedDevice(email)
+  const { sessionId, code } = await seedOtp(email, phone)
+
+  const r = await fetch(`${API}/auth/sms/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, code }),
+  })
+  const data = await r.json()
+  if (!data.token) throw new Error(`getToken failed: ${JSON.stringify(data)}`)
+  return data
 }
 
 // ── Page setup ────────────────────────────────────────────────────────────────
@@ -152,28 +131,4 @@ export async function loginAs(page, token, email, role = 'admin', domains = ['ex
     sessionStorage.setItem('hermes_role', role)
     sessionStorage.setItem('hermes_domains', JSON.stringify(domains))
   }, { token, email, role, domains })
-}
-
-/**
- * Gets a JWT for a user by performing the TOTP login flow programmatically.
- * Requires the user and a TOTP device to already be seeded.
- */
-export async function getToken(email, totpSecret) {
-  // Request MFA session
-  const r1 = await fetch(`${API}/auth/mfa/request`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email }),
-  })
-  const { mfaSessionId } = await r1.json()
-
-  // Confirm TOTP
-  const r2 = await fetch(`${API}/auth/mfa/confirm`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ mfaSessionId, code: totpCode(totpSecret) }),
-  })
-  const data = await r2.json()
-  if (!data.token) throw new Error(`getToken failed: ${JSON.stringify(data)}`)
-  return data
 }
