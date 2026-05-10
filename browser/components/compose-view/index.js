@@ -21,7 +21,8 @@ export default class extends Tac {
     const apiFetch = window._hermes?.apiFetch
     if (!apiFetch) { this.$loading = false; return }
     try {
-      const res = await apiFetch('/send', { method: 'POST', body: JSON.stringify({ to: [this.$to], cc: this.$cc ? [this.$cc] : [], subject: this.$subject, text: this.$text }) })
+      const split = s => s.split(',').map(x => x.trim()).filter(Boolean)
+      const res = await apiFetch('/send', { method: 'POST', body: JSON.stringify({ to: split(this.$to), cc: split(this.$cc), subject: this.$subject, text: this.$text }) })
       if (res?.ok) {
         window._hermes?.toast('Message sent.')
         this.$to = this.$cc = this.$subject = this.$text = ''

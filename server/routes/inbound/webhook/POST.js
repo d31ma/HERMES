@@ -7,7 +7,7 @@ import { findEmailById } from "@/repositories/emails.js";
 import { saveEmailAttachments } from "@/repositories/attachments.js";
 import { matchRoute, applyRouteAction, applyInboxRules, parseInboundMessage } from "@/services/inbound.js";
 import { sendEmailNotification } from "@/services/push.js";
-import { createHmac } from "node:crypto";
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { requireEnv } from "@/services/security.js";
 /**
  * POST /inbound/webhook
@@ -20,7 +20,10 @@ export async function handler({ headers, body }) {
   const signature = (headers ?? {})["x-hermes-signature"] ?? (headers ?? {})["X-Hermes-Signature"] ?? "";
   const jsonBody = JSON.stringify(body ?? {});
   const expected = createHmac("sha256", webhookSecret).update(jsonBody).digest("hex");
-  if (!signature || signature !== expected) {
+  // Timing-safe comparison to prevent timing attacks on HMAC verification
+  const sigOk = signature.length === expected.length
+    && timingSafeEqual(Buffer.from(signature, "hex"), Buffer.from(expected, "hex"));
+  if (!sigOk) {
     return r401("Invalid webhook signature");
   }
   const msg = body;

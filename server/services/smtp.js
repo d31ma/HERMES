@@ -250,28 +250,31 @@ class SmtpRelayAdapter {
 // ── MIME message builder (for Gmail API) ────────────────────────────────────
 
 function buildMimeMessage(from, msg) {
+  const boundary = `_=_hermes_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}=_`
   const lines = []
   lines.push(`From: ${from}`)
   lines.push(`To: ${msg.to.join(', ')}`)
   if (msg.cc?.length) lines.push(`Cc: ${msg.cc.join(', ')}`)
-  lines.push(`Subject: =?UTF-8?B?${btoa(unescape(encodeURIComponent(msg.subject)))}?=`)
+  lines.push(`Subject: =?UTF-8?B?${Buffer.from(msg.subject, 'utf-8').toString('base64')}?=`)
   lines.push('MIME-Version: 1.0')
-  lines.push('Content-Type: multipart/alternative; boundary="boundary"')
+  lines.push(`Content-Type: multipart/alternative; boundary="${boundary}"`)
   lines.push('')
-  lines.push('--boundary')
+  lines.push(`--${boundary}`)
   if (msg.text) {
     lines.push('Content-Type: text/plain; charset=UTF-8')
+    lines.push('Content-Transfer-Encoding: base64')
     lines.push('')
-    lines.push(msg.text)
-    lines.push('--boundary')
+    lines.push(Buffer.from(msg.text, 'utf-8').toString('base64'))
+    lines.push(`--${boundary}`)
   }
   if (msg.html) {
     lines.push('Content-Type: text/html; charset=UTF-8')
+    lines.push('Content-Transfer-Encoding: base64')
     lines.push('')
-    lines.push(msg.html)
-    lines.push('--boundary--')
+    lines.push(Buffer.from(msg.html, 'utf-8').toString('base64'))
+    lines.push(`--${boundary}--`)
   } else {
-    lines.push('--boundary--')
+    lines.push(`--${boundary}--`)
   }
   return lines.join('\r\n')
 }
