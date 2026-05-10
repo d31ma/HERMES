@@ -78,31 +78,19 @@ if (command === 'serve') {
   await import('./migrate-domain.mjs')
 } else if (command === 'help' || command === '--help' || command === '-h') {
   console.log([
-    'HERMES — open-source multi-domain mail server',
-    '',
-    'Commands:',
-    '  serve            Start the API and frontend server (default)',
-    '  admin:create     Create the first admin for a domain',
-    '  domain:migrate   Promote users from one domain suffix to another',
-    '  help             Show this help',
-    '',
-    'Environment variables:',
-    '  Required: JWT_SECRET, INBOUND_WEBHOOK_SECRET',
-    '  Storage:  FYLO_ROOT (default: /data), ATTACHMENT_ROOT',
-    '  Server:   PORT (default: 8080), HOST (default: 0.0.0.0)',
-    '  Push:     VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, WEB_PUSH_DISABLED',
-    '  Adapters: SMS_ADAPTER, SMTP_ADAPTER',
-    '  OAuth:    OAUTH_GOOGLE_CLIENT_ID/SECRET, OAUTH_MICROSOFT_CLIENT_ID/SECRET, OAUTH_APPLE_CLIENT_ID/SECRET',
-    '  AWS:      AWS_REGION, AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY',
-    '  Azure:    AZURE_COMMUNICATION_ENDPOINT, AZURE_COMMUNICATION_KEY',
-    '  GCP:      GCP_SERVICE_ACCOUNT_EMAIL, GCP_SERVICE_ACCOUNT_KEY',
+    'Hermes container commands:',
+    '  serve           Start the Hermes API and frontend server',
+    '  admin:create    Create the first admin for a domain',
+    '  domain:migrate  Promote users from one domain suffix to another',
     '',
     'Examples:',
-    '  JWT_SECRET=secret INBOUND_WEBHOOK_SECRET=secret FYLO_ROOT=/data ./hermes',
-    '  FYLO_ROOT=.data JWT_SECRET=s ./hermes admin:create --email=admin@ex.com --phone=+1... --domain=ex.com',
+    '  docker run ghcr.io/d31ma/hermes:latest',
+    '  docker run -v hermes-data:/data ghcr.io/d31ma/hermes:latest admin:create --email=admin@example.com --phone=+14165550100 --domain=example.com',
+    '  docker run -v hermes-data:/data ghcr.io/d31ma/hermes:latest domain:migrate --from=old.example --to=new.example --apply',
   ].join('\n'))
   process.exit(0)
 } else {
-  console.error(`Unknown command: ${command}. Use serve, admin:create, domain:migrate, or help.`)
+  console.error(`Unsupported Hermes container command: ${command}`)
+  console.error('Allowed commands: serve, admin:create, domain:migrate')
   process.exit(64)
 }
