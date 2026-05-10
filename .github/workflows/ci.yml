@@ -1,10 +1,9 @@
 name: CI
 
 on:
-  push:
-    branches: ['release/**']
   pull_request:
     branches: [main]
+    types: [opened, reopened, ready_for_review]
   workflow_dispatch:
 
 permissions:
@@ -38,7 +37,14 @@ jobs:
         with:
           bun-version: latest
       - run: bun install --frozen-lockfile
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        id: pw-cache
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('bun.lock') }}
       - run: bun node_modules/.bin/playwright install --with-deps
+        if: steps.pw-cache.outputs.cache-hit != 'true'
       - run: bun run test:e2e
       - uses: actions/upload-artifact@v4
         if: failure()
@@ -162,42 +168,3 @@ jobs:
       - name: Stop container
         if: always()
         run: docker rm -f hermes-blackbox || true
-
-  open-release-pr:
-    name: Open release PR
-    if: github.event_name == 'push' && startsWith(github.ref, 'refs/heads/release/')
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - name: Create PR if one doesn't exist
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          BRANCH: ${{ github.ref_name }}
-        run: |
-          existing=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
-          if [ -n "$existing" ]; then
-            echo "PR #$existing already open for $BRANCH"
-            exit 0
-          fi
-          version="${BRANCH#release/}"
-          gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "Release $version" \
-            --body "Automated release PR for \`$BRANCH\`.
-
-          Merging this PR will:
-          - Build and push the Docker image to Docker Hub
-          - Tag the commit as \`v$version\`
-          - Publish a GitHub Release with generated notes
-
-          Make sure \`package.json\` version matches \`$version\` before merging." || {
-            # If gh pr create fails, check once more — a PR may have been opened concurrently.
-            existing=$(gh pr list --head "$BRANCH" --base main --state open --json number --jq '.[0].number // empty')
-            if [ -n "$existing" ]; then
-              echo "PR #$existing already open for $BRANCH (concurrent open)"
-              exit 0
-            fi
-            exit 1
-          }

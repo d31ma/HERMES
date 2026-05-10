@@ -1,0 +1,14 @@
+<logic :if="$loading">
+  <div class="callback-screen">
+    <md-circular-progress indeterminate></md-circular-progress>
+    <p class="md-typescale-body-large" style="margin-top:1rem;">Completing sign in…</p>
+  </div>
+</logic>
+
+<logic :if="!$loading && $error">
+  <div class="callback-screen">
+    <p class="md-typescale-title-medium" style="color:var(--md-sys-color-error);">Sign in failed</p>
+    <p class="md-typescale-body-medium" style="color:var(--md-sys-color-on-surface-variant);margin-top:0.5rem;">{$error}</p>
+    <md-filled-button @click="window._hermes?.navigate('/')" style="margin-top:1.5rem;">Back to sign in</md-filled-button>
+  </div>
+</logic>

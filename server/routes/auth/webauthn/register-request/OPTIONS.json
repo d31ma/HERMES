@@ -1,0 +1,6 @@
+{
+  "POST": {
+    "200": { "challenge": "", "options": {} },
+    "401": { "error": "", "unauthorized": true }
+  }
+}

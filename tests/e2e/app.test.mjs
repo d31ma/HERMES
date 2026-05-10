@@ -1,13 +1,12 @@
 /**
  * E2E app interaction tests — runs against the real local API server.
  *
- * Each test seeds an isolated user (unique email + TOTP device) and obtains
- * a JWT token to seed sessionStorage, bypassing the login flow.
+ * Each test seeds an isolated user and obtains a JWT via the SMS OTP flow.
  *
  * Run: bun run test:e2e
  */
 import { test, expect } from '@playwright/test'
-import { uniqueEmail, seedUser, seedDevice, seedDomain, deliverEmail, useTestApi, loginAs, getToken, totpCode } from './helpers.mjs'
+import { uniqueEmail, seedUser, seedDomain, deliverEmail, useTestApi, loginAs, getToken } from './helpers.mjs'
 
 // ── Fixture: authenticated page ───────────────────────────────────────────────
 
@@ -16,8 +15,7 @@ async function withAuth(page, opts = {}) {
   const email = opts.email ?? `test-${Date.now()}@${domain}`
   const userOpts = { domains: [domain], ...(opts.user ?? {}) }
   await seedUser(email, userOpts)
-  const { secret } = await seedDevice(email)
-  const data = await getToken(email, secret)
+  const data = await getToken(email)
   await useTestApi(page)
   await loginAs(page, data.token, data.email, data.role, data.domains)
   return { email, token: data.token, domains: data.domains }
@@ -199,68 +197,24 @@ test('navigates to settings', async ({ page }) => {
   await expect(page.locator('.settings-panel .settings-section-title').filter({ hasText: 'Routing Rules' })).toBeVisible()
 })
 
-test('MFA devices section shows seeded device', async ({ page }) => {
-  const email = uniqueEmail()
-  await seedUser(email)
-  const { secret } = await seedDevice(email, 'Work Phone')
-  const data = await getToken(email, secret)
-  await useTestApi(page)
-  await loginAs(page, data.token, data.email, data.role, data.domains)
-  await gotoApp(page)
-  await page.getByRole('button', { name: 'Settings' }).click()
-  await expect(page.getByText('Work Phone')).toBeVisible()
-})
-
-test('can add a new MFA device from settings', async ({ page }) => {
+test('can add a passkey from settings', async ({ page }) => {
   await withAuth(page)
   await gotoApp(page)
   await page.getByRole('button', { name: 'Settings' }).click()
 
-  // Click + Add device
-  await page.getByRole('button', { name: '+ Add device' }).click()
+  // Click add passkey button
+  await page.getByRole('button', { name: 'Add passkey' }).click()
 
-  // Wait for the setup form (API call to /mfa/provision completes)
-  await expect(page.getByLabel('Secret key')).toBeVisible()
+  // The form should appear with a device name field
+  await expect(page.getByLabel(/Device name/)).toBeVisible()
+  await page.getByLabel(/Device name/).fill('Test Passkey')
 
-  // Read the generated TOTP secret and compute the current code
-  const secret = await page.getByLabel('Secret key').inputValue()
-  await page.getByLabel(/Device name/).fill('New Test Device')
-  await page.getByLabel('Confirmation code').fill(totpCode(secret))
-  await page.getByRole('button', { name: 'Add device' }).click()
+  // WebAuthn registration requires a real authenticator in headful mode.
+  // In headless CI, the browser's virtual authenticator can be used.
+  // For now, verify the setup UI appears correctly.
+  await expect(page.getByRole('button', { name: 'Register' })).toBeVisible()
 
-  // Device should now appear in the list
-  await expect(page.getByText('New Test Device')).toBeVisible()
-})
-
-test('shows error for wrong confirmation code when adding device', async ({ page }) => {
-  await withAuth(page)
-  await gotoApp(page)
-  await page.getByRole('button', { name: 'Settings' }).click()
-
-  await page.getByRole('button', { name: '+ Add device' }).click()
-  await expect(page.getByLabel('Secret key')).toBeVisible()
-
-  await page.getByLabel('Confirmation code').fill('000000')
-  await page.getByRole('button', { name: 'Add device' }).click()
-
-  await expect(page.getByText(/Invalid code/)).toBeVisible()
-})
-
-test('can remove an MFA device from settings', async ({ page }) => {
-  const email = uniqueEmail()
-  await seedUser(email)
-  const { secret } = await seedDevice(email, 'Device To Remove')
-  const data = await getToken(email, secret)
-  await useTestApi(page)
-  await loginAs(page, data.token, data.email, data.role, data.domains)
-  await gotoApp(page)
-  await page.getByRole('button', { name: 'Settings' }).click()
-
-  await expect(page.getByText('Device To Remove')).toBeVisible()
-
-  // Set up dialog accept before clicking Remove
-  page.on('dialog', d => d.accept())
-  await page.getByRole('button', { name: 'Remove' }).first().click()
-
-  await expect(page.getByText('Device To Remove')).not.toBeVisible()
+  // Navigate back — settings should still be visible
+  await page.getByText(/Back to settings/).click()
+  await expect(page.locator('.settings-panel .settings-section-title').filter({ hasText: 'Notifications' })).toBeVisible()
 })

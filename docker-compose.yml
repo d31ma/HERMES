@@ -1,0 +1,95 @@
+# HERMES + LocalStack — local AWS adapter testing
+#
+# Start: docker compose up -d
+# Logs:  docker compose logs -f hermes
+# Stop:  docker compose down -v
+#
+# LocalStack emulates AWS SNS (SMS) and SES (email) on localhost:4566.
+# HERMES connects to LocalStack via AWS_ENDPOINT_URL=http://localstack:4566.
+#
+# Test with:
+#   docker compose run --rm test
+
+services:
+  # ── LocalStack: AWS cloud emulator ────────────────────────────────────
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: hermes-localstack
+    ports:
+      - '4566:4566'            # LocalStack Gateway
+      - '4510-4559:4510-4559'  # external services port range
+    environment:
+      - SERVICES=sns,ses
+      - ACTIVATE_PRO=0
+      - DEBUG=0
+      - PERSISTENCE=0
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - localstack-data:/var/lib/localstack
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4566/_localstack/health']
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # ── HERMES: mail server ────────────────────────────────────────────────
+  hermes:
+    build: .
+    container_name: hermes-server
+    ports:
+      - '8080:8080'
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=8080
+      - FYLO_ROOT=/data
+      - ATTACHMENT_ROOT=/data/attachments
+      - JWT_SECRET=hermes-local-test-secret
+      - INBOUND_WEBHOOK_SECRET=hermes-local-inbound-secret
+      # AWS via LocalStack
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+      # Adapters
+      - SMS_ADAPTER=aws
+      - SMTP_ADAPTER=aws
+      - SES_FROM_ADDRESS=hermes@localhost.local
+      # Web Push disabled in local testing
+      - WEB_PUSH_DISABLED=true
+    volumes:
+      - hermes-data:/data
+    depends_on:
+      localstack:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8080/health']
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  # ── Test runner: smoke tests against HERMES + LocalStack ───────────────
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    container_name: hermes-test-runner
+    environment:
+      - HERMES_URL=http://hermes:8080
+      - LOCALSTACK_URL=http://localstack:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_ENDPOINT_URL=http://localstack:4566
+    depends_on:
+      hermes:
+        condition: service_healthy
+    profiles:
+      - test
+
+volumes:
+  localstack-data:
+  hermes-data:

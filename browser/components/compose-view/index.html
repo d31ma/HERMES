@@ -1,0 +1,18 @@
+<div class="compose-panel">
+  <p class="md-typescale-title-large" style="font-weight:600;margin-bottom:1.25rem;">New message</p>
+
+  <md-outlined-text-field type="email" label="To" :value="$to" placeholder="recipient@example.com" style="width:100%;margin-bottom:0.5rem;"></md-outlined-text-field>
+  <md-outlined-text-field type="email" label="CC" :value="$cc" placeholder="optional" style="width:100%;margin-bottom:0.5rem;"></md-outlined-text-field>
+  <md-outlined-text-field type="text" label="Subject" :value="$subject" placeholder="Subject" style="width:100%;margin-bottom:0.5rem;"></md-outlined-text-field>
+
+  <md-outlined-text-field type="textarea" label="Message" :value="$text" placeholder="Write your message…" rows="8" style="width:100%;margin-bottom:1rem;min-height:240px;"></md-outlined-text-field>
+
+  <logic :if="$error">
+    <p class="login-error" style="margin:0 0 0.75rem;">{$error}</p>
+  </logic>
+
+  <div style="display:flex;gap:0.75rem;">
+    <md-filled-button :disabled="$loading" @click="send()">{$loading ? 'Sending…' : 'Send'}</md-filled-button>
+    <md-text-button @click="window._hermes?.navigate('inbox')">Discard</md-text-button>
+  </div>
+</div>

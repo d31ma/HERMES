@@ -1,11 +1,11 @@
 #!/usr/bin/env bun
 import { randomUUID } from 'node:crypto'
-import { createDb, Collections, collect } from '../src/db/index.ts'
-import { findDomainEntry, putDomain } from '../src/db/domains.ts'
-import { putDomainMigration } from '../src/db/domain-migrations.ts'
-import { listRules, findRuleById, putRule } from '../src/db/rules.ts'
-import { listUsers, findUserByEmail, normalizeUser } from '../src/db/users.ts'
-import { normalizeDomain } from '../src/shared/security.ts'
+import { createDb, Collections, collect } from '@/repositories/index.js'
+import { findDomainEntry, putDomain } from '@/repositories/domains.js'
+import { putDomainMigration } from '@/repositories/domain-migrations.js'
+import { listRules, findRuleById, putRule } from '@/repositories/rules.js'
+import { listUsers, findUserByEmail, normalizeUser } from '@/repositories/users.js'
+import { normalizeDomain } from '@/services/security.js'
 
 const args = parseArgs(process.argv.slice(2))
 const fromDomain = normalizeDomain(String(args.from ?? args._[0] ?? ''))

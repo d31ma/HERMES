@@ -1,7 +1,0 @@
-{
-  "POST": {
-    "200": { "token": "", "email": "", "domains": [""], "role": "" },
-    "400": { "error": "" },
-    "401": { "error": "", "unauthorized": true }
-  }
-}

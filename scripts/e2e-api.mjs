@@ -29,7 +29,7 @@ const CORS_HEADERS = {
   'Access-Control-Max-Age': '86400',
 }
 
-const tach = spawn(join(projectRoot, 'node_modules', '.bin', 'tach.serve'), [], {
+const tach = spawn(join(projectRoot, 'node_modules', '.bin', 'yon.serve'), [], {
   cwd: projectRoot,
   stdio: 'inherit',
   env: {

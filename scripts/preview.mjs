@@ -19,4 +19,4 @@ process.on('SIGINT', () => { shutdown('SIGINT'); process.exit(0) })
 process.on('SIGTERM', () => { shutdown('SIGTERM'); process.exit(0) })
 
 start('bun', ['./scripts/bundle.mjs', '--watch'])
-start(bin('tach.preview'), [])
+start(bin('tac.preview'), [])
