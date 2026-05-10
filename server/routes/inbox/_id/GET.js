@@ -1,0 +1,28 @@
+import { r401, r403, r404 } from "@/services/respond.js";
+import { verifyJwt, getJwtSecret } from "@/services/auth.js";
+import { createDb } from "@/repositories/index.js";
+import { findEmailById } from "@/repositories/emails.js";
+import { listAttachmentSummaries } from "@/repositories/attachments.js";
+import { presentEmailForDomainMigrations } from "@/services/domain-migration.js";
+/**
+ * GET /inbox/_id
+ * @param {object} params
+ * @param {{ id: string }} params.paths - URL path parameters
+ * @param {{ bearer?: { token: string } }} params.context - Request context
+ * @returns {Promise<Record<string, unknown>>}
+ */
+export async function handler({ paths, context }) {
+  const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());
+  if (!claims)
+    return r401("Authentication required");
+  const id = paths?.id;
+  if (!id)
+    return r404("Email not found");
+  const fylo = await createDb();
+  const [, email] = await findEmailById(fylo, id);
+  if (!email)
+    return r404("Email not found");
+  if (!claims.domains.includes(email.domain))
+    return r403("Access denied");
+  return { ...await presentEmailForDomainMigrations(fylo, email), attachments: await listAttachmentSummaries(fylo, id) };
+}

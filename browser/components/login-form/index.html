@@ -1,0 +1,75 @@
+<div class="login-card">
+  <div class="login-logo">HERMES</div>
+
+  <logic :if="$step === 'start'">
+    <p class="login-title md-typescale-title-medium">Sign in</p>
+
+    <logic :if="$providers.length > 0">
+      <div class="oauth-buttons">
+        <loop :for="provider of $providers">
+          <md-outlined-button class="oauth-btn" @click="initOAuth(provider)" style="width:100%;margin-bottom:0.5rem;justify-content:center;">
+            <svg slot="icon" viewBox="0 0 24 24" fill="currentColor" style="width:20px;height:20px;">
+              <logic :if="provider === 'google'">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </logic>
+              <logic :if="provider === 'microsoft'">
+                <path d="M11.4 24H0V12.6h11.4V24zM24 24H12.6V12.6H24V24zM11.4 11.4H0V0h11.4v11.4zM24 11.4H12.6V0H24v11.4z"/>
+              </logic>
+              <logic :if="provider === 'apple'">
+                <path d="M17.05 20.28c-.98.95-2.05.88-3.08.4-1.09-.5-2.08-.48-3.24 0-1.44.62-2.2.44-3.06-.4C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.54 4.09zM15.03 3.39c.22-1.66-.44-3.27-1.15-3.39-.8-.13-2.08.63-2.75 1.46-.62.77-.88 1.84-.66 2.82.86.05 1.75-.36 2.3-.95"/>
+              </logic>
+            </svg>
+            Continue with {provider.charAt(0).toUpperCase() + provider.slice(1)}
+          </md-outlined-button>
+        </loop>
+      </div>
+      <div class="oauth-divider"><span>or</span></div>
+    </logic>
+
+    <p class="login-subtitle md-typescale-body-small">Enter your email to continue.</p>
+    <md-outlined-text-field data-login-email type="email" label="Email" :value="$email" placeholder="you@example.com" autocomplete="email" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
+    <logic :if="$error"><p class="login-error">{$error}</p></logic>
+    <md-filled-button :disabled="$loading" @click="requestMfa()" style="width:100%;">{$loading ? 'Checking…' : 'Continue'}</md-filled-button>
+  </logic>
+
+  <logic :if="$step === 'mfa'">
+    <p class="login-title md-typescale-title-medium">Authenticator code</p>
+    <p class="login-subtitle md-typescale-body-small">Enter the 6-digit code from your authenticator app.</p>
+    <md-outlined-text-field data-login-totp type="text" label="Code" :value="$totpCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
+    <logic :if="$error"><p class="login-error">{$error}</p></logic>
+    <md-filled-button :disabled="$loading" @click="confirmMfa()" style="width:100%;">{$loading ? 'Verifying…' : 'Verify'}</md-filled-button>
+    <div style="display:flex;justify-content:space-between;margin-top:0.75rem;">
+      <md-text-button @click="back()">Back</md-text-button>
+      <md-text-button @click="usePhoneBackup()">Use phone backup</md-text-button>
+    </div>
+  </logic>
+
+  <logic :if="$step === 'phone-input'">
+    <p class="login-title md-typescale-title-medium">Phone verification</p>
+    <p class="login-subtitle md-typescale-body-small">Enter a phone number linked to your account to receive a code.</p>
+    <md-outlined-text-field data-login-phone type="tel" label="Phone" :value="$phone" placeholder="+1 416 555 0100" autocomplete="tel" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
+    <logic :if="$error"><p class="login-error">{$error}</p></logic>
+    <md-filled-button :disabled="$loading" @click="requestSms()" style="width:100%;">{$loading ? 'Sending…' : 'Send code'}</md-filled-button>
+    <md-text-button @click="back()" style="display:block;margin-top:0.75rem;width:100%;text-align:center;">Back</md-text-button>
+  </logic>
+
+  <logic :if="$step === 'phone-code'">
+    <p class="login-title md-typescale-title-medium">Enter your code</p>
+    <p class="login-subtitle md-typescale-body-small">If the details match an account, a 6-digit code was sent.</p>
+    <md-outlined-text-field data-login-otp type="text" label="Verification code" :value="$otpCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
+    <logic :if="$error"><p class="login-error">{$error}</p></logic>
+    <md-filled-button :disabled="$loading" @click="confirmSms()" style="width:100%;">{$loading ? 'Verifying…' : 'Verify'}</md-filled-button>
+    <md-text-button @click="back()" style="display:block;margin-top:0.75rem;width:100%;text-align:center;">Back</md-text-button>
+  </logic>
+
+  <logic :if="$step === 'mfa-setup'">
+    <p class="login-title md-typescale-title-medium">Set up authenticator</p>
+    <p class="login-subtitle md-typescale-body-small">Add the key below to your authenticator app, then enter the code it generates.</p>
+    <md-outlined-text-field label="Secret key" :value="$totpSecret" readonly style="width:100%;margin-bottom:0.75rem;font-family:monospace;"></md-outlined-text-field>
+    <p style="font-size:12px;margin:0 0 0.75rem;">On mobile? <a :href="$totpUri" style="color:var(--md-sys-color-primary);">Open in authenticator app</a></p>
+    <md-outlined-text-field data-login-device-name type="text" label="Device name (optional)" :value="$deviceName" placeholder="e.g. iPhone 15" style="width:100%;margin-bottom:0.75rem;"></md-outlined-text-field>
+    <md-outlined-text-field data-login-device-code type="text" label="Confirmation code" :value="$deviceCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
+    <logic :if="$error"><p class="login-error">{$error}</p></logic>
+    <md-filled-button :disabled="$loading" @click="confirmSetup()" style="width:100%;">{$loading ? 'Saving…' : 'Activate'}</md-filled-button>
+  </logic>
+</div>

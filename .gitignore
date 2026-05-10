@@ -6,3 +6,15 @@ test-results/
 playwright-report/
 coverage/
 .blackbox-tests/
+
+# Graphify
+.graphify_*
+graphify-out/
+CLAUDE.md
+AGENTS.md
+.github/copilot-instructions.md
+
+# Untrack markdown except README and DEPLOY
+*.md
+!README.md
+!DEPLOY.md

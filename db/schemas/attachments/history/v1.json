@@ -1,0 +1,10 @@
+{
+  "emailId": "^.+$",
+  "domain": "^[A-Za-z0-9]([A-Za-z0-9-]{0,61}[A-Za-z0-9])?\\.[A-Za-z]{2,}$",
+  "filename": "^.{1,255}$",
+  "contentType": "^[a-z]+/[a-z0-9.+-]+$",
+  "size": "^\\d+$",
+  "storagePath": "^.+$",
+  "disposition?": "^(inline|attachment)$",
+  "contentId?": "^.+$"
+}

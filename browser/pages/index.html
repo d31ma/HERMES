@@ -1,0 +1,34 @@
+<logic :if="isAuthenticated">
+  <div class="app-shell">
+    <header class="app-topbar">
+      <span class="app-brand md-typescale-title-large">HERMES</span>
+      <span class="app-user md-typescale-body-medium">{email}</span>
+      <md-text-button data-sign-out>Sign out</md-text-button>
+    </header>
+
+    <div class="app-layout">
+      <aside class="app-sidebar">
+        <app-nav_ />
+      </aside>
+
+      <main class="app-main">
+        <slot />
+      </main>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Primary">
+      <app-nav_ />
+    </nav>
+  </div>
+</logic>
+
+<logic :if="!isAuthenticated">
+  <logic :if="isRootPath">
+    <div class="login-screen">
+      <login-form_ @login="handleLogin($event.detail)" />
+    </div>
+  </logic>
+  <logic :if="!isRootPath">
+    <slot />
+  </logic>
+</logic>

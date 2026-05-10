@@ -1,0 +1,119 @@
+<div class="settings-panel">
+  <logic :if="restoreMfaSetupStateForRender()"></logic>
+
+  <div class="settings-section">
+    <p class="md-typescale-label-large settings-section-title">Routing Rules</p>
+    <logic :if="$loading"><div class="inbox-empty"><md-circular-progress indeterminate></md-circular-progress><span class="md-typescale-body-medium" style="margin-left:1rem;">Loading…</span></div></logic>
+    <logic :if="!$loading && $domains.length === 0"><p class="md-typescale-body-medium" style="color:var(--md-sys-color-on-surface-variant);padding:1rem;">No domains configured.</p></logic>
+    <loop :for="domain of $domains">
+      <div style="margin-bottom:1rem;">
+        <p class="md-typescale-title-small" style="margin:0 0 0.5rem;color:var(--md-sys-color-on-surface-variant);">{domain.domain}</p>
+        <div class="settings-card">
+          <loop :for="route of domain.routes">
+            <div class="settings-row"><span style="flex:1;">{route.match}</span><span :class="'route-badge ' + route.action.type">{route.action.type}</span>
+              <logic :if="!route.enabled"><span class="md-typescale-label-small" style="color:var(--md-sys-color-on-surface-variant);margin-left:0.5rem;">(disabled)</span></logic>
+            </div>
+          </loop>
+        </div>
+      </div>
+    </loop>
+  </div>
+
+  <div class="settings-section">
+    <p class="md-typescale-label-large settings-section-title">Notifications</p>
+    <div class="settings-card">
+      <div class="settings-row" style="align-items:flex-start;">
+        <div style="display:flex;flex-direction:column;gap:0.25rem;"><span class="md-typescale-body-medium">New mail alerts</span><span class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">{notificationHelpText}</span></div>
+        <span class="md-typescale-label-medium" style="color:var(--md-sys-color-on-surface-variant);margin-left:auto;">{notificationStatusLabel}</span>
+      </div>
+      <logic :if="$pushSubscriptions.length > 0">
+        <loop :for="pushSubscription of $pushSubscriptions">
+          <div class="settings-row"><span class="md-typescale-body-small">Registered device</span><span class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);margin-left:auto;">{new Date(pushSubscription.updatedAt).toLocaleDateString()}</span></div>
+        </loop>
+      </logic>
+    </div>
+    <logic :if="$notificationError"><p class="login-error" style="margin:0.75rem 0 0;">{$notificationError}</p></logic>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;">
+      <md-filled-tonal-button :disabled="$notificationLoading || !$notificationSupported || $notificationPermission === 'denied'" @click="enableNotifications()">{$notificationLoading ? 'Working…' : 'Enable notifications'}</md-filled-tonal-button>
+      <logic :if="$notificationSupported && $pushSubscriptions.length > 0">
+        <md-text-button :disabled="$notificationLoading" @click="disableNotifications()">Disable on this device</md-text-button>
+      </logic>
+    </div>
+  </div>
+
+  <div class="settings-section">
+    <p class="md-typescale-label-large settings-section-title">MFA Devices</p>
+    <logic :if="$loading"><div class="inbox-empty"><md-circular-progress indeterminate></md-circular-progress></div></logic>
+    <logic :if="!$loading && $mfaDevices.length > 0">
+      <div class="settings-card">
+        <loop :for="device of $mfaDevices">
+          <div class="settings-row"><span class="md-typescale-body-medium" style="flex:1;">{device.name}</span><span class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">{new Date(device.createdAt).toLocaleDateString()}</span><md-text-button @click="deleteMfaDevice(device.id)">Remove</md-text-button></div>
+        </loop>
+      </div>
+    </logic>
+    <logic :if="!$loading && $mfaDevices.length === 0"><p class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);padding:0.5rem 0;">No MFA devices registered.</p></logic>
+    <md-filled-tonal-button @click="startAddDevice()" style="margin-top:0.75rem;">{$showAddDevice ? 'Cancel' : '+ Add device'}</md-filled-tonal-button>
+    <logic :if="$showAddDevice && !$deviceProvision"><div class="inbox-empty" style="padding:1rem;"><md-circular-progress indeterminate></md-circular-progress><span style="margin-left:1rem;">Generating…</span></div></logic>
+    <logic :if="$deviceProvision">
+      <div class="settings-card" style="margin-top:0.75rem;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+        <p class="md-typescale-body-medium" style="margin:0;">Add the secret key to your authenticator app, then enter the code it shows.</p>
+        <md-outlined-text-field label="Secret key" :value="$deviceProvision.totpSecret" readonly style="font-family:monospace;"></md-outlined-text-field>
+        <p class="md-typescale-body-small" style="margin:0;">On mobile? <a :href="$deviceProvision.totpUri" style="color:var(--md-sys-color-primary);">Open in authenticator app</a></p>
+        <md-outlined-text-field label="Device name (optional)" :value="$newDeviceName" placeholder="e.g. iPhone 15"></md-outlined-text-field>
+        <md-outlined-text-field label="Confirmation code" :value="$newDeviceCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code"></md-outlined-text-field>
+        <logic :if="$deviceError"><p class="login-error" style="margin:0;">{$deviceError}</p></logic>
+        <md-filled-button :disabled="$deviceLoading" @click="confirmDevice()">{$deviceLoading ? 'Saving…' : 'Add device'}</md-filled-button>
+      </div>
+    </logic>
+  </div>
+
+  <logic :if="$isAdmin">
+    <div class="settings-section">
+      <p class="md-typescale-label-large settings-section-title">Inbox Rules</p>
+      <logic :if="!$loading && $rules.length > 0">
+        <div class="settings-card">
+          <loop :for="rule of $rules">
+            <div class="settings-row" style="flex-direction:column;align-items:flex-start;gap:0.25rem;padding:0.6rem 0;">
+              <div style="display:flex;align-items:center;gap:0.5rem;width:100%;">
+                <span class="md-typescale-body-medium" style="font-weight:600;">{rule.name}</span>
+                <span class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">{rule.domain}</span>
+                <span :class="'route-badge ' + (rule.enabled ? 'store' : 'drop')" style="cursor:pointer;margin-left:auto;" @click="toggleRule(rule.id, rule.enabled)">{rule.enabled ? 'on' : 'off'}</span>
+                <md-text-button @click="deleteRule(rule.id)">Remove</md-text-button>
+              </div>
+              <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">If {describeConditions(rule)}</div>
+              <div class="md-typescale-body-small">{describeActions(rule)}</div>
+            </div>
+          </loop>
+        </div>
+      </logic>
+      <logic :if="!$loading && $rules.length === 0"><p class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);padding:0.5rem 0;">No inbox rules.</p></logic>
+      <md-filled-tonal-button @click="$showAddRule = !$showAddRule" style="margin-top:0.75rem;">+ Add rule</md-filled-tonal-button>
+      <logic :if="$showAddRule">
+        <div class="settings-card" style="margin-top:0.75rem;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+          <md-outlined-text-field label="Rule name" :value="$newRuleName" placeholder="e.g. Move newsletters"></md-outlined-text-field>
+          <div><md-filled-tonal-button @click="saveRule()">Save</md-filled-tonal-button><md-text-button @click="resetRuleForm()" style="margin-left:0.5rem;">Cancel</md-text-button></div>
+        </div>
+      </logic>
+    </div>
+
+    <div class="settings-section">
+      <p class="md-typescale-label-large settings-section-title">Users</p>
+      <logic :if="!$loading && $users.length > 0">
+        <div class="settings-card">
+          <loop :for="user of $users">
+            <div class="settings-row"><span style="flex:1;" class="md-typescale-body-medium">{user.email}</span><span class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">{user.role}</span></div>
+          </loop>
+        </div>
+      </logic>
+      <md-filled-tonal-button @click="$showAddUser = !$showAddUser" style="margin-top:0.75rem;">+ Add user</md-filled-tonal-button>
+      <logic :if="$showAddUser">
+        <div class="settings-card" style="margin-top:0.75rem;padding:1rem;display:flex;flex-direction:column;gap:0.75rem;">
+          <md-outlined-text-field label="Email" type="email" :value="$newEmail" placeholder="user@example.com"></md-outlined-text-field>
+          <md-outlined-text-field label="Phone numbers (comma-separated)" :value="$newPhones" placeholder="+1 416 555 0100"></md-outlined-text-field>
+          <md-outlined-text-field label="Domains (comma-separated)" :value="$newDomains" placeholder="example.com"></md-outlined-text-field>
+          <md-filled-tonal-button @click="addUser()">Save</md-filled-tonal-button>
+        </div>
+      </logic>
+    </div>
+  </logic>
+</div>

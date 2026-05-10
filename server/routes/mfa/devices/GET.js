@@ -1,0 +1,18 @@
+import { r401 } from "@/services/respond.js";
+import { verifyJwt, getJwtSecret } from "@/services/auth.js";
+import { createDb } from "@/repositories/index.js";
+import { listDevices } from "@/repositories/mfa.js";
+/**
+ * GET /mfa/devices
+ * @param {object} params
+ * @param {{ bearer?: { token: string } }} params.context - Request context
+ * @returns {Promise<Record<string, unknown>>}
+ */
+export async function handler({ context }) {
+  const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());
+  if (!claims)
+    return r401("Authentication required");
+  const fylo = await createDb();
+  const devices = await listDevices(fylo, claims.email);
+  return devices.map(({ id, name, createdAt }) => ({ id, name, createdAt }));
+}

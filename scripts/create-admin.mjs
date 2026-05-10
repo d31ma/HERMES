@@ -1,8 +1,8 @@
 #!/usr/bin/env bun
-import { createDb } from '../src/db/index.ts'
-import { findDomainEntry, putDomain } from '../src/db/domains.ts'
-import { putUser } from '../src/db/users.ts'
-import { normalizeDomain, normalizeEmailAddress } from '../src/shared/security.ts'
+import { createDb } from '@/repositories/index.js'
+import { findDomainEntry, putDomain } from '@/repositories/domains.js'
+import { putUser } from '@/repositories/users.js'
+import { normalizeDomain, normalizeEmailAddress } from '@/services/security.js'
 
 const args = Object.fromEntries(
   process.argv.slice(2).map(arg => {

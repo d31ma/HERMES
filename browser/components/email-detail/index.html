@@ -1,0 +1,59 @@
+<div class="email-toolbar">
+  <md-text-button @click="window._hermes?.navigate('inbox')" trailing-icon>
+    <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    Inbox
+  </md-text-button>
+
+  <div class="email-actions">
+    <md-text-button @click="$email && updateEmail({ read: !$email.read }, $email.read ? 'Marked unread.' : 'Marked read.')">
+      {$email && $email.read ? 'Mark unread' : 'Mark read'}
+    </md-text-button>
+    <md-text-button @click="$email && updateEmail({ starred: !$email.starred }, $email.starred ? 'Star removed.' : 'Starred.')">
+      {$email && $email.starred ? 'Unstar' : 'Star'}
+    </md-text-button>
+    <logic :if="$email && $email.folder !== 'archive' && $email.folder !== 'trash'">
+      <md-text-button @click="updateEmail({ folder: 'archive' }, 'Archived.')">Archive</md-text-button>
+    </logic>
+    <logic :if="$email && $email.folder !== 'inbox'">
+      <md-text-button @click="updateEmail({ folder: 'inbox' }, 'Moved to inbox.')">To inbox</md-text-button>
+    </logic>
+    <logic :if="$email && $email.folder !== 'trash'">
+      <md-text-button @click="updateEmail({ folder: 'trash' }, 'Moved to trash.')">Trash</md-text-button>
+    </logic>
+    <md-text-button @click="reply()">Reply</md-text-button>
+    <logic :if="$email && $email.folder === 'trash'">
+      <md-filled-tonal-button @click="deleteEmail()" style="--md-filled-tonal-button-container-color:var(--md-sys-color-error-container);">Delete forever</md-filled-tonal-button>
+    </logic>
+  </div>
+</div>
+
+<logic :if="$email">
+  <div class="email-header">
+    <h2 class="md-typescale-headline-small" style="margin:0 0 1rem;">{$email.subject}</h2>
+    <div class="email-meta">
+      <div class="email-avatar">{window._hermes?.initials($email.sender) ?? ''}</div>
+      <div style="min-width:0;">
+        <div class="md-typescale-body-medium" style="font-weight:500;">{$email.sender}</div>
+        <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">To: {$email.recipient}</div>
+        <logic :if="$email.originalRecipient && $email.originalRecipient !== $email.recipient">
+          <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">Originally: {$email.originalRecipient}</div>
+        </logic>
+      </div>
+      <span class="md-typescale-label-medium" style="color:var(--md-sys-color-on-surface-variant);margin-left:auto;">{new Date($email.receivedAt).toLocaleString()}</span>
+    </div>
+  </div>
+
+  <logic :if="$email.attachments && $email.attachments.length > 0">
+    <div class="email-attachments">
+      <p class="md-typescale-label-large" style="margin:0 0 0.5rem;">Attachments</p>
+      <loop :for="attachment of $email.attachments">
+        <button class="attachment-chip" @click="downloadAttachment(attachment)">
+          <span>{attachment.filename}</span>
+          <span style="color:var(--md-sys-color-on-surface-variant);">{window._hermes?.bytesLabel(attachment.size) ?? ''}</span>
+        </button>
+      </loop>
+    </div>
+  </logic>
+
+  <div class="email-body md-typescale-body-large">{$email.body || '(No body)'}</div>
+</logic>

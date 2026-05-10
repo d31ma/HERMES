@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm view *)",
+      "Bash(aws ecs describe-*)",
+      "Bash(aws ecs list-*)",
+      "Bash(aws ec2 describe-*)",
+      "Bash(aws logs get-log-events *)",
+      "Bash(aws logs describe-*)",
+      "Bash(aws sts get-caller-identity *)",
+      "Bash(aws iam get-*)",
+      "Bash(aws iam list-*)",
+      "Bash(aws route53 list-*)",
+      "Bash(aws efs describe-*)",
+      "Bash(aws elbv2 describe-*)",
+      "Bash(aws amplify list-*)",
+      "Bash(gh run watch *)",
+      "Bash(gh search *)",
+      "Bash(curl -s *)"
+    ]
+  }
+}

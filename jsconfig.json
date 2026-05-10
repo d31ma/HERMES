@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "checkJs": true,
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "types": ["bun-types"],
+    "paths": {
+      "@/*": ["./server/*"]
+    }
+  },
+  "include": [
+    "tachyon-env.d.ts",
+    "server/**/*.d.ts",
+    "tests/**/*.js",
+    "server/routes/**/*.js",
+    "server/repositories/**/*.js",
+    "server/services/**/*.js",
+    "browser/**/*.d.ts",
+    "browser/**/*.js",
+    "browser/**/*.ts"
+  ]
+}

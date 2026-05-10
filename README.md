@@ -47,7 +47,7 @@ The existing web manifest provides standalone display metadata, theme colors, sh
 
 ## Docker
 
-Published images are available on Docker Hub at [`d3lma/hermes`](https://hub.docker.com/r/d3lma/hermes). Every push to `main` builds and publishes an image tagged with the `package.json` version (for example `0.2.0`) and `latest`. Images are multi-arch (`linux/amd64`, `linux/arm64`).
+Published images are available on GitHub Container Registry at [`ghcr.io/d31ma/hermes`](https://ghcr.io/d31ma/hermes). Every push to `main` builds and publishes a multi-arch image (`linux/amd64`, `linux/arm64`) tagged with a [CalVer](https://calver.org) date (`YY.WW.DD`) and `latest`.
 
 ### Run the published image
 
@@ -59,7 +59,7 @@ docker run --rm \
   -e WEB_PUSH_DISABLED=true \
   -e FYLO_ROOT=/data \
   -v hermes-data:/data \
-  d3lma/hermes:latest
+  ghcr.io/d31ma/hermes:latest
 ```
 
 The container serves the API on `PORT` and stores data under `FYLO_ROOT`. Build the frontend separately with `bun run bundle` when distributing it through a CDN.
@@ -105,7 +105,7 @@ The private suite receives `HERMES_IMAGE`, `HERMES_URL`, and `INBOUND_WEBHOOK_SE
 Because the runtime base is distroless, downstream Dockerfiles can add files and configuration but cannot run shell commands. This works:
 
 ```dockerfile
-FROM d3lma/hermes:0.2.0
+FROM ghcr.io/d31ma/hermes:latest
 
 COPY --chown=65532:65532 my-routes/   /app/routes/custom/
 COPY --chown=65532:65532 my-config.json /app/config.json
@@ -114,7 +114,7 @@ ENV CUSTOM_FLAG=true
 
 Files placed under `/app/routes/` are picked up automatically by Tachyon's file-system router. Static assets, components, and configuration work the same way.
 
-`RUN` commands that require a shell will not work (`bun install`, `apt-get`, shell scripts). To add new npm dependencies, do a multi-stage build yourself: run `bun install` in a full Bun image and copy `node_modules` into a layer on top of `d3lma/hermes`.
+`RUN` commands that require a shell will not work (`bun install`, `apt-get`, shell scripts). To add new npm dependencies, do a multi-stage build yourself: run `bun install` in a full Bun image and copy `node_modules` into a layer on top of `ghcr.io/d31ma/hermes`.
 
 Bind-mounting at runtime is always an option for ad-hoc additions:
 
@@ -127,7 +127,7 @@ docker run --rm \
   -e FYLO_ROOT=/data \
   -v hermes-data:/data \
   -v $(pwd)/my-routes:/app/routes/custom:ro \
-  d3lma/hermes:latest
+  ghcr.io/d31ma/hermes:latest
 ```
 
 Bind-mount sources should be owned by uid `65532` on the host (or world-readable) to satisfy the non-root container user.
@@ -161,7 +161,7 @@ For the hardened Docker image, run the same bootstrap as an explicit one-shot co
 ```sh
 docker run --rm \
   -v hermes-data:/data \
-  d3lma/hermes:latest \
+  ghcr.io/d31ma/hermes:latest \
   admin:create --email=admin@example.com --phone=+14165550100 --domain=example.com
 ```
 
@@ -190,7 +190,7 @@ For Docker:
 ```sh
 docker run --rm \
   -v hermes-data:/data \
-  d3lma/hermes:latest \
+  ghcr.io/d31ma/hermes:latest \
   domain:migrate --from=old.example --to=new.example --apply
 ```
 

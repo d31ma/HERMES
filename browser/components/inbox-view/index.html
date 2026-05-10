@@ -1,0 +1,50 @@
+<div class="inbox-toolbar">
+  <span class="inbox-title md-typescale-title-large">Inbox</span>
+  <span class="inbox-count md-typescale-label-medium" style="margin-left:0.5rem;">{unreadCount} unread</span>
+  <md-icon-button @click="load()" style="margin-left:auto;" aria-label="Refresh"><svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.2"/></svg></md-icon-button>
+</div>
+
+<div class="inbox-search">
+  <md-outlined-text-field type="search" :value="$search" aria-label="Search mail" placeholder="Search mail…" style="flex:1;min-width:0;"></md-outlined-text-field>
+  <md-filled-tonal-button @click="load()">Search</md-filled-tonal-button>
+  <md-text-button @click="clearSearch()">Clear</md-text-button>
+</div>
+
+<div class="filter-strip">
+  <md-assist-chip :class="$statusFilter === 'all' ? 'selected' : ''" label="All" @click="$statusFilter = 'all'; load()"></md-assist-chip>
+  <md-assist-chip :class="$statusFilter === 'unread' ? 'selected' : ''" label="Unread" @click="$statusFilter = 'unread'; load()"></md-assist-chip>
+  <md-assist-chip :class="$statusFilter === 'starred' ? 'selected' : ''" label="Starred" @click="$statusFilter = 'starred'; load()"></md-assist-chip>
+</div>
+
+<div class="folder-tabs">
+  <loop :for="folder of folders">
+    <md-assist-chip :class="$selectedFolder === folder ? 'selected' : ''" :label="folder + ' (' + folderCount(folder) + ')'" @click="$selectedFolder = folder"></md-assist-chip>
+  </loop>
+</div>
+
+<div class="inbox-list">
+  <logic :if="$loading">
+    <div class="inbox-empty"><md-circular-progress indeterminate></md-circular-progress><span class="md-typescale-body-medium" style="margin-left:1rem;">Loading…</span></div>
+  </logic>
+
+  <logic :if="!$loading && emails.length === 0">
+    <div class="inbox-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--md-sys-color-on-surface-variant);">
+        <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+        <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+      </svg>
+      <span class="md-typescale-body-medium" style="color:var(--md-sys-color-on-surface-variant);margin-top:0.5rem;">{$search ? 'No matching mail in ' + $selectedFolder : 'No emails in ' + $selectedFolder}</span>
+    </div>
+  </logic>
+
+  <loop :for="email of emails">
+    <a :class="'email-row ' + (!email.read ? 'unread' : 'read')" :href="'/email/' + encodeURIComponent(email.id)">
+      <div class="email-avatar">{window._hermes.initials(email.sender)}</div>
+      <div class="email-meta">
+        <div class="email-sender md-typescale-body-medium">{email.starred ? '★ ' : ''}{email.sender}</div>
+        <div class="email-subject md-typescale-body-small">{email.subject}</div>
+      </div>
+      <span class="email-time md-typescale-label-small">{window._hermes.formatDate(email.receivedAt)}</span>
+    </a>
+  </loop>
+</div>
