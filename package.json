@@ -24,7 +24,8 @@
     "test:e2e:ui": "bun run bundle && bun node_modules/.bin/playwright test --ui"
   },
   "dependencies": {
-    "@d31ma/tachyon": "^26.19.7"
+    "@d31ma/tachyon": "26.20.1-2",
+    "@material/web": "^2.4.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",
