@@ -18,3 +18,6 @@ AGENTS.md
 *.md
 !README.md
 !DEPLOY.md
+dist-bin/
+hermes-darwin-arm64
+hermes-lambda
