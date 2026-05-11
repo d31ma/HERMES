@@ -25,6 +25,7 @@
     "test:e2e:ui": "bun run bundle && bun node_modules/.bin/playwright test --ui"
   },
   "dependencies": {
+    "@aws-sdk/client-ses": "^3.1045.0",
     "@aws-sdk/client-sns": "^3.1045.0",
     "@d31ma/tachyon": "26.20.1-3"
   },

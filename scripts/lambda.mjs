@@ -28,8 +28,45 @@ const RUNTIME_API = `http://${process.env.AWS_LAMBDA_RUNTIME_API || '127.0.0.1:9
 // exports map check applies.
 import '../node_modules/@d31ma/tachyon/src/cli/serve.js'
 
-// Give the server a moment to start
-await new Promise(resolve => setTimeout(resolve, 500))
+const PORT = parseInt(process.env.PORT || '8080', 10)
+const SERVER_URL = `http://127.0.0.1:${PORT}`
+
+/**
+ * Poll the server health endpoint until it responds, or time out.
+ * Uses a tight retry loop (200ms) for up to 15s — EFS mount init and Fylo
+ * collection creation (14 collections) can take 1-3s on cold start, so a
+ * fixed 500ms sleep was unreliable.
+ */
+async function waitForServer(timeoutMs = 15000, retryMs = 200) {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    try {
+      const res = await fetch(SERVER_URL, { signal: AbortSignal.timeout(1000) })
+      // Any response (even 404) means the server is listening
+      if (res.ok || res.status < 500) return true
+    } catch {
+      // ECONNREFUSED — server not listening yet, keep polling
+    }
+    await new Promise(r => setTimeout(r, retryMs))
+  }
+  return false
+}
+
+/** Quick readiness check for use before each invocation. */
+async function isServerReady() {
+  try {
+    const res = await fetch(SERVER_URL, { signal: AbortSignal.timeout(1000) })
+    return res.ok || res.status < 500
+  } catch {
+    return false
+  }
+}
+
+// Wait for the server to be ready (poll health endpoint)
+const serverStarted = await waitForServer()
+if (!serverStarted) {
+  console.error('[lambda] Server failed to start within timeout — cold start may fail')
+}
 
 // ── Static asset cache ───────────────────────────────────────────────────
 // Compiled frontend assets live in YON_DIST_PATH. They never change for a
@@ -150,7 +187,22 @@ export async function handler(event, context) {
   }
 
   // ── API / dynamic requests → tachyon server ──────────────────────────
-  const url = `http://127.0.0.1:${process.env.PORT || 8080}${rawPath}${rawQueryString ? '?' + rawQueryString : ''}`
+  // If the server isn't ready, attempt a brief recovery wait (e.g. it may
+  // be temporarily overloaded). If still not ready, return 503 so the load
+  // balancer can retry instead of crashing the Runtime API loop.
+  if (!(await isServerReady())) {
+    const recovered = await waitForServer(5000, 200)
+    if (!recovered) {
+      return {
+        statusCode: 503,
+        isBase64Encoded: false,
+        headers: { 'content-type': 'application/json', 'retry-after': '5' },
+        body: JSON.stringify({ error: 'Server not ready' }),
+      }
+    }
+  }
+
+  const url = `${SERVER_URL}${rawPath}${rawQueryString ? '?' + rawQueryString : ''}`
 
   const reqHeaders = new Headers()
   for (const [k, v] of Object.entries(headers || {})) {
