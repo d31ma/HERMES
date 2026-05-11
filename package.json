@@ -15,6 +15,7 @@
     "domain:migrate": "bun scripts/migrate-domain.mjs",
     "bundle": "bun ./scripts/bundle.mjs",
     "bundle:watch": "bun ./scripts/bundle.mjs --watch",
+    "extract-static": "bun scripts/extract-static.mjs",
     "preview": "bun ./scripts/preview.mjs",
     "compile": "bun scripts/compile.mjs",
     "compile:lambda": "bun build --compile --target bun-linux-arm64 scripts/lambda.mjs --outfile hermes-lambda",
