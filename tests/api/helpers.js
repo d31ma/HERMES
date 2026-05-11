@@ -7,6 +7,7 @@ const HERMES_ROOT = join(import.meta.dir, "..", "..");
 const TACH_SERVE = join(HERMES_ROOT, "node_modules", ".bin", "yon.serve");
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 const INBOUND_WEBHOOK_SECRET = process.env.INBOUND_WEBHOOK_SECRET || "test-inbound-secret";
+const EVENTS_WEBHOOK_SECRET = process.env.EVENTS_WEBHOOK_SECRET || "test-events-secret";
 const PORT_BASE = 19000;
 let portCounter = 0;
 export async function startTestServer() {
@@ -60,7 +61,11 @@ export async function startTestServer() {
     get: (path, opts) => fetch(`${url}${path}`, { headers: makeHeaders(undefined, opts) }),
     post: (path, body, opts) => fetch(`${url}${path}`, {
       method: "POST",
-      headers: makeHeaders(body, { ...opts, secret: opts?.secret ?? (path === "/inbound/webhook" ? INBOUND_WEBHOOK_SECRET : undefined) }),
+      headers: makeHeaders(body, { ...opts, secret: opts?.secret ?? (
+        path === "/inbound/webhook" ? INBOUND_WEBHOOK_SECRET :
+        path.startsWith("/events/") ? EVENTS_WEBHOOK_SECRET :
+        undefined
+      ) }),
       body: JSON.stringify(body)
     }),
     put: (path, body, opts) => fetch(`${url}${path}`, { method: "PUT", headers: makeHeaders(body, opts), body: JSON.stringify(body) }),
