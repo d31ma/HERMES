@@ -9,11 +9,11 @@ import { suppressAddress } from "@/repositories/suppressed.js";
  */
 export async function handler({ headers, body }) {
   const secret = process.env.EVENTS_WEBHOOK_SECRET;
-  if (secret) {
-    const provided = headers?.["x-webhook-secret"] ?? headers?.["X-Webhook-Secret"];
-    if (provided !== secret)
-      return r401("Invalid webhook secret");
-  }
+  if (!secret)
+    return r401("Webhook secret not configured");
+  const provided = headers?.["x-webhook-secret"] ?? headers?.["X-Webhook-Secret"];
+  if (provided !== secret)
+    return r401("Invalid webhook secret");
   const { address, addresses } = body ?? {};
   const targets = addresses ?? (address ? [address] : []);
   if (targets.length === 0)

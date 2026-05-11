@@ -13,6 +13,11 @@
 // except /tmp). Prevents EROFS errors on cold start manifest writes.
 process.env.YON_DIST_PATH = process.env.YON_DIST_PATH || '/tmp/dist'
 
+// Trust the local loopback proxy so the tachyon server reads the real client
+// IP from X-Forwarded-For (forwarded by CloudFront through the Lambda handler).
+// Without this, getClientInfo() returns the loopback IP for every request.
+process.env.YON_TRUST_PROXY = process.env.YON_TRUST_PROXY || 'loopback'
+
 // Bootstrap the Lambda runtime API
 const RUNTIME_API = `http://${process.env.AWS_LAMBDA_RUNTIME_API || '127.0.0.1:9001'}/2018-06-01`
 
@@ -106,6 +111,25 @@ function normalizeEvent(event) {
 export async function handler(event, context) {
   const ev = normalizeEvent(event)
   const { rawPath, rawQueryString, headers, body, requestContext } = ev
+
+  // ── CloudFront proxy verification ──────────────────────────────────────
+  // When TRUSTED_PROXY_SECRET is configured, reject requests that did not
+  // pass through CloudFront. CloudFront adds the x-trusted-proxy-secret
+  // header as a custom origin header (configured in the CloudFront
+  // distribution). Direct hits to the Lambda Function URL lack this header
+  // and are rejected to prevent CloudFront bypass.
+  const TRUSTED_PROXY_SECRET = process.env.TRUSTED_PROXY_SECRET
+  if (TRUSTED_PROXY_SECRET) {
+    const provided = headers?.["x-trusted-proxy-secret"] ?? headers?.["X-Trusted-Proxy-Secret"]
+    if (provided !== TRUSTED_PROXY_SECRET) {
+      return {
+        statusCode: 403,
+        isBase64Encoded: false,
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ detail: "Direct access not allowed" }),
+      }
+    }
+  }
 
   const method = requestContext?.http?.method || 'GET'
 
