@@ -8,6 +8,9 @@ WORKDIR /app
 COPY package.json bun.lock ./
 RUN bun install --frozen-lockfile --production
 
+COPY scripts/patch-tachyon.mjs ./scripts/
+RUN bun scripts/patch-tachyon.mjs
+
 COPY browser ./browser
 COPY server ./server
 COPY scripts/entry.mjs ./scripts/
