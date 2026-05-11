@@ -61,13 +61,7 @@ if (attempts >= 60) throw new Error('Timeout waiting for bundle to complete')
 // Extra wait for bundle to fully complete
 await new Promise(r => setTimeout(r, 2000))
 
-// ── Step 2: Apply patches ────────────────────────────────────────────────
-// Patch missing class Tac in compiled components (tachyon compiler bug #57)
-await import('./patch-tac-class.mjs')
-// Patch component import bindings (fixed in 26.20.1-2; kept for older versions)
-try { await import('./patch-component-imports.mjs') } catch {}
-
-// ── Step 3: Start preview server ─────────────────────────────────────────
+// ── Step 2: Start preview server ──────────────────────────────────────────
 const previewServer = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'tac.preview')], {
   cwd: projectRoot,
   stdio: 'inherit',

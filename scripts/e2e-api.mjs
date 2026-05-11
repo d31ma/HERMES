@@ -79,10 +79,6 @@ async function waitForTachyon() {
 
 await waitForTachyon()
 
-// Patch tachyon compiler bugs in the generated dist
-await import('./patch-tac-class.mjs')
-await import('./patch-component-imports.mjs')
-
 const proxy = Bun.serve({
   port: 9876,
   hostname: '127.0.0.1',
