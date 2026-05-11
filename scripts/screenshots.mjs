@@ -53,9 +53,11 @@ const apiServer = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'yon.s
 })
 
 // Wait for bundle to complete (dist appears + API server is ready)
-while (!existsSync(join(projectRoot, 'dist', 'index.html'))) {
+let attempts = 0
+while (!existsSync(join(projectRoot, 'dist', 'index.html')) && attempts++ < 60) {
   await new Promise(r => setTimeout(r, 500))
 }
+if (attempts >= 60) throw new Error('Timeout waiting for bundle to complete')
 // Extra wait for bundle to fully complete
 await new Promise(r => setTimeout(r, 2000))
 
@@ -101,7 +103,8 @@ for (const route of routes) {
   const url = `http://127.0.0.1:${PREVIEW_PORT}${route.path}`
   try {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 })
-  } catch {
+  } catch (err) {
+    console.error(`  Failed to load ${url}: ${err.message}`)
     await page.waitForTimeout(3000)
   }
   await page.waitForTimeout(2000)
