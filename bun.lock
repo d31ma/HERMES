@@ -5,7 +5,7 @@
     "": {
       "name": "hermes",
       "dependencies": {
-        "@d31ma/tachyon": "^26.19.7",
+        "@d31ma/tachyon": "^26.20.1",
       },
       "devDependencies": {
         "@playwright/test": "^1.49.0",
@@ -25,7 +25,7 @@
 
     "@d31ma/fylo": ["@d31ma/fylo@26.19.7", "", { "dependencies": { "@d31ma/chex": "26.18.27-2", "@d31ma/ttid": "26.18.27-2" }, "bin": { "fylo.query": "dist/cli/index.js", "fylo.admin": "dist/cli/index.js", "fylo.exec": "dist/cli/index.js" } }, "sha512-VTM4zi4LcXA8t2kBh2+4ynoBr0mw25wnhAeCVmiOSOve7XmIVyOZi8L578NsK7BAt99+0GQJD6ODVjbSJIM7bg=="],
 
-    "@d31ma/tachyon": ["@d31ma/tachyon@26.19.7", "", { "dependencies": { "@d31ma/fylo": "26.19.7" }, "bin": { "yon.init": "bin/yon.init.js", "yon.serve": "bin/yon.serve.js", "tac.bundle": "bin/tac.bundle.js", "tac.preview": "bin/tac.preview.js" } }, "sha512-U7YVr4O+gidEu8tny8PzB/gzXt4+VD/dAI0l1xL1XdMScMREWtSCMaRfk4/oKz0h5j7nuHwHQiq9GSLNyGDR8A=="],
+    "@d31ma/tachyon": ["@d31ma/tachyon@26.20.1", "", { "dependencies": { "@d31ma/fylo": "26.19.7" }, "bin": { "yon.init": "bin/yon.init.js", "yon.serve": "bin/yon.serve.js", "tac.bundle": "bin/tac.bundle.js", "tac.preview": "bin/tac.preview.js" } }, "sha512-MoALC4Su57DdwvA0F7mxxipn7J6HXbg7Gd3n/c/qlJAos2hn884z6ISa1RhpfSGDbHNBrmCitvFQJLGEvsrQeQ=="],
 
     "@d31ma/ttid": ["@d31ma/ttid@26.18.27-2", "", {}, "sha512-n4kxGaLTqdeaUYwfzLx6Co7hwTeJjlEkEDTGb+d6IiMFy6SMqk8KljohlRzyBtgDWmNAaZ4JmnnWt3PtZ4Sgkw=="],
 
