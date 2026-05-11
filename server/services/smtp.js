@@ -59,8 +59,8 @@ class AwsSesAdapter {
         ReplyToAddresses: msg.replyTo,
       }))
       return { messageId: result.MessageId || `ses-${Date.now()}` }
-    } catch {
-      // Fallback: REST API via HTTP request
+    } catch (e) {
+      console.error('[smtp] SES SDK send failed, falling back to REST:', e)
       return await sesRestSend(from, msg, region)
     }
   }
@@ -176,7 +176,7 @@ class GcpMailAdapter {
         })
         const data = await res.json()
         return { messageId: data.id || `gcp-${Date.now()}` }
-      } catch { /* fall through to REST */ }
+      } catch (e) { console.error('[smtp] GCP JWT auth failed, falling back to SMTP relay:', e) }
     }
 
     // Fallback: use a configured SMTP relay (e.g. smtp-relay.gmail.com)
@@ -241,7 +241,8 @@ class SmtpRelayAdapter {
         replyTo: msg.replyTo?.join(', '),
       })
       return { messageId: info.messageId || `smtp-${Date.now()}` }
-    } catch {
+    } catch (e) {
+      console.error('[smtp] SMTP relay send failed:', e)
       return { messageId: `smtp-${Date.now()}` }
     }
   }
