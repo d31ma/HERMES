@@ -9,7 +9,7 @@ export async function getVapidPublicKey() {
     const wp = await import('web-push')
     const keys = wp.default.generateVAPIDKeys?.() || wp.generateVAPIDKeys?.()
     if (keys?.publicKey) return keys.publicKey
-  } catch { /* fall through to fallback */ }
+  } catch (e) { console.error('[push] web-push import/generation failed, using fallback:', e) }
   // Fallback ephemeral key for local dev
   const { generateKeyPairSync } = await import('node:crypto')
   const { publicKey } = generateKeyPairSync('ec', { namedCurve: 'prime256v1' })
@@ -49,7 +49,7 @@ async function sendPushNotifications(fylo, email) {
         vapidDetails: { subject: vapidSubject, publicKey: vapidPublicKey, privateKey: vapidPrivateKey },
       })
     ))
-  } catch { /* push delivery is best-effort */ }
+  } catch (e) { console.error('[push] sendPushNotifications failed:', e) }
 }
 
 /**

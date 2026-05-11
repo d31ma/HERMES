@@ -18,6 +18,13 @@ COPY jsconfig.json ./jsconfig.json
 # Remove test routes — they should never be in production
 RUN rm -rf server/routes/test
 
+# Validate the image can actually serve — catch missing deps / broken bundles
+# at build time rather than deploying a broken container that fails at runtime.
+RUN bun -e "require('@d31ma/tachyon')" \
+  && test -f scripts/entry.mjs \
+  && test -f scripts/create-admin.mjs \
+  && test -f scripts/migrate-domain.mjs
+
 # Pre-create data directory structure (distroless has no shell for RUN)
 RUN mkdir -p /data /data/attachments && chown 65532:65532 /data /data/attachments
 

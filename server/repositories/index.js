@@ -21,7 +21,9 @@ export const Collections = {
  * Creates a Fylo instance and ensures all collections exist.
  *
  * Pass a custom `root` for test isolation (e.g. a temp directory).
- * Falls back to the `FYLO_ROOT` env var, then `/mnt/hermes`.
+ * In production, `FYLO_ROOT` **must** be set. Without it the server
+ * cannot determine where to store data. For Lambda set `FYLO_ROOT=/tmp`;
+ * for Docker the Dockerfile already sets `FYLO_ROOT=/data`.
  *
  * When `FYLO_S3_BUCKET` is set, the query index is stored in S3
  * (using `Bun.S3Client`) instead of the local filesystem. Document
@@ -32,7 +34,14 @@ export const Collections = {
  * @returns {Promise<import('@d31ma/fylo').default>}
  */
 export async function createDb(root) {
-  const fyloRoot = root ?? process.env.FYLO_ROOT ?? '/mnt/hermes'
+  const fyloRoot = root ?? process.env.FYLO_ROOT
+  if (!fyloRoot) {
+    throw new Error(
+      'FYLO_ROOT environment variable is required. ' +
+      'Set it to the directory where Fylo should store data. ' +
+      'For Lambda: FYLO_ROOT=/tmp. For Docker: the image already sets FYLO_ROOT=/data.'
+    )
+  }
   const s3Bucket = process.env.FYLO_S3_BUCKET
 
   /** @type {import('@d31ma/fylo').FyloOptions} */
