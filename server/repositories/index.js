@@ -39,9 +39,20 @@ export async function createDb(root) {
   const options = { root: fyloRoot }
 
   if (s3Bucket) {
+    /** @type {Record<string, string>} */
+    const s3 = { bucket: s3Bucket }
+    const region = process.env.FYLO_S3_REGION
+    const endpoint = process.env.FYLO_S3_ENDPOINT
+    const accessKey = process.env.FYLO_S3_ACCESS_KEY_ID
+    const secretKey = process.env.FYLO_S3_SECRET_ACCESS_KEY
+    if (region) s3.region = region
+    if (endpoint) s3.endpoint = endpoint
+    if (accessKey) s3.accessKeyId = accessKey
+    if (secretKey) s3.secretAccessKey = secretKey
+
     options.index = {
       backend: 's3-client',
-      s3: { bucket: s3Bucket },
+      s3,
     }
   }
 
