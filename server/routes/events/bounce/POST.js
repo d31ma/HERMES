@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "node:crypto";
 import { r400, r401 } from "@/services/respond.js";
 import { createDb } from "@/repositories/index.js";
 import { suppressAddress } from "@/repositories/suppressed.js";
@@ -12,7 +13,11 @@ export async function handler({ headers, body }) {
   if (!secret)
     return r401("Webhook secret not configured");
   const provided = headers?.["x-webhook-secret"] ?? headers?.["X-Webhook-Secret"];
-  if (provided !== secret)
+  if (!provided || provided.length !== secret.length)
+    return r401("Invalid webhook secret");
+  const a = Buffer.from(secret);
+  const b = Buffer.from(provided);
+  if (!timingSafeEqual(a, b))
     return r401("Invalid webhook secret");
   const { address, addresses } = body ?? {};
   const targets = addresses ?? (address ? [address] : []);
