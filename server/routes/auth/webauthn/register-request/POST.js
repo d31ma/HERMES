@@ -3,20 +3,34 @@ import { r400, r401 } from "@/services/respond.js"
 import { verifyJwt, getJwtSecret } from "@/services/auth.js"
 import { buildRegistrationOptions } from "@/services/webauthn.js"
 import { createDb } from "@/repositories/index.js"
-import { listDevices, putSetupSession } from "@/repositories/mfa.js"
+import { listDevices, putSetupSession, findSetupSession } from "@/repositories/mfa.js"
 
 /**
  * POST /auth/webauthn/register-request
  * Initiates WebAuthn passkey registration. Returns creation options for navigator.credentials.create().
  * @param {object} params
+ * @param {object} [params.body] - Request payload, may contain setupToken for first-time setup
  * @param {{ bearer?: { token: string }, ipAddress: string, requestId: string }} params.context - Request context
  * @returns {Promise<Record<string, unknown>>}
  */
-export async function handler({ context }) {
-  const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret())
+export async function handler({ body, context }) {
+  const fylo = await createDb()
+
+  // Try JWT auth first
+  let claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret())
+
+  // Fallback: accept setupToken from SMS confirm for first-time passkey registration
+  const { setupToken } = body ?? {}
+  if (!claims && setupToken) {
+    const [sessionDocId, session] = await findSetupSession(fylo, setupToken)
+    if (!session || !sessionDocId || new Date(session.expiresAt) < new Date()) {
+      return r401("Invalid or expired setup token")
+    }
+    claims = { email: session.email }
+  }
+
   if (!claims) return r401("Authentication required")
 
-  const fylo = await createDb()
   const existingDevices = await listDevices(fylo, claims.email)
 
   const { challenge, options } = buildRegistrationOptions(
