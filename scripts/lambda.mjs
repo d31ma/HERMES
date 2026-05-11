@@ -26,6 +26,57 @@ import '../node_modules/@d31ma/tachyon/src/cli/serve.js'
 // Give the server a moment to start
 await new Promise(resolve => setTimeout(resolve, 500))
 
+// ── Static asset cache ───────────────────────────────────────────────────
+// Compiled frontend assets live in YON_DIST_PATH. They never change for a
+// given deployment, so GET/HEAD requests can be served directly without
+// touching the tachyon server — bypassing the reservedConcurrentExecutions=1
+// bottleneck for static files.
+const DIST = process.env.YON_DIST_PATH || '/tmp/dist'
+
+const MIME = {
+  '.js':    'application/javascript; charset=utf-8',
+  '.mjs':   'application/javascript; charset=utf-8',
+  '.html':  'text/html; charset=utf-8',
+  '.css':   'text/css; charset=utf-8',
+  '.json':  'application/json; charset=utf-8',
+  '.png':   'image/png',
+  '.svg':   'image/svg+xml',
+  '.ico':   'image/x-icon',
+  '.webmanifest': 'application/manifest+json',
+  '.xml':   'application/xml; charset=utf-8',
+  '.txt':   'text/plain; charset=utf-8',
+}
+
+/** Serve a static file from dist, or null if not found. */
+function serveStatic(rawPath) {
+  // Normalise: strip leading slash, map root to index.html
+  let rel = rawPath === '/' ? 'index.html' : rawPath.replace(/^\/+/, '')
+
+  // Path traversal guard
+  if (rel.includes('..') || rel.includes('~') || rel.includes('\0')) return null
+
+  const file = Bun.file(`${DIST}/${rel}`)
+
+  // Bun.file returns a 0-size object for missing paths. All dist files
+  // are non-empty (even shells.json and routes.json have content).
+  if (file.size === 0) return null
+
+  const ext = (rel.match(/\.[a-z]+$/i) || [''])[0].toLowerCase()
+  // index.html files (SPA shell routes like /inbox/) may not carry an ext
+  const ct = MIME[ext] || (rel.endsWith('index.html') ? 'text/html; charset=utf-8' : null)
+  if (!ct) return null
+
+  return new Response(file, {
+    status: 200,
+    headers: {
+      'content-type': ct,
+      'cache-control': ext === '.html' || ext === '.json'
+        ? 'public, max-age=0, must-revalidate'
+        : 'public, max-age=86400, immutable',
+    },
+  })
+}
+
 /**
  * Normalize an ALB event to the API Gateway HTTP API v2 format.
  * Detects ALB format by the presence of `httpMethod` / `path`.
@@ -56,6 +107,25 @@ export async function handler(event, context) {
   const ev = normalizeEvent(event)
   const { rawPath, rawQueryString, headers, body, requestContext } = ev
 
+  const method = requestContext?.http?.method || 'GET'
+
+  // ── Static asset fast path ────────────────────────────────────────────
+  // Serve compiled frontend assets directly, bypassing the tachyon server.
+  // This keeps static files from consuming the single Lambda concurrency slot
+  // needed for Fylo-dependent API requests.
+  if (method === 'GET' || method === 'HEAD') {
+    const staticResponse = serveStatic(rawPath)
+    if (staticResponse) {
+      return {
+        statusCode: 200,
+        isBase64Encoded: false,
+        headers: Object.fromEntries(staticResponse.headers),
+        body: await staticResponse.text(),
+      }
+    }
+  }
+
+  // ── API / dynamic requests → tachyon server ──────────────────────────
   const url = `http://127.0.0.1:${process.env.PORT || 8080}${rawPath}${rawQueryString ? '?' + rawQueryString : ''}`
 
   const reqHeaders = new Headers()
@@ -71,9 +141,9 @@ export async function handler(event, context) {
   }
 
   const response = await fetch(url, {
-    method: requestContext?.http?.method || 'GET',
+    method,
     headers: reqHeaders,
-    body: requestContext?.http?.method !== 'GET' ? (body || undefined) : undefined,
+    body: method !== 'GET' && method !== 'HEAD' ? (body || undefined) : undefined,
   })
 
   const responseBody = await response.text()
