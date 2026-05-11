@@ -1,6 +1,7 @@
 /**
  * Take screenshots of key pages to verify they aren't blank.
- * Starts the E2E preview + API servers, then captures each route.
+ * Starts the E2E API server first (which bundles the dist), applies patches,
+ * then starts the preview server.
  *
  * Usage: bun scripts/screenshots.mjs
  * Output: screenshots/ directory
@@ -17,12 +18,23 @@ const screenshotDir = join(projectRoot, 'screenshots')
 if (existsSync(screenshotDir)) rmSync(screenshotDir, { recursive: true })
 mkdirSync(screenshotDir, { recursive: true })
 
-// ── Start servers ─────────────────────────────────────────────────────────
 const fyloRoot = join(projectRoot, '.screenshot-data')
 const API_PORT = 19876
 const PREVIEW_PORT = 3000
 
-// API server
+let shuttingDown = false
+function cleanup(code = 0) {
+  if (shuttingDown) return
+  shuttingDown = true
+  apiServer?.kill('SIGTERM')
+  previewServer?.kill('SIGTERM')
+  if (existsSync(fyloRoot)) rmSync(fyloRoot, { recursive: true, force: true })
+  process.exit(code)
+}
+process.on('SIGINT', () => cleanup(0))
+process.on('SIGTERM', () => cleanup(0))
+
+// ── Step 1: Start API server (bundles the dist) ──────────────────────────
 const apiServer = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'yon.serve')], {
   cwd: projectRoot,
   stdio: 'inherit',
@@ -40,48 +52,48 @@ const apiServer = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'yon.s
   },
 })
 
-// Preview server
+// Wait for bundle to complete (dist appears + API server is ready)
+while (!existsSync(join(projectRoot, 'dist', 'index.html'))) {
+  await new Promise(r => setTimeout(r, 500))
+}
+// Extra wait for bundle to fully complete
+await new Promise(r => setTimeout(r, 2000))
+
+// ── Step 2: Apply patches ────────────────────────────────────────────────
+// Patch missing class Tac in compiled components (tachyon compiler bug #57)
+await import('./patch-tac-class.mjs')
+// Patch component import bindings (fixed in 26.20.1-2; kept for older versions)
+try { await import('./patch-component-imports.mjs') } catch {}
+
+// ── Step 3: Start preview server ─────────────────────────────────────────
 const previewServer = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'tac.preview')], {
   cwd: projectRoot,
   stdio: 'inherit',
-  env: {
-    ...process.env,
-    YON_PREVIEW_PORT: String(PREVIEW_PORT),
-  },
+  env: { ...process.env, YON_PREVIEW_PORT: String(PREVIEW_PORT) },
 })
-
-let shuttingDown = false
-function cleanup(code = 0) {
-  if (shuttingDown) return
-  shuttingDown = true
-  apiServer.kill('SIGTERM')
-  previewServer.kill('SIGTERM')
-  if (existsSync(fyloRoot)) rmSync(fyloRoot, { recursive: true, force: true })
-  process.exit(code)
-}
-process.on('SIGINT', () => cleanup(0))
-process.on('SIGTERM', () => cleanup(0))
-
-// Wait for servers
-await new Promise(r => setTimeout(r, 5000))
+await new Promise(r => setTimeout(r, 2000))
 
 // ── Playwright screenshots ────────────────────────────────────────────────
 const { chromium } = await import('playwright')
 const browser = await chromium.launch({ headless: true })
 
 const routes = [
-  { path: '/', name: 'login', description: 'Login page — should show Sign in' },
-  { path: '/compose', name: 'compose', description: 'Compose — redirect to login' },
-  { path: '/settings', name: 'settings', description: 'Settings — redirect to login' },
-  { path: '/inbox', name: 'inbox', description: 'Inbox — redirect to login' },
+  { path: '/', name: 'login', description: 'Login page' },
+  { path: '/compose', name: 'compose', description: 'Compose' },
+  { path: '/settings', name: 'settings', description: 'Settings' },
+  { path: '/inbox', name: 'inbox', description: 'Inbox' },
 ]
 
 const API_URL = `http://127.0.0.1:${API_PORT}`
 
 for (const route of routes) {
   const page = await browser.newPage()
+  const errors = []
+  page.on('console', msg => {
+    if (msg.type() === 'error') errors.push(msg.text().substring(0, 200))
+  })
+  page.on('pageerror', err => errors.push(err.message.substring(0, 200)))
 
-  // Inject HERMES config so the page knows the API URL
   await page.addInitScript(apiUrl => {
     window.HERMES_CONFIG = { apiUrl }
   }, API_URL)
@@ -90,17 +102,17 @@ for (const route of routes) {
   try {
     await page.goto(url, { waitUntil: 'networkidle', timeout: 15000 })
   } catch {
-    // page may not fully load — still take screenshot
-    await page.waitForTimeout(2000)
+    await page.waitForTimeout(3000)
   }
+  await page.waitForTimeout(2000)
 
   const filepath = join(screenshotDir, `${route.name}.png`)
   await page.screenshot({ path: filepath, fullPage: true })
-  console.log(`${route.name}: ${url} → ${filepath}`)
+  console.log(`${route.name}: ${url} -> ${filepath}`)
 
-  // Log page text content for quick validation
-  const bodyText = await page.evaluate(() => document.body?.innerText?.substring(0, 120) || '<empty body>')
+  const bodyText = await page.evaluate(() => document.body?.innerText?.substring(0, 200) || '<empty body>')
   console.log(`  body: "${bodyText}"`)
+  if (errors.length) console.log(`  errors: [${errors.join(' | ')}]`)
   await page.close()
 }
 
