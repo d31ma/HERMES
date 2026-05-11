@@ -3,26 +3,58 @@
 //
 // Deploy as a Lambda function with:
 //   - Runtime: Custom runtime on Amazon Linux 2023
-//   - Handler: lambda.handler (or just the binary path in bootstrap)
 //   - Architecture: arm64 or x86_64
 //   - Environment: JWT_SECRET, INBOUND_WEBHOOK_SECRET, FYLO_ROOT=/tmp/data
 //
-// For Lambda, use API Gateway HTTP API or Lambda Function URL in front.
-// Set FYLO_ROOT to /tmp (Lambda's only writable directory).
+// Supports API Gateway HTTP API v2, Lambda Function URL, and ALB event formats.
+// For Lambda, set FYLO_ROOT to /tmp (Lambda's only writable directory).
+
+// Redirect tachyon build artifacts to /tmp (Lambda's container FS is read-only
+// except /tmp). Prevents EROFS errors on cold start manifest writes.
+process.env.YON_DIST_PATH = process.env.YON_DIST_PATH || '/tmp/dist'
 
 // Bootstrap the Lambda runtime API
 const RUNTIME_API = `http://${process.env.AWS_LAMBDA_RUNTIME_API || '127.0.0.1:9001'}/2018-06-01`
 
-// Start the HERMES server in the background
-import '@d31ma/tachyon/src/cli/serve.js'
+// Start the HERMES server in the background.
+// Use a relative import to bypass the @d31ma/tachyon exports map, which does
+// not expose ./src/cli/serve.js (see package.json "exports" field). The
+// relative path works because Bun resolves it at compile time before the
+// exports map check applies.
+import '../node_modules/@d31ma/tachyon/src/cli/serve.js'
 
 // Give the server a moment to start
 await new Promise(resolve => setTimeout(resolve, 500))
 
+/**
+ * Normalize an ALB event to the API Gateway HTTP API v2 format.
+ * Detects ALB format by the presence of `httpMethod` / `path`.
+ */
+function normalizeEvent(event) {
+  // API Gateway v2 (already in expected format)
+  if (event.rawPath || event.requestContext?.http) return event
+
+  // ALB format — convert to v2 shape
+  return {
+    rawPath: event.path || '/',
+    rawQueryString: event.queryStringParameters
+      ? new URLSearchParams(event.queryStringParameters).toString()
+      : '',
+    headers: event.headers || event.multiValueHeaders || {},
+    body: event.body || null,
+    isBase64Encoded: event.isBase64Encoded || false,
+    requestContext: {
+      http: {
+        method: event.httpMethod || 'GET',
+      },
+    },
+  }
+}
+
 // Lambda handler
 export async function handler(event, context) {
-  // Convert Lambda event to HTTP request
-  const { rawPath, rawQueryString, headers, body, requestContext } = event
+  const ev = normalizeEvent(event)
+  const { rawPath, rawQueryString, headers, body, requestContext } = ev
 
   const url = `http://127.0.0.1:${process.env.PORT || 8080}${rawPath}${rawQueryString ? '?' + rawQueryString : ''}`
 
@@ -39,15 +71,16 @@ export async function handler(event, context) {
   }
 
   const response = await fetch(url, {
-    method: event.requestContext?.http?.method || 'GET',
+    method: requestContext?.http?.method || 'GET',
     headers: reqHeaders,
-    body: event.requestContext?.http?.method !== 'GET' ? (body || undefined) : undefined,
+    body: requestContext?.http?.method !== 'GET' ? (body || undefined) : undefined,
   })
 
   const responseBody = await response.text()
 
   return {
     statusCode: response.status,
+    isBase64Encoded: false,
     headers: {
       'content-type': response.headers.get('content-type') || 'application/json',
       'access-control-allow-origin': '*',
@@ -57,9 +90,7 @@ export async function handler(event, context) {
 }
 
 // Lambda Runtime API — keeps the function alive between invocations
-// For Lambda Function URL, we need to use the streaming response format
 if (process.env.AWS_LAMBDA_RUNTIME_API) {
-  // Poll for invocations
   while (true) {
     try {
       const nextResp = await fetch(`${RUNTIME_API}/runtime/invocation/next`)
@@ -79,7 +110,6 @@ if (process.env.AWS_LAMBDA_RUNTIME_API) {
         })
       }
     } catch {
-      // Runtime API error — wait and retry
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }
