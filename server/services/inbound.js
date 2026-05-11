@@ -240,7 +240,14 @@ export async function applyInboxRules(fylo, messageId, domain, meta) {
       if (matched || !rule.conditions?.length) {
         for (const action of rule.actions) {
           if (action.type === 'folder') { await fylo.patchDoc('emails', { [messageId]: { folder: action.folder } }) }
-          else if (action.type === 'forward') { try { const smtp = await getSmtpAdapter(); await smtp.send({ to: [action.to], subject: `Fwd: ${meta.subject}`, text: `Forwarded` }) } catch (e) { console.error('[inbound] inbox rule forward failed:', e) } }
+          else if (action.type === 'forward') {
+            try {
+              const smtp = await getSmtpAdapter()
+              await smtp.send({ to: [action.to], subject: `Fwd: ${meta.subject}`, text: `Forwarded` })
+            } catch (e) {
+              console.error('[inbound] inbox rule forward failed:', e)
+            }
+          }
         }
       }
     }

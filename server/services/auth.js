@@ -33,10 +33,17 @@ export function verifyJwt(token, secret) {
   if (parts.length !== 3) return null
   const [header, body, sig] = parts
   const expected = createHmac('sha256', secret).update(`${header}.${body}`).digest('base64url')
-  try { if (!timingSafeEqual(Buffer.from(sig, 'ascii'), Buffer.from(expected, 'ascii'))) return null } catch (e) { console.error('[auth] JWT verification error:', e); return null }
-  const payload = JSON.parse(fromB64url(body).toString())
-  if (payload.exp < Math.floor(Date.now() / 1000)) return null
-  return payload
+  try {
+    const sigBuf = Buffer.from(sig, 'ascii')
+    const expBuf = Buffer.from(expected, 'ascii')
+    if (sigBuf.length !== expBuf.length || !timingSafeEqual(sigBuf, expBuf)) return null
+    const payload = JSON.parse(fromB64url(body).toString())
+    if (payload.exp < Math.floor(Date.now() / 1000)) return null
+    return payload
+  } catch (e) {
+    if (!(e instanceof SyntaxError)) console.error('[auth] JWT verification error:', e)
+    return null
+  }
 }
 
 /** @returns {string} */

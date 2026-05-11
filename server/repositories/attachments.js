@@ -14,8 +14,7 @@ export function attachmentRoot() {
   if (process.env.ATTACHMENT_ROOT) return process.env.ATTACHMENT_ROOT
   if (process.env.NODE_ENV === 'production') throw new Error('ATTACHMENT_ROOT is required in production')
   if (!process.env.FYLO_ROOT) {
-    console.error('[attachments] FYLO_ROOT is not set - falling back to /mnt/hermes. Set FYLO_ROOT to avoid data loss.')
-    return '/mnt/hermes/attachments'
+    throw new Error('FYLO_ROOT environment variable is required to determine the attachment storage root.')
   }
   return join(process.env.FYLO_ROOT, 'attachments')
 }

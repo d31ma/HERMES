@@ -330,7 +330,7 @@ async function verifyCoseSignature(publicKeyCose, data, signature) {
       data
     )
   } catch (e) {
-    console.error('[webauthn] signature verification error:', e)
+    console.warn('[webauthn] signature verification failed:', e.message)
     return false
   }
 }
