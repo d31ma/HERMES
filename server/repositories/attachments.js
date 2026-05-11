@@ -13,7 +13,11 @@ import { Collections, collect } from './index.js'
 export function attachmentRoot() {
   if (process.env.ATTACHMENT_ROOT) return process.env.ATTACHMENT_ROOT
   if (process.env.NODE_ENV === 'production') throw new Error('ATTACHMENT_ROOT is required in production')
-  return join(process.env.FYLO_ROOT ?? '/mnt/hermes', 'attachments')
+  if (!process.env.FYLO_ROOT) {
+    console.error('[attachments] FYLO_ROOT is not set - falling back to /mnt/hermes. Set FYLO_ROOT to avoid data loss.')
+    return '/mnt/hermes/attachments'
+  }
+  return join(process.env.FYLO_ROOT, 'attachments')
 }
 
 /** @param {EmailAttachmentRecord} attachment @returns {EmailAttachmentSummary} */
@@ -91,7 +95,7 @@ export async function deleteAttachmentsForEmail(fylo, emailId) {
   const attachments = await listAttachments(fylo, emailId)
   await Promise.all(attachments.map(async ({ docId, storagePath }) => {
     await fylo.delDoc(Collections.ATTACHMENTS, docId)
-    try { ensureInsideRoot(attachmentRoot(), storagePath); await rm(storagePath, { force: true }) } catch { /* best effort */ }
+    try { ensureInsideRoot(attachmentRoot(), storagePath); await rm(storagePath, { force: true }) } catch (e) { console.error('[attachments] delete attachment file failed:', e) }
   }))
   await rm(resolve(attachmentRoot(), emailId), { recursive: true, force: true })
 }

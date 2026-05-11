@@ -255,7 +255,8 @@ if (process.env.AWS_LAMBDA_RUNTIME_API) {
           body: JSON.stringify({ errorMessage: err.message, errorType: 'Error' }),
         })
       }
-    } catch {
+    } catch (e) {
+      console.error('[lambda] runtime loop error:', e)
       await new Promise(resolve => setTimeout(resolve, 1000))
     }
   }

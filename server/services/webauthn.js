@@ -329,7 +329,8 @@ async function verifyCoseSignature(publicKeyCose, data, signature) {
       rawSig,
       data
     )
-  } catch {
+  } catch (e) {
+    console.error('[webauthn] signature verification error:', e)
     return false
   }
 }
@@ -356,7 +357,8 @@ function derToRaw(der) {
       return p
     }
     return Buffer.concat([pad(r), pad(s)])
-  } catch {
+  } catch (e) {
+    console.error('[webauthn] DER-to-raw conversion error:', e)
     return null
   }
 }

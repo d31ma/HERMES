@@ -165,7 +165,8 @@ export async function parseInboundMessage(rawBody) {
       contentId: a.contentId || undefined,
     }))
     return { text: parsed.text || rawBody, attachments }
-  } catch {
+  } catch (e) {
+    console.error('[inbound] mailparser parse failed, using raw body:', e)
     return { text: rawBody, attachments: [] }
   }
 }
@@ -202,7 +203,7 @@ export async function applyRouteAction(fylo, rule, messageId, sender, recipient,
       const body = JSON.stringify({ messageId, sender, recipient, subject })
       const headers = { 'Content-Type': 'application/json' }
       await fetch(rule.action.url, { method: 'POST', headers, body })
-    } catch {} break
+    } catch (e) { console.error('[inbound] route webhook action failed:', e) } break
     case 'forward': if (rule.action.to && rule.action.to !== recipient) {
       const smtp = await getSmtpAdapter()
       await smtp.send({ to: [rule.action.to], subject: `Fwd: ${subject}`, text: `Forwarded from ${sender} to ${recipient}` })
@@ -239,11 +240,11 @@ export async function applyInboxRules(fylo, messageId, domain, meta) {
       if (matched || !rule.conditions?.length) {
         for (const action of rule.actions) {
           if (action.type === 'folder') { await fylo.patchDoc('emails', { [messageId]: { folder: action.folder } }) }
-          else if (action.type === 'forward') { try { const smtp = await getSmtpAdapter(); await smtp.send({ to: [action.to], subject: `Fwd: ${meta.subject}`, text: `Forwarded` }) } catch {} }
+          else if (action.type === 'forward') { try { const smtp = await getSmtpAdapter(); await smtp.send({ to: [action.to], subject: `Fwd: ${meta.subject}`, text: `Forwarded` }) } catch (e) { console.error('[inbound] inbox rule forward failed:', e) } }
         }
       }
     }
-  } catch {}
+  } catch (e) { console.error('[inbound] applyInboxRules failed:', e) }
 }
 
 /** @param {string} a @param {string} op @param {string} b */

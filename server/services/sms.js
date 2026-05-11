@@ -82,8 +82,8 @@ class AzureSmsAdapter {
       const { SmsClient } = await import('@azure/communication-sms')
       const client = new SmsClient(endpoint, { key })
       await client.send({ from: process.env.AZURE_SMS_FROM || 'HERMES', to: [to], message: body })
-    } catch {
-      // Fallback: REST API call
+    } catch (e) {
+      console.error('[sms] Azure SMS SDK send failed, falling back to REST:', e)
       await fetch(`${endpoint}/sms?api-version=2023-03-31`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
@@ -120,5 +120,5 @@ async function signAwsRequest(service, region, endpoint, body) {
     const signer = new SignatureV4({ service, region, credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID || '', secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '' }, sha256: Sha256 })
     const { headers } = await signer.sign({ method: 'POST', hostname: new URL(endpoint).hostname, path: '/', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body })
     return headers
-  } catch { return {} }
+  } catch (e) { console.error('[sms] AWS SigV4 signing failed:', e); return {} }
 }

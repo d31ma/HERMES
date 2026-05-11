@@ -58,7 +58,8 @@ if (command === 'serve') {
   try {
     process.argv = ['bun', 'yon.serve', ...args]
     await import('@d31ma/tachyon/src/cli/serve.js')
-  } catch {
+  } catch (e) {
+    console.error('[entry] dynamic import failed, falling back to child process:', e)
     const { spawn } = await import('node:child_process')
     const child = spawn(process.execPath, ['node_modules/.bin/yon.serve', ...args], {
       cwd: process.cwd(),
