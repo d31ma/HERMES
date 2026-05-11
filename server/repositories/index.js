@@ -19,13 +19,33 @@ export const Collections = {
 
 /**
  * Creates a Fylo instance and ensures all collections exist.
+ *
  * Pass a custom `root` for test isolation (e.g. a temp directory).
  * Falls back to the `FYLO_ROOT` env var, then `/mnt/hermes`.
+ *
+ * When `FYLO_S3_BUCKET` is set, the query index is stored in S3
+ * (using `Bun.S3Client`) instead of the local filesystem. Document
+ * bodies still live on local disk under `root`. S3 credentials are
+ * read from the standard AWS env vars or the `FYLO_S3_*` family.
+ *
  * @param {string} [root]
  * @returns {Promise<import('@d31ma/fylo').default>}
  */
 export async function createDb(root) {
-  const fylo = new Fylo({ root: root ?? process.env.FYLO_ROOT ?? '/mnt/hermes' })
+  const fyloRoot = root ?? process.env.FYLO_ROOT ?? '/mnt/hermes'
+  const s3Bucket = process.env.FYLO_S3_BUCKET
+
+  /** @type {import('@d31ma/fylo').FyloOptions} */
+  const options = { root: fyloRoot }
+
+  if (s3Bucket) {
+    options.index = {
+      backend: 's3-client',
+      s3: { bucket: s3Bucket },
+    }
+  }
+
+  const fylo = new Fylo(options)
   await Promise.all(Object.values(Collections).map(name => fylo.createCollection(name)))
   return fylo
 }
