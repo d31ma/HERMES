@@ -158,14 +158,11 @@ export async function handler(event, context) {
   const TRUSTED_PROXY_SECRET = process.env.TRUSTED_PROXY_SECRET
   if (TRUSTED_PROXY_SECRET) {
     const provided = headers?.["x-trusted-proxy-secret"] ?? headers?.["X-Trusted-Proxy-Secret"]
-    if (provided !== TRUSTED_PROXY_SECRET) {
-      return {
-        statusCode: 403,
-        isBase64Encoded: false,
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ detail: "Direct access not allowed" }),
-      }
-    }
+    // Constant-time comparison to prevent timing attacks on secret verification
+    if (!provided || provided.length !== TRUSTED_PROXY_SECRET.length)
+      return { statusCode: 403, isBase64Encoded: false, headers: { "content-type": "application/json" }, body: JSON.stringify({ detail: "Direct access not allowed" }) }
+    if (!crypto.timingSafeEqual(Buffer.from(TRUSTED_PROXY_SECRET), Buffer.from(provided)))
+      return { statusCode: 403, isBase64Encoded: false, headers: { "content-type": "application/json" }, body: JSON.stringify({ detail: "Direct access not allowed" }) }
   }
 
   const method = requestContext?.http?.method || 'GET'
