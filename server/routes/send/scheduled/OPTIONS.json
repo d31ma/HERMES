@@ -1,0 +1,12 @@
+{
+  "GET": {
+    "200": [],
+    "401": { "error": "", "unauthorized": true }
+  },
+  "DELETE": {
+    "200": { "cancelled": true },
+    "400": { "error": "" },
+    "401": { "error": "", "unauthorized": true },
+    "404": { "error": "", "notFound": true }
+  }
+}

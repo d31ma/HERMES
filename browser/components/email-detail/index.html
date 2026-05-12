@@ -20,6 +20,7 @@
     <logic :if="$email && $email.folder !== 'trash'">
       <md-text-button @click="updateEmail({ folder: 'trash' }, 'Moved to trash.')">Trash</md-text-button>
     </logic>
+    <md-text-button @click="snooze()">Snooze</md-text-button>
     <div class="email-action-divider"></div>
     <md-filled-tonal-button @click="reply()" style="min-width:80px;">Reply</md-filled-tonal-button>
     <md-text-button @click="replyAll()">Reply All</md-text-button>
