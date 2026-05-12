@@ -57,15 +57,18 @@
   }
 
   .app-brand {
-    font-weight: 700; font-size: 1rem;
-    letter-spacing: -0.5px; color: var(--ms-primary);
+    font-weight: var(--ms-font-weight-bold, 700);
+    font-size: var(--ms-font-lg, 1.0625rem);
+    letter-spacing: var(--ms-letter-spacing-tight, -0.02em);
+    color: var(--ms-primary);
     user-select: none;
   }
 
   .app-user {
     margin-left: auto;
     color: var(--ms-text-subtle);
-    font-size: 0.8125rem;
+    font-size: var(--ms-font-sm, 0.75rem);
+    font-weight: var(--ms-font-weight-normal, 400);
   }
 
   .app-layout {
@@ -85,7 +88,9 @@
   .sidebar-folder {
     display: flex; align-items: center; gap: 0.5rem;
     padding: 0.4rem 0.75rem; border-radius: 6px;
-    color: var(--ms-text-subtle); font-size: 0.875rem;
+    color: var(--ms-text-subtle);
+    font-size: var(--ms-font-base, 0.875rem);
+    font-weight: var(--ms-font-weight-normal, 400);
     cursor: pointer; text-decoration: none;
     transition: background 0.1s, color 0.1s;
     width: 100%; border: none; background: none; text-align: left;
