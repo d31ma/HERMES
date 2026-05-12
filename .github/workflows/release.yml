@@ -119,6 +119,7 @@ jobs:
             -p 18080:8080 \
             -e JWT_SECRET=blackbox-jwt-secret \
             -e INBOUND_WEBHOOK_SECRET=${{ env.INBOUND_WEBHOOK_SECRET }} \
+            -e EVENTS_WEBHOOK_SECRET=blackbox-events-secret \
             -e WEB_PUSH_DISABLED=true \
             "${{ env.HERMES_IMAGE }}"
 
