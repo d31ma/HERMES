@@ -12,6 +12,8 @@ export default class extends Tac {
   $notificationSupported = false; $notificationPermission = 'default'
   $notificationLoading = false; $notificationError = ''
   $isAdmin = false
+  $signatures = []
+  $newSigDomain = ''; $newSigName = ''; $newSigText = ''; $signatureError = ''
 
   _condSeq = 0; _actSeq = 0
   _mfaSetupStateKey = '__hermes_mfa_setup_state'
@@ -37,9 +39,9 @@ export default class extends Tac {
     this.$loading = true; this.syncNotificationState()
     this.$isAdmin = sessionStorage.getItem('hermes_role') === 'admin'
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
-    const [dr, rr, mr, nr] = await Promise.all([apiFetch('/domains'), apiFetch('/rules'), apiFetch('/mfa/devices'), apiFetch('/notifications/subscriptions')])
+    const [dr, rr, mr, nr, sr] = await Promise.all([apiFetch('/domains'), apiFetch('/rules'), apiFetch('/mfa/devices'), apiFetch('/notifications/subscriptions'), apiFetch('/signatures')])
     this.$domains = dr?.ok ? await dr.json() : []; this.$rules = rr?.ok ? await rr.json() : []
-    this.$mfaDevices = mr?.ok ? await mr.json() : []; this.$pushSubscriptions = nr?.ok ? await nr.json() : []
+    this.$mfaDevices = mr?.ok ? await mr.json() : []; this.$signatures = sr?.ok ? await sr.json() : []; this.$pushSubscriptions = nr?.ok ? await nr.json() : []
     if (this.$isAdmin) { const ur = await apiFetch('/users'); this.$users = ur?.ok ? await ur.json() : [] }
     this.restoreMfaSetupState(); this.$loading = false
   }
@@ -148,4 +150,33 @@ export default class extends Tac {
   }
 
   async deleteMfaDevice(id) { if (!confirm('Remove this MFA device?')) return; const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return; const res = await apiFetch(`/mfa/devices/${id}`, { method: 'DELETE' }); if (res?.ok) { this.$mfaDevices = this.$mfaDevices.filter(d => d.id !== id); window._hermes?.toast('Device removed.') } }
+
+  async saveSignature() {
+    if (!this.$newSigDomain || !this.$newSigName || !this.$newSigText) {
+      this.$signatureError = 'Domain, name, and text are required.'
+      return
+    }
+    this.$signatureError = ''
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const res = await apiFetch('/signatures', { method: 'POST', body: JSON.stringify({ domain: this.$newSigDomain.trim(), name: this.$newSigName.trim(), text: this.$newSigText }) })
+    if (res?.ok) {
+      const sig = await res.json()
+      this.$signatures = [...this.$signatures, sig]
+      this.$newSigDomain = this.$newSigName = this.$newSigText = ''
+      window._hermes?.toast('Signature saved.')
+    } else {
+      const data = await res.json()
+      this.$signatureError = data?.error || 'Failed to save signature.'
+    }
+  }
+
+  async deleteSignature(id) {
+    if (!confirm('Remove this signature?')) return
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const res = await apiFetch(`/signatures/${id}`, { method: 'DELETE' })
+    if (res?.ok) {
+      this.$signatures = this.$signatures.filter(s => s.id !== id)
+      window._hermes?.toast('Signature removed.')
+    }
+  }
 }

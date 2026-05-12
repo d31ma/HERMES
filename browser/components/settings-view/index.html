@@ -67,6 +67,35 @@
     </logic>
   </div>
 
+  <div class="settings-section">
+    <p class="md-typescale-label-large settings-section-title">Signatures</p>
+    <logic :if="!$loading && $signatures.length > 0">
+      <div class="settings-card">
+        <loop :for="sig of $signatures">
+          <div class="settings-row">
+            <div style="display:flex;flex-direction:column;gap:0.15rem;flex:1;min-width:0;">
+              <span class="md-typescale-body-medium">{sig.name}</span>
+              <span class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);">{sig.domain}</span>
+            </div>
+            <md-text-button @click="deleteSignature(sig.id)">Remove</md-text-button>
+          </div>
+        </loop>
+      </div>
+    </logic>
+    <logic :if="!$loading && $signatures.length === 0">
+      <p class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);padding:0.5rem 0;">No signatures configured. Add one below to auto-append to composed emails.</p>
+    </logic>
+    <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.75rem;align-items:flex-start;">
+      <md-outlined-text-field label="Domain" :value="$newSigDomain" placeholder="example.com" style="flex:1;min-width:140px;"></md-outlined-text-field>
+      <md-outlined-text-field label="Signature name" :value="$newSigName" placeholder="Default" style="flex:1;min-width:140px;"></md-outlined-text-field>
+    </div>
+    <div style="margin-top:0.5rem;">
+      <md-outlined-text-field type="textarea" label="Signature HTML" :value="$newSigText" placeholder="<p>Best regards,<br>Sender Name</p>" rows="4" style="width:100%;"></md-outlined-text-field>
+    </div>
+    <logic :if="$signatureError"><p class="login-error" style="margin:0.5rem 0 0;">{$signatureError}</p></logic>
+    <md-filled-tonal-button @click="saveSignature()" style="margin-top:0.75rem;">Save signature</md-filled-tonal-button>
+  </div>
+
   <logic :if="$isAdmin">
     <div class="settings-section">
       <p class="md-typescale-label-large settings-section-title">Inbox Rules</p>

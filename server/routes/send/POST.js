@@ -60,6 +60,9 @@ export async function handler({ body, context }) {
   if (blocked.length > 0)
     return r422("Recipients are suppressed", blocked);
 
+  // Tracking info (read receipts / link clicks)
+  const trackingId = body?.trackingId;
+
   // Scheduled send — store for later delivery
   const sendAt = body?.sendAt;
   if (sendAt && typeof sendAt === 'string') {
@@ -78,6 +81,11 @@ export async function handler({ body, context }) {
       createdAt: Date.now(),
     });
 
+    // Store a sent email copy for tracking
+    if (trackingId) {
+      await storeSentEmail(fylo, trackingId, claims.email, scheduledId, req);
+    }
+
     return { scheduled: true, id: scheduledId };
   }
 
@@ -92,6 +100,12 @@ export async function handler({ body, context }) {
       sender: claims.email,
       expiresAt,
     });
+
+    // Store a sent email copy for tracking (tracking pixel needs to
+    // work even before the delayed send actually fires)
+    if (trackingId) {
+      await storeSentEmail(fylo, trackingId, claims.email, undoId, req);
+    }
 
     // Schedule the actual send after the delay
     const senderEmail = claims.email;
@@ -111,5 +125,11 @@ export async function handler({ body, context }) {
 
   const smtp = getSmtpAdapter();
   const result = await smtp.sendEmail(claims.email, req);
+
+  // Store a sent email copy for tracking
+  if (trackingId) {
+    await storeSentEmail(fylo, trackingId, claims.email, result.messageId, req);
+  }
+
   return { messageId: result.messageId };
 }
