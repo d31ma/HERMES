@@ -18,7 +18,7 @@ if (!document.querySelector('link[data-demo-style]')) {
 // ── Theme initialization ──────────────────────────────────────────────
 (function initTheme() {
   const stored = localStorage.getItem('hermes-theme')
-  if (stored === 'light' || stored === 'dark') {
+  if (stored === 'light' || stored === 'dark' || stored === 'auto') {
     document.documentElement.setAttribute('data-theme', stored)
   } else {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
@@ -32,6 +32,23 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
   })
 }
 
+// ── Keyboard shortcuts ────────────────────────────────────────────────
+;(function loadKeyboard() {
+  var mtScript = document.createElement('script')
+  mtScript.src = '/shared/scripts/mousetrap.js'
+  mtScript.onload = function () {
+    var kbScript = document.createElement('script')
+    kbScript.src = '/shared/scripts/keyboard.js'
+    kbScript.onload = function () {
+      if (window._hermesKeyboard) {
+        window._hermesKeyboard.init()
+      }
+    }
+    document.head.appendChild(kbScript)
+  }
+  document.head.appendChild(mtScript)
+})()
+
 // Global toasts — rendered as Material snackbar
 let _toastTimer
 window._hermesShowToast = (msg, duration = 2500) => {
@@ -43,7 +60,7 @@ window._hermesShowToast = (msg, duration = 2500) => {
     el.setAttribute('role', 'status')
     el.setAttribute('aria-live', 'polite')
     el.setAttribute('aria-atomic', 'true')
-    el.style.cssText = 'position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);z-index:9999;background:var(--md-sys-color-inverse-surface,#333);color:var(--md-sys-color-inverse-on-surface,#fff);padding:0.75rem 1.25rem;border-radius:8px;font-size:14px;font-family:IBM Plex Sans,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:opacity 0.3s;opacity:0;pointer-events:none'
+    el.style.cssText = 'position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);z-index:9999;background:var(--ms-inverse-surface,#333);color:var(--ms-inverse-on-surface,#fff);padding:0.75rem 1.25rem;border-radius:8px;font-size:14px;font-family:IBM Plex Sans,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:opacity 0.3s;opacity:0;pointer-events:none'
     document.body.appendChild(el)
   }
   el.textContent = msg

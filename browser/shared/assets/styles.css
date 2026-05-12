@@ -25,34 +25,48 @@ img, svg, video { max-width: 100%; display: block; }
 
 /* ── Mailspring-aligned color system ───────────────────────────────────── */
 :root {
-  --ms-primary: var(--md-sys-color-primary, #6750a4);
-  --ms-primary-container: var(--md-sys-color-primary-container, #eaddff);
-  --ms-on-primary-container: var(--md-sys-color-on-primary-container, #21005d);
+  --ms-primary: var(--ms-primary, #6750a4);
+  --ms-primary-container: var(--ms-primary-container, #eaddff);
+  --ms-on-primary-container: var(--ms-on-primary-container, #21005d);
 
-  --ms-bg: var(--md-sys-color-surface, #fefbff);
-  --ms-sidebar-bg: var(--md-sys-color-surface-container-low, #f7f2fa);
-  --ms-list-bg: var(--md-sys-color-surface, #fefbff);
-  --ms-detail-bg: var(--md-sys-color-surface, #fefbff);
-  --ms-toolbar-bg: var(--md-sys-color-surface-container-high, #ece6f0);
+  --ms-bg: var(--ms-surface, #fefbff);
+  --ms-sidebar-bg: var(--ms-sidebar, #f7f2fa);
+  --ms-list-bg: var(--ms-surface, #fefbff);
+  --ms-detail-bg: var(--ms-surface, #fefbff);
+  --ms-toolbar-bg: var(--ms-toolbar, #ece6f0);
 
-  --ms-text: var(--md-sys-color-on-surface, #1c1b1f);
-  --ms-text-subtle: var(--md-sys-color-on-surface-variant, #49454f);
-  --ms-text-very-subtle: #79747e;
+  --ms-text: var(--ms-text, #1c1b1f);
+  --ms-text-subtle: var(--ms-text-subtle, #49454f);
+  --ms-text-very-subtle: var(--ms-text-very-subtle, #79747e);
 
-  --ms-divider: var(--md-sys-color-outline-variant, #cac4d0);
-  --ms-border: var(--md-sys-color-outline-variant, #cac4d0);
+  --ms-divider: var(--ms-divider, #cac4d0);
+  --ms-border: var(--ms-border, #cac4d0);
 
-  --ms-hover-bg: var(--md-sys-color-surface-container, #f3edf7);
-  --ms-selected-bg: var(--md-sys-color-secondary-container, #e8def8);
-  --ms-selected-color: var(--md-sys-color-on-secondary-container, #1d192b);
-  --ms-active-color: var(--md-sys-color-secondary-container, #e8def8);
+  --ms-hover-bg: var(--ms-hover-bg, #f3edf7);
+  --ms-selected-bg: var(--ms-selected-bg, #e8def8);
+  --ms-selected-color: var(--ms-selected-color, #1d192b);
+  --ms-active-color: var(--ms-active-color, #e8def8);
 
-  --ms-avatar-bg: var(--md-sys-color-primary-container, #eaddff);
-  --ms-avatar-text: var(--md-sys-color-on-primary-container, #21005d);
-  --ms-unread-indicator: var(--md-sys-color-primary, #6750a4);
+  --ms-avatar-bg: var(--ms-avatar-bg, #eaddff);
+  --ms-avatar-text: var(--ms-avatar-text, #21005d);
+  --ms-unread-indicator: var(--ms-unread-indicator, #6750a4);
 
-  --ms-error: var(--md-sys-color-error, #b3261e);
-  --ms-error-container: var(--md-sys-color-error-container, #f9dedc);
+  --ms-error: var(--ms-error, #b3261e);
+  --ms-error-container: var(--ms-error-container, #f9dedc);
+
+  --ms-secondary-container: var(--ms-secondary-container, #e8def8);
+  --ms-on-secondary-container: var(--ms-on-secondary-container, #1d192b);
+  --ms-surface-container-low: var(--ms-surface-container-low, #f7f2fa);
+  --ms-surface-container-high: var(--ms-surface-container-high, #ece6f0);
+  --ms-surface-container: var(--ms-surface-container, #f3edf7);
+  --ms-inverse-surface: var(--ms-inverse-surface, #313033);
+  --ms-inverse-on-surface: var(--ms-inverse-on-surface, #f4eff4);
+  --ms-on-surface: var(--ms-on-surface, #1c1b1f);
+  --ms-on-surface-variant: var(--ms-on-surface-variant, #49454f);
+  --ms-outline-variant: var(--ms-outline-variant, #cac4d0);
+  --ms-tertiary-container: var(--ms-tertiary-container, #ffd8e4);
+  --ms-on-tertiary-container: var(--ms-on-tertiary-container, #3e001d);
+  --ms-on-error-container: var(--ms-on-error-container, #410e0b);
 
   --ms-toolbar-height: 48px;
   --ms-sidebar-width: 220px;
@@ -110,8 +124,8 @@ img, svg, video { max-width: 100%; display: block; }
 /* ── Toast notification ────────────────────────────────────────────────── */
 .app-toast {
   position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%); z-index: 9999;
-  background: var(--md-sys-color-inverse-surface, #313033);
-  color: var(--md-sys-color-inverse-on-surface, #f4eff4);
+  background: var(--ms-inverse-surface, #313033);
+  color: var(--ms-inverse-on-surface, #f4eff4);
   padding: 0.75rem 1.25rem; border-radius: 8px; font-size: 0.8125rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.14);
   pointer-events: none; animation: toast-in 0.2s ease-out; max-width: calc(100vw - 2rem);

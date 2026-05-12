@@ -54,6 +54,21 @@ export default class extends Tac {
     else { window._hermes?.toast('Update failed.') }
   }
 
+  @onMount
+  bindShortcuts() {
+    const on = (name, fn) => window.addEventListener('hermes:shortcut:' + name, fn)
+
+    on('email:reply', () => this.reply())
+    on('email:reply-all', () => this.replyAll())
+    on('email:forward', () => this.forward())
+    on('email:star', () => { if (this.$email) this.updateEmail({ starred: !this.$email.starred }, this.$email.starred ? 'Star removed.' : 'Starred.') })
+    on('email:archive', () => { if (this.$email) this.updateEmail({ folder: 'archive' }, 'Archived.') })
+    on('email:trash', () => { if (this.$email) this.updateEmail({ folder: 'trash' }, 'Moved to trash.') })
+    on('email:mark-read', () => { if (this.$email) this.updateEmail({ read: true }, 'Marked read.') })
+    on('email:mark-unread', () => { if (this.$email) this.updateEmail({ read: false }, 'Marked unread.') })
+    on('email:open', () => { if (this.$email) window._hermes?.openEmailId(this.$email.id) })
+  }
+
   goBack() {
     if (this.props?.onBack) return this.emit('back')
     window._hermes?.navigate('inbox')

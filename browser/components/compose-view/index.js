@@ -15,6 +15,14 @@ export default class extends Tac {
     this.$subject = prefill.subject || ''
   }
 
+  @onMount
+  bindShortcuts() {
+    window.addEventListener('hermes:shortcut:composer:send', () => this.send())
+    window.addEventListener('hermes:shortcut:composer:discard', () => {
+      window._hermes?.navigate('inbox')
+    })
+  }
+
   async send() {
     if (!this.$to || !this.$subject) { this.$error = 'To and Subject are required.'; return }
     this.$loading = true; this.$error = ''

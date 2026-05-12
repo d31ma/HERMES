@@ -38,7 +38,7 @@
   </logic>
 
   <loop :for="email of emails">
-    <div :class="'email-row ' + (!email.read ? 'unread' : 'read') + ($selectedId === email.id ? ' selected' : '')" @click="selectEmail(email.id)">
+    <div :class="'email-row ' + (!email.read ? 'unread' : 'read') + ($selectedId === email.id ? ' selected' : '')" @click="selectEmail(email.id)" draggable="true" @dragstart="dragStart(email.id, $event)">
       <div class="email-avatar">{window._hermes.initials(email.sender)}</div>
       <div class="email-meta">
         <div class="email-sender md-typescale-body-medium">{email.starred ? '★ ' : ''}{email.sender}</div>

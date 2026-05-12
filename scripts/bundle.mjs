@@ -74,6 +74,33 @@ async function copyServiceWorker() {
   await copyFile(sourcePath, outputPath)
 }
 
+async function copyMousetrap() {
+  const { mkdir } = await import('node:fs/promises')
+  const sourcePath = new URL('../node_modules/mousetrap/mousetrap.js', import.meta.url).pathname
+  const outputDir = new URL('../dist/shared/scripts/', import.meta.url).pathname
+  await mkdir(outputDir, { recursive: true })
+  const outputPath = new URL('../dist/shared/scripts/mousetrap.js', import.meta.url).pathname
+  await copyFile(sourcePath, outputPath)
+}
+
+async function copyKeyboard() {
+  const { mkdir } = await import('node:fs/promises')
+  const sourcePath = new URL('../browser/shared/scripts/keyboard.js', import.meta.url).pathname
+  const outputDir = new URL('../dist/shared/scripts/', import.meta.url).pathname
+  await mkdir(outputDir, { recursive: true })
+  const outputPath = new URL('../dist/shared/scripts/keyboard.js', import.meta.url).pathname
+  await copyFile(sourcePath, outputPath)
+}
+
+async function copyKeymap() {
+  const { mkdir } = await import('node:fs/promises')
+  const sourcePath = new URL('../browser/shared/data/keymap.json', import.meta.url).pathname
+  const outputDir = new URL('../dist/shared/data/', import.meta.url).pathname
+  await mkdir(outputDir, { recursive: true })
+  const outputPath = new URL('../dist/shared/data/keymap.json', import.meta.url).pathname
+  await copyFile(sourcePath, outputPath)
+}
+
 if (isWatch) {
   await ensureConfigJs()
   const tach = start(bin('tac.bundle'), ['--watch'])
@@ -86,4 +113,7 @@ if (isWatch) {
   await run(bin('tac.bundle'), [])
   await patchHtmlShells()
   await copyServiceWorker()
+  await copyMousetrap()
+  await copyKeyboard()
+  await copyKeymap()
 }
