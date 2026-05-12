@@ -73,6 +73,18 @@
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   }
 
+.inline-reply {
+    padding: 1rem 1.5rem; border-top: 1px solid var(--ms-divider);
+    background: var(--ms-sidebar-bg);
+  }
+  .inline-reply-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  .inline-reply-bar {
+    padding: 0.75rem 1.5rem; border-top: 1px solid var(--ms-divider);
+  }
+
   @media (max-width: 760px) {
     .email-header { padding: 1rem; }
     .email-toolbar { padding: 0.5rem; }

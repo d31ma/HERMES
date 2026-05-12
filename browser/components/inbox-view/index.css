@@ -71,13 +71,21 @@
     border-left: 3px solid transparent;
   }
 
+.email-row { position: relative; overflow: hidden; }
   .email-row:hover { background: var(--ms-hover-bg); }
   .email-row:active { background: var(--md-sys-color-surface-container-high); }
   .email-row.selected { background: var(--ms-selected-bg); color: var(--ms-selected-color); }
-  .email-row > * { pointer-events: none; }
+  .email-row > :not(.email-quick-actions) { pointer-events: none; }
+  .email-row > .email-quick-actions, .email-row > .email-quick-actions > * { pointer-events: auto; }
   .email-row.unread { border-left-color: var(--md-sys-color-primary); }
   .email-row.unread .email-sender { font-weight: 600; color: var(--md-sys-color-on-surface); }
   .email-row.read .email-sender, .email-row.read .email-subject { color: var(--md-sys-color-on-surface-variant); }
+  .email-quick-actions { display: flex; gap: 0.25rem; opacity: 0; transition: opacity 0.15s; position: absolute; right: 3.5rem; top: 50%; transform: translateY(-50%); background: inherit; padding: 0 0.5rem; }
+  .email-row:hover .email-quick-actions { opacity: 1; }
+  .email-row:hover .email-time { opacity: 0; }
+  .email-time { transition: opacity 0.15s; }
+  .quick-action { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--ms-text-subtle); border-radius: 6px; cursor: pointer; transition: background 0.1s, color 0.1s; padding: 0; }
+  .quick-action:hover { background: var(--ms-hover-bg); color: var(--ms-text); }
 
   .email-avatar {
     width: 44px; height: 44px;

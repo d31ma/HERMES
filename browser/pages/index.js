@@ -55,6 +55,13 @@ export default class extends Tac {
     }
   }
 
+  toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme')
+    const next = current === 'dark' ? 'light' : 'dark'
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('hermes-theme', next)
+  }
+
   updateActiveFolder() {
     const p = location.pathname
     if (p.startsWith('/inbox') || p === '/') this.$activeFolder = 'inbox'

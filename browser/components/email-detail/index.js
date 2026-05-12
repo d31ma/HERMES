@@ -3,6 +3,8 @@ export default class extends Tac {
   $email = null
   $loading = true
   $loadError = ''
+  $showReply = false
+  $replyText = ''
 
   @onMount
   async init() {
@@ -71,6 +73,16 @@ export default class extends Tac {
   forward() {
     if (!this.$email) return
     window._hermes?.compose({ subject: `Fwd: ${this.$email.subject}`, body: `\n\n---------- Forwarded message ----------\nFrom: ${this.$email.sender}\nDate: ${new Date(this.$email.receivedAt).toLocaleString()}\nSubject: ${this.$email.subject}\n\n${this.$email.body || ''}` })
+  }
+
+  async sendReply() {
+    if (!this.$email || !this.$replyText) return
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    try {
+      const res = await apiFetch('/send', { method: 'POST', body: JSON.stringify({ to: [this.$email.sender], subject: `Re: ${this.$email.subject}`, text: this.$replyText }) })
+      if (res?.ok) { window._hermes?.toast('Reply sent.'); this.$showReply = false; this.$replyText = '' }
+      else { window._hermes?.toast('Send failed.') }
+    } catch { window._hermes?.toast('Network error.') }
   }
 
   async downloadAttachment(attachment) {

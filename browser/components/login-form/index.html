@@ -27,7 +27,7 @@
     </logic>
 
     <p class="login-subtitle md-typescale-body-small">Enter your email to continue.</p>
-    <md-outlined-text-field data-login-email type="email" label="Email" :value="$email" placeholder="you@example.com" autocomplete="email" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
+    <md-outlined-text-field data-login-email type="email" label="Email" :value="$email" placeholder="you@example.com" autocomplete="email" spellcheck="false" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
     <logic :if="$error"><p class="login-error">{$error}</p></logic>
     <md-filled-button :disabled="$loading" @click="requestMfa()" style="width:100%;">{$loading ? 'Checking…' : 'Continue'}</md-filled-button>
   </logic>

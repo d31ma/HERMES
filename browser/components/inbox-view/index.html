@@ -45,6 +45,17 @@
         <div class="email-subject md-typescale-body-small">{email.subject}</div>
       </div>
       <span class="email-time md-typescale-label-small">{window._hermes.formatDate(email.receivedAt)}</span>
+      <div class="email-quick-actions">
+        <button class="quick-action" @click="quickStar(email.id, $event)" :title="email.starred ? 'Unstar' : 'Star'" aria-label="Toggle star">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </button>
+        <button class="quick-action" @click="quickArchive(email.id, $event)" title="Archive" aria-label="Archive">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+        </button>
+        <button class="quick-action" @click="quickTrash(email.id, $event)" title="Trash" aria-label="Trash">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+        </button>
+      </div>
     </div>
   </loop>
 </div>

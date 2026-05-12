@@ -15,7 +15,16 @@ if (!document.querySelector('link[data-demo-style]')) {
   document.head.appendChild(materialScript)
 }
 
-document.documentElement.setAttribute('data-theme', 'light')
+// ── Theme initialization ──────────────────────────────────────────────
+(function initTheme() {
+  const stored = localStorage.getItem('hermes-theme')
+  if (stored === 'light' || stored === 'dark') {
+    document.documentElement.setAttribute('data-theme', stored)
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'auto' : 'light')
+  }
+})()
 
 if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
   window.addEventListener('load', () => {

@@ -77,4 +77,23 @@
   </logic>
 
   <div class="email-body md-typescale-body-large">{$email.body || '(No body)'}</div>
+
+  <logic :if="$showReply">
+    <div class="inline-reply">
+      <div class="inline-reply-header">
+        <span class="md-typescale-label-large">Reply to {$email.sender}</span>
+        <md-text-button @click="$showReply = false">Cancel</md-text-button>
+      </div>
+      <md-outlined-text-field type="textarea" label="Reply" :value="$replyText" placeholder="Write your reply…" rows="4" spellcheck="true" style="width:100%;min-height:120px;"></md-outlined-text-field>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+        <md-filled-button :disabled="!$replyText" @click="sendReply()">Send reply</md-filled-button>
+      </div>
+    </div>
+  </logic>
+
+  <logic :if="!$showReply">
+    <div class="inline-reply-bar">
+      <md-filled-tonal-button @click="$showReply = true" style="width:100%;">Reply</md-filled-tonal-button>
+    </div>
+  </logic>
 </logic>
