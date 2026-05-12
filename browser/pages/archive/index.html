@@ -1,7 +1,7 @@
 <logic :if="canUseApp">
   <div class="mail-layout">
     <div class="mail-list-panel">
-      <inbox-view_ @select="mailSelected" />
+      <inbox-view_ :folder="'archive'" @select="mailSelected" />
     </div>
     <div class="mail-detail-panel">
       <logic :if="$selectedMail">

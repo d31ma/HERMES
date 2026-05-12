@@ -2,10 +2,15 @@
 export default class extends Tac {
   $allEmails = []
   $loading = true
-  $selectedFolder = 'inbox'
+  $selectedFolder = this.props?.folder || 'inbox'
   $search = ''
   $statusFilter = 'all'
   $selectedId = ''
+
+  get folderTitle() {
+    const name = this.$selectedFolder || 'inbox'
+    return name.charAt(0).toUpperCase() + name.slice(1)
+  }
 
   get folders() {
     const fs = new Set(this.$allEmails.map(e => e.folder || 'inbox'))

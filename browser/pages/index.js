@@ -57,7 +57,7 @@ export default class extends Tac {
 
   updateActiveFolder() {
     const p = location.pathname
-    if (p.startsWith('/inbox')) this.$activeFolder = 'inbox'
+    if (p.startsWith('/inbox') || p === '/') this.$activeFolder = 'inbox'
     else if (p.startsWith('/drafts')) this.$activeFolder = 'drafts'
     else if (p.startsWith('/sent')) this.$activeFolder = 'sent'
     else if (p.startsWith('/archive')) this.$activeFolder = 'archive'
@@ -65,6 +65,7 @@ export default class extends Tac {
     else if (p.startsWith('/trash')) this.$activeFolder = 'trash'
     else if (p.startsWith('/settings')) this.$activeFolder = 'settings'
     else if (p.startsWith('/compose')) this.$activeFolder = 'compose'
+    else if (p.startsWith('/email')) this.$activeFolder = 'inbox'
   }
 
   bindEvents() {
