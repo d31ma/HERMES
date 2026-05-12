@@ -1,27 +1,38 @@
 // @ts-check
 export default class extends Tac {
   $email = null
+  $loading = true
+  $loadError = ''
 
   @onMount
   async init() {
-    const routeEmailId = location.pathname.startsWith('/email/')
-      ? decodeURIComponent(location.pathname.slice('/email/'.length))
-      : new URLSearchParams(location.search).get('email') || new URLSearchParams(location.search).get('id') || ''
-    const incomingProps = this.props || {}
-    const propEmailId = incomingProps.emailId || incomingProps.emailid || routeEmailId
-    this.$email = incomingProps.email || (propEmailId ? { id: propEmailId } : null)
+    const props = this.props || {}
+    // Accept emailId from parent (3-panel layout) or from route (standalone page)
+    const emailId = props.emailId || props.emailid
+      || (location.pathname.startsWith('/email/') ? decodeURIComponent(location.pathname.slice('/email/'.length)) : '')
+      || new URLSearchParams(location.search).get('email')
+      || new URLSearchParams(location.search).get('id') || ''
+    this.$email = props.email || (emailId ? { id: emailId } : null)
     await this.loadEmail()
   }
 
   async loadEmail() {
     if (!this.$email?.id) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
-    const res = await apiFetch(`/inbox/${this.$email.id}`)
-    if (res?.ok) this.$email = await res.json()
-    if (this.$email && !this.$email.read) {
-      this.$email = { ...this.$email, read: true }
-      await apiFetch(`/inbox/${this.$email.id}`, { method: 'PUT', body: JSON.stringify({ read: true }) })
-      window.dispatchEvent(new Event('hermes:refresh-inbox'))
+    this.$loading = true; this.$loadError = ''
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    try {
+      const res = await apiFetch(`/inbox/${this.$email.id}`)
+      if (res?.ok) this.$email = await res.json()
+      else this.$loadError = 'Could not load this email.'
+      if (this.$email && !this.$email.read) {
+        this.$email = { ...this.$email, read: true }
+        await apiFetch(`/inbox/${this.$email.id}`, { method: 'PUT', body: JSON.stringify({ read: true }) })
+        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+      }
+    } catch (err) {
+      this.$loadError = err.message || 'Network error'
+    } finally {
+      this.$loading = false
     }
   }
 
@@ -41,7 +52,26 @@ export default class extends Tac {
     else { window._hermes?.toast('Update failed.') }
   }
 
-  reply() { if (!this.$email) return; this.emit('compose', { to: this.$email.sender, subject: `Re: ${this.$email.subject}` }) }
+  goBack() {
+    if (this.props?.onBack) return this.emit('back')
+    window._hermes?.navigate('inbox')
+  }
+
+  reply() {
+    if (!this.$email) return
+    window._hermes?.compose({ to: this.$email.sender, subject: `Re: ${this.$email.subject}` })
+  }
+
+  replyAll() {
+    if (!this.$email) return
+    const to = [this.$email.sender, this.$email.recipient].filter(Boolean).join(', ')
+    window._hermes?.compose({ to, subject: `Re: ${this.$email.subject}` })
+  }
+
+  forward() {
+    if (!this.$email) return
+    window._hermes?.compose({ subject: `Fwd: ${this.$email.subject}`, body: `\n\n---------- Forwarded message ----------\nFrom: ${this.$email.sender}\nDate: ${new Date(this.$email.receivedAt).toLocaleString()}\nSubject: ${this.$email.subject}\n\n${this.$email.body || ''}` })
+  }
 
   async downloadAttachment(attachment) {
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch || !this.$email?.id) return

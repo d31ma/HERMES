@@ -1,80 +1,99 @@
-  .inbox-title { font-weight: 600; }
-  .inbox-count { color: var(--md-sys-color-on-surface-variant); }
+.inbox-title { font-weight: 600; }
+  .inbox-count {
+    color: var(--md-sys-color-on-surface-variant);
+    background: var(--md-sys-color-surface-container-high);
+    border-radius: 999px;
+    padding: 2px 10px;
+    font-size: 0.75rem;
+  }
 
   .inbox-toolbar {
     display: flex;
     align-items: center;
-    padding: 0.75rem 1.25rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     gap: 0.5rem;
+    background: var(--md-sys-color-surface);
+    position: sticky;
+    top: 0;
+    z-index: 5;
   }
 
   .inbox-search {
     display: flex;
     gap: 0.5rem;
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 1.5rem;
     align-items: center;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface);
   }
 
   .filter-strip, .folder-tabs {
     display: flex;
     gap: 0.5rem;
-    padding: 0.5rem 1.25rem;
+    padding: 0.5rem 1.5rem;
     flex-wrap: wrap;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    background: var(--md-sys-color-surface);
   }
 
   .filter-strip md-assist-chip.selected,
   .folder-tabs md-assist-chip.selected {
     background: var(--md-sys-color-secondary-container);
     color: var(--md-sys-color-on-secondary-container);
+    --md-assist-chip-elevated-container-shape: 8px;
   }
 
-  .inbox-list { flex: 1; overflow-y: auto; }
+  .inbox-list { flex: 1; overflow-y: auto; background: var(--md-sys-color-surface); }
 
   .inbox-empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 3rem 1rem;
+    padding: 4rem 1rem;
     flex-direction: column;
+    color: var(--md-sys-color-on-surface-variant);
   }
 
   .email-row {
     display: grid;
-    grid-template-columns: auto 1fr auto;
+    grid-template-columns: 44px 1fr auto;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     width: 100%;
-    padding: 0.75rem 1.25rem;
+    padding: 0.85rem 1.5rem;
     border-bottom: 1px solid var(--md-sys-color-outline-variant);
     background: transparent;
     color: inherit;
     text-decoration: none;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: background 0.15s, box-shadow 0.15s;
+    border-left: 3px solid transparent;
   }
 
-  .email-row:hover { background: var(--md-sys-color-surface-container-highest); }
+  .email-row:hover { background: var(--ms-hover-bg); }
+  .email-row:active { background: var(--md-sys-color-surface-container-high); }
+  .email-row.selected { background: var(--ms-selected-bg); color: var(--ms-selected-color); }
   .email-row > * { pointer-events: none; }
+  .email-row.unread { border-left-color: var(--md-sys-color-primary); }
   .email-row.unread .email-sender { font-weight: 600; color: var(--md-sys-color-on-surface); }
   .email-row.read .email-sender, .email-row.read .email-subject { color: var(--md-sys-color-on-surface-variant); }
 
   .email-avatar {
-    width: 40px; height: 40px;
+    width: 44px; height: 44px;
     border-radius: 50%;
     background: var(--md-sys-color-primary-container);
     color: var(--md-sys-color-on-primary-container);
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 600;
+    font-size: 15px; font-weight: 600;
     flex-shrink: 0;
+    letter-spacing: 0;
   }
 
-  .email-meta { overflow: hidden; }
+  .email-meta { overflow: hidden; min-width: 0; }
   .email-sender { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .email-subject { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-  .email-time { white-space: nowrap; flex-shrink: 0; }
+  .email-time { white-space: nowrap; flex-shrink: 0; color: var(--md-sys-color-on-surface-variant); font-size: 0.75rem; }
 
   @media (max-width: 760px) {
     .inbox-toolbar { padding: 0.75rem 1rem; }
@@ -85,6 +104,6 @@
       scrollbar-width: none;
     }
     .filter-strip::-webkit-scrollbar, .folder-tabs::-webkit-scrollbar { display: none; }
-    .email-row { padding: 0.85rem 1rem; min-height: 68px; }
-    .email-avatar { width: 40px; height: 40px; }
+    .email-row { padding: 0.85rem 1rem; min-height: 68px; gap: 0.75rem; grid-template-columns: 40px 1fr auto; }
+    .email-avatar { width: 40px; height: 40px; font-size: 14px; }
   }

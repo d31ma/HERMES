@@ -7,6 +7,7 @@ export default class extends Tac {
   $toastMsg = ''
   $toastVisible = false
   $isRoot = false
+  $activeFolder = 'inbox'
 
   _toastTimer = null
 
@@ -27,6 +28,7 @@ export default class extends Tac {
     if (this.$isRoot && this.isAuthenticated) {
       location.replace('/inbox')
     }
+    this.updateActiveFolder()
 
     this.registerGlobals()
     this.bindEvents()
@@ -53,9 +55,22 @@ export default class extends Tac {
     }
   }
 
+  updateActiveFolder() {
+    const p = location.pathname
+    if (p.startsWith('/inbox')) this.$activeFolder = 'inbox'
+    else if (p.startsWith('/drafts')) this.$activeFolder = 'drafts'
+    else if (p.startsWith('/sent')) this.$activeFolder = 'sent'
+    else if (p.startsWith('/archive')) this.$activeFolder = 'archive'
+    else if (p.startsWith('/spam')) this.$activeFolder = 'spam'
+    else if (p.startsWith('/trash')) this.$activeFolder = 'trash'
+    else if (p.startsWith('/settings')) this.$activeFolder = 'settings'
+    else if (p.startsWith('/compose')) this.$activeFolder = 'compose'
+  }
+
   bindEvents() {
     window.addEventListener('hermes:logout', () => this.signOut())
     window.addEventListener('hermes:open-email', (e) => { this.openEmail(e.detail) })
+    window.addEventListener('tachyon:navigate', () => { this.updateActiveFolder() })
     window.addEventListener('hashchange', () => {
       if (!location.hash.startsWith('#email=')) return
       this.openEmailId(decodeURIComponent(location.hash.slice('#email='.length)))

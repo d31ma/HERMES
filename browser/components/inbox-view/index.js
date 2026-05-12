@@ -5,6 +5,7 @@ export default class extends Tac {
   $selectedFolder = 'inbox'
   $search = ''
   $statusFilter = 'all'
+  $selectedId = ''
 
   get folders() {
     const fs = new Set(this.$allEmails.map(e => e.folder || 'inbox'))
@@ -49,4 +50,9 @@ export default class extends Tac {
   }
 
   async clearSearch() { this.$search = ''; this.$statusFilter = 'all'; await this.load() }
+
+  selectEmail(id) {
+    this.$selectedId = id
+    this.emit('select', id)
+  }
 }

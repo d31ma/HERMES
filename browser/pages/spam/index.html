@@ -11,8 +11,7 @@
         <div class="mail-detail-empty">
           <div class="empty-state">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;">
-              <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
-              <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+              <path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
             </svg>
             <p class="empty-state-title">No message selected</p>
             <p class="empty-state-subtitle">Choose a message from the list to read it here.</p>
@@ -22,9 +21,6 @@
     </div>
   </div>
 </logic>
-
 <logic :if="canShowLogin">
-  <div class="login-screen">
-    <login-form_ @login="window._hermes?.handleLogin($event.detail)" />
-  </div>
+  <div class="login-screen"><login-form_ @login="window._hermes?.handleLogin($event.detail)" /></div>
 </logic>

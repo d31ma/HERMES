@@ -62,6 +62,44 @@
     <md-text-button @click="back()" style="display:block;margin-top:0.75rem;width:100%;text-align:center;">Back</md-text-button>
   </logic>
 
+  <logic :if="$step === 'passkey'">
+    <div class="passkey-prompt">
+      <div class="passkey-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0110 0v4"/>
+          <circle cx="12" cy="16" r="1"/>
+        </svg>
+      </div>
+      <p class="login-title md-typescale-title-medium">Verify your identity</p>
+      <p class="login-subtitle md-typescale-body-small">Follow the prompt from your browser or device to sign in with your passkey.</p>
+      <md-circular-progress indeterminate style="margin:1.5rem auto;display:block;"></md-circular-progress>
+      <logic :if="$error"><p class="login-error">{$error}</p></logic>
+      <div style="display:flex;justify-content:center;gap:0.75rem;margin-top:0.5rem;">
+        <md-text-button @click="back()">Cancel</md-text-button>
+        <md-text-button @click="usePhoneBackup()">Use phone instead</md-text-button>
+      </div>
+    </div>
+  </logic>
+
+  <logic :if="$step === 'passkey-setup'">
+    <div class="passkey-prompt">
+      <div class="passkey-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+          <circle cx="12" cy="16" r="1"/>
+        </svg>
+      </div>
+      <p class="login-title md-typescale-title-medium">Create a passkey</p>
+      <p class="login-subtitle md-typescale-body-small">Follow the prompt from your browser to save a passkey for this account.</p>
+      <md-circular-progress indeterminate style="margin:1.5rem auto;display:block;"></md-circular-progress>
+      <logic :if="$error"><p class="login-error">{$error}</p></logic>
+      <div style="display:flex;justify-content:center;margin-top:0.5rem;">
+        <md-text-button @click="back()">Cancel</md-text-button>
+      </div>
+    </div>
+  </logic>
+
   <logic :if="$step === 'mfa-setup'">
     <p class="login-title md-typescale-title-medium">Set up authenticator</p>
     <p class="login-subtitle md-typescale-body-small">Add the key below to your authenticator app, then enter the code it generates.</p>

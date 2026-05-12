@@ -38,13 +38,13 @@
   </logic>
 
   <loop :for="email of emails">
-    <a :class="'email-row ' + (!email.read ? 'unread' : 'read')" :href="'/email/' + encodeURIComponent(email.id)">
+    <div :class="'email-row ' + (!email.read ? 'unread' : 'read') + ($selectedId === email.id ? ' selected' : '')" @click="selectEmail(email.id)">
       <div class="email-avatar">{window._hermes.initials(email.sender)}</div>
       <div class="email-meta">
         <div class="email-sender md-typescale-body-medium">{email.starred ? '★ ' : ''}{email.sender}</div>
         <div class="email-subject md-typescale-body-small">{email.subject}</div>
       </div>
       <span class="email-time md-typescale-label-small">{window._hermes.formatDate(email.receivedAt)}</span>
-    </a>
+    </div>
   </loop>
 </div>

@@ -1,7 +1,7 @@
 <div class="email-toolbar">
-  <md-text-button @click="window._hermes?.navigate('inbox')" trailing-icon>
+  <md-text-button @click="goBack()">
     <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    Inbox
+    Back
   </md-text-button>
 
   <div class="email-actions">
@@ -20,14 +20,35 @@
     <logic :if="$email && $email.folder !== 'trash'">
       <md-text-button @click="updateEmail({ folder: 'trash' }, 'Moved to trash.')">Trash</md-text-button>
     </logic>
-    <md-text-button @click="reply()">Reply</md-text-button>
+    <div class="email-action-divider"></div>
+    <md-filled-tonal-button @click="reply()" style="min-width:80px;">Reply</md-filled-tonal-button>
+    <md-text-button @click="replyAll()">Reply All</md-text-button>
+    <md-text-button @click="forward()">Forward</md-text-button>
     <logic :if="$email && $email.folder === 'trash'">
-      <md-filled-tonal-button @click="deleteEmail()" style="--md-filled-tonal-button-container-color:var(--md-sys-color-error-container);">Delete forever</md-filled-tonal-button>
+      <md-filled-tonal-button @click="deleteEmail()" style="--md-filled-tonal-button-container-color:var(--ms-error-container);">Delete forever</md-filled-tonal-button>
     </logic>
   </div>
 </div>
 
-<logic :if="$email">
+<logic :if="$loading">
+  <div class="empty-state">
+    <md-circular-progress indeterminate></md-circular-progress>
+    <p class="empty-state-title" style="margin-top:1rem;">Loading email</p>
+  </div>
+</logic>
+
+<logic :if="!$loading && $loadError">
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--md-sys-color-error);">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p class="empty-state-title">Failed to load email</p>
+    <p class="empty-state-subtitle">{$loadError}</p>
+    <md-text-button @click="load()" style="margin-top:0.75rem;">Try again</md-text-button>
+  </div>
+</logic>
+
+<logic :if="!$loading && !$loadError && $email">
   <div class="email-header">
     <h2 class="md-typescale-headline-small" style="margin:0 0 1rem;">{$email.subject}</h2>
     <div class="email-meta">
