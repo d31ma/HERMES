@@ -31,7 +31,17 @@
 </div>
 
 <div class="inbox-list" data-density="{$density}">
-  <logic :if="$loading">
+  <logic :if="$error && !$loading">
+    <div class="inbox-empty">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--ms-error);">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <span class="md-typescale-body-medium" style="color:var(--ms-error);margin-top:0.5rem;">{$error}</span>
+      <md-text-button @click="load()" style="margin-top:0.5rem;">Try again</md-text-button>
+    </div>
+  </logic>
+
+  <logic :if="!$error && $loading">
     <div class="inbox-empty"><md-circular-progress indeterminate></md-circular-progress><span class="md-typescale-body-medium" style="margin-left:1rem;">Loading…</span></div>
   </logic>
 

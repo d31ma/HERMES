@@ -95,9 +95,23 @@ img, svg, video { max-width: 100%; display: block; }
 
 /* ── Focus ─────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--ms-primary);
+  outline: 2px solid var(--ms-primary, #6750a4);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ── Interactive base states ──────────────────────────────────────────── */
+.email-row:focus-visible,
+.thread-summary:focus-visible,
+.thread-email-row:focus-visible,
+.sidebar-folder:focus-visible,
+.quick-action:focus-visible,
+.toolbar-btn:focus-visible,
+.attachment-chip:focus-visible,
+.sidebar-section-header:focus-visible {
+  outline: 2px solid var(--ms-primary, #6750a4);
+  outline-offset: -2px;
+  border-radius: 6px;
 }
 
 /* ── Scrollbar ─────────────────────────────────────────────────────────── */

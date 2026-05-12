@@ -1,10 +1,15 @@
-.inbox-title { font-weight: 600; }
+.inbox-title {
+    font-weight: var(--ms-font-weight-semibold, 600);
+    font-size: var(--ms-font-xl, 1.25rem);
+    letter-spacing: var(--ms-letter-spacing-tight, -0.01em);
+  }
   .inbox-count {
     color: var(--ms-on-surface-variant);
     background: var(--ms-surface-container-high);
     border-radius: 999px;
-    padding: 2px 10px;
-    font-size: 0.75rem;
+    padding: 4px 12px;
+    font-size: var(--ms-font-sm, 0.75rem);
+    font-weight: var(--ms-font-weight-medium, 500);
   }
 
   .inbox-toolbar {
@@ -84,34 +89,46 @@
   .email-row:hover .email-quick-actions { opacity: 1; }
   .email-row:hover .email-time { opacity: 0; }
   .email-time { transition: opacity 0.15s; }
-  .quick-action { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--ms-text-subtle); border-radius: 6px; cursor: pointer; transition: background 0.1s, color 0.1s; padding: 0; }
+  .quick-action { width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border: none; background: transparent; color: var(--ms-text-subtle); border-radius: 6px; cursor: pointer; transition: background 150ms, color 150ms; padding: 0; }
   .quick-action:hover { background: var(--ms-hover-bg); color: var(--ms-text); }
 
-  .email-avatar {
+.email-avatar {
     width: 44px; height: 44px;
     border-radius: 50%;
     background: var(--ms-primary-container);
     color: var(--ms-on-primary-container);
     display: flex; align-items: center; justify-content: center;
-    font-size: 15px; font-weight: 600;
+    font-size: var(--ms-font-md, 0.9375rem);
+    font-weight: var(--ms-font-weight-semibold, 600);
     flex-shrink: 0;
-    letter-spacing: 0;
+    letter-spacing: var(--ms-letter-spacing-normal, 0);
   }
 
   .email-meta { overflow: hidden; min-width: 0; }
-  .email-sender { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .email-subject { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
-  .email-time { white-space: nowrap; flex-shrink: 0; color: var(--ms-on-surface-variant); font-size: 0.75rem; }
+  .email-sender {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-size: var(--ms-font-base, 0.875rem);
+  }
+  .email-subject {
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;
+    font-size: var(--ms-font-sm, 0.75rem);
+  }
+  .email-time {
+    white-space: nowrap; flex-shrink: 0;
+    color: var(--ms-on-surface-variant);
+    font-size: var(--ms-font-sm, 0.75rem);
+    font-weight: var(--ms-font-weight-normal, 400);
+  }
 
   /* ── Density modes ─────────────────────────────────────────────────── */
-  .inbox-list[data-density="compact"] .email-row { padding: 0.5rem 1.5rem; }
-  .inbox-list[data-density="compact"] .email-avatar { width: 32px; height: 32px; font-size: 13px; }
+.inbox-list[data-density="compact"] .email-row { padding: 0.5rem 1.5rem; }
+  .inbox-list[data-density="compact"] .email-avatar { width: 32px; height: 32px; font-size: var(--ms-font-sm, 0.75rem); }
   .inbox-list[data-density="compact"] .email-row { grid-template-columns: 32px 1fr auto; }
   .inbox-list[data-density="compact"] .email-sender,
-  .inbox-list[data-density="compact"] .email-subject { font-size: 13px; }
+  .inbox-list[data-density="compact"] .email-subject { font-size: var(--ms-font-sm, 0.75rem); }
 
   .inbox-list[data-density="default"] .email-row { padding: 0.65rem 1.5rem; }
-  .inbox-list[data-density="default"] .email-avatar { width: 38px; height: 38px; font-size: 14px; }
+  .inbox-list[data-density="default"] .email-avatar { width: 38px; height: 38px; font-size: var(--ms-font-base, 0.875rem); }
   .inbox-list[data-density="default"] .email-row { grid-template-columns: 38px 1fr auto; }
 
   @media (max-width: 760px) {
@@ -123,8 +140,8 @@
       scrollbar-width: none;
     }
     .filter-strip::-webkit-scrollbar, .folder-tabs::-webkit-scrollbar { display: none; }
-    .email-row { padding: 0.85rem 1rem; min-height: 68px; gap: 0.75rem; grid-template-columns: 40px 1fr auto; }
-    .email-avatar { width: 40px; height: 40px; font-size: 14px; }
+    .email-row { padding: 0.85rem 1rem; min-height: 72px; gap: 0.75rem; grid-template-columns: 40px 1fr auto; }
+    .email-avatar { width: 40px; height: 40px; font-size: var(--ms-font-base, 0.875rem); }
   }
 
   /* ── Threading ───────────────────────────────────────────────────── */
@@ -153,9 +170,9 @@
     background: var(--ms-primary-container);
     color: var(--ms-on-primary-container);
     border-radius: 11px;
-    font-size: 11px;
+    font-size: var(--ms-font-xs, 0.6875rem);
     font-weight: 600;
-    padding: 0 6px;
+    padding: 0 8px;
     margin-right: 0.5rem;
   }
 
@@ -163,7 +180,7 @@
     padding: 0.6rem 1.5rem 0.6rem 3rem;
     border-bottom: 1px solid var(--ms-outline-variant);
     cursor: pointer;
-    transition: background 0.1s;
+    transition: background 150ms;
     background: var(--ms-surface-container-low);
     border-left: 3px solid transparent;
   }

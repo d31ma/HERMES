@@ -48,7 +48,7 @@
   --ms-on-primary-container: #ffffff;
   --ms-text: #eeeeee;
   --ms-text-subtle: rgba(255,255,255,0.6);
-  --ms-text-very-subtle: rgba(255,255,255,0.45);
+  --ms-text-very-subtle: rgba(255,255,255,0.55);
   --ms-divider: #333333;
   --ms-border: #333333;
   --ms-hover-bg: rgba(255,255,255,0.05);
@@ -87,7 +87,7 @@
     --ms-on-primary-container: #ffffff;
     --ms-text: #eeeeee;
     --ms-text-subtle: rgba(255,255,255,0.6);
-    --ms-text-very-subtle: rgba(255,255,255,0.45);
+    --ms-text-very-subtle: rgba(255,255,255,0.55);
     --ms-divider: #333333;
     --ms-border: #333333;
     --ms-hover-bg: rgba(255,255,255,0.05);
