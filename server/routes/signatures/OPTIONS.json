@@ -1,0 +1,10 @@
+{
+  "GET": {
+    "401": { "error": "", "unauthorized": true }
+  },
+  "POST": {
+    "200": { "id": "", "domain": "", "name": "", "text": "" },
+    "400": { "error": "" },
+    "401": { "error": "", "unauthorized": true }
+  }
+}

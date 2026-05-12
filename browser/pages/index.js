@@ -98,6 +98,8 @@ export default class extends Tac {
     else if (p.startsWith('/trash')) this.$activeFolder = 'trash'
     else if (p.startsWith('/settings')) this.$activeFolder = 'settings'
     else if (p.startsWith('/compose')) this.$activeFolder = 'compose'
+    else if (p.startsWith('/scheduled')) this.$activeFolder = 'scheduled'
+    else if (p.startsWith('/snoozed')) this.$activeFolder = 'snoozed'
     else if (p.startsWith('/email')) this.$activeFolder = 'inbox'
   }
 

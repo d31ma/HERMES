@@ -19,6 +19,7 @@ export const Collections = {
   SNOOZED:           'snoozed',
   SCHEDULED:         'scheduled',
   TEMPLATES:         'templates',
+  SIGNATURES:        'signatures',
 }
 
 /**

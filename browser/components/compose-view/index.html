@@ -5,15 +5,52 @@
   <md-outlined-text-field type="email" label="CC" :value="$cc" placeholder="optional" spellcheck="false" style="width:100%;margin-bottom:0.5rem;"></md-outlined-text-field>
   <md-outlined-text-field type="text" label="Subject" :value="$subject" placeholder="Subject" spellcheck="true" style="width:100%;margin-bottom:0.5rem;"></md-outlined-text-field>
 
-  <md-outlined-text-field type="textarea" label="Message" :value="$text" placeholder="Write your message…" rows="8" spellcheck="true" style="width:100%;margin-bottom:1rem;min-height:240px;"></md-outlined-text-field>
+  <div class="compose-toolbar">
+    <button class="toolbar-btn" @click="execBold()" title="Bold (Ctrl+B)"><b>B</b></button>
+    <button class="toolbar-btn" @click="execItalic()" title="Italic (Ctrl+I)"><i>I</i></button>
+    <span class="toolbar-sep"></span>
+    <button class="toolbar-btn" @click="execBulletList()" title="Bullet List">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor"/><circle cx="4" cy="12" r="1.5" fill="currentColor"/><circle cx="4" cy="18" r="1.5" fill="currentColor"/></svg>
+    </button>
+    <button class="toolbar-btn" @click="execNumberedList()" title="Numbered List">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><text x="2" y="9" font-size="8" fill="currentColor" stroke="none" font-weight="600">1</text><text x="2" y="15" font-size="8" fill="currentColor" stroke="none" font-weight="600">2</text><text x="2" y="21" font-size="8" fill="currentColor" stroke="none" font-weight="600">3</text></svg>
+    </button>
+    <span class="toolbar-sep"></span>
+    <button class="toolbar-btn" @click="execLink()" title="Insert Link">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+    </button>
+  </div>
+  <div contenteditable="true" data-compose-editor class="compose-editor" placeholder="Write your message…" spellcheck="true"></div>
 
   <logic :if="$error">
     <p class="login-error" style="margin:0 0 0.75rem;">{$error}</p>
   </logic>
 
+  <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:0.75rem;">
+    <select @change="loadTemplate($event)" style="padding:0.25rem;">
+      <option value="">Load template…</option>
+      <loop :for="tpl of $templates">
+        <option :value="tpl.id">{tpl.name}</option>
+      </loop>
+    </select>
+    <md-text-button @click="saveTemplate()">Save as template</md-text-button>
+  </div>
+
+  <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;">
+    <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.875rem;cursor:pointer;">
+      <input type="checkbox" :checked="$requestReadReceipt" @change="$requestReadReceipt = !$requestReadReceipt" style="cursor:pointer;">
+      Request read receipt
+    </label>
+    <label style="display:flex;align-items:center;gap:0.35rem;font-size:0.875rem;cursor:pointer;">
+      <input type="checkbox" :checked="$trackLinks" @change="$trackLinks = !$trackLinks" style="cursor:pointer;">
+      Track links
+    </label>
+  </div>
+
   <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
     <md-filled-button :disabled="$loading" @click="send()">{$loading ? 'Sending…' : 'Send'}</md-filled-button>
     <md-filled-tonal-button :disabled="$loading" @click="sendAndArchive()">Send & Archive</md-filled-tonal-button>
+    <md-filled-tonal-button :disabled="$loading" @click="sendLater()">Send later</md-filled-tonal-button>
     <md-text-button @click="window._hermes?.navigate('inbox')">Discard</md-text-button>
   </div>
 </div>

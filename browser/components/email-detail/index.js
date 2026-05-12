@@ -38,6 +38,44 @@ export default class extends Tac {
     }
   }
 
+  async snooze() {
+    if (!this.$email) return
+    const presets = [
+      { label: 'Later today', hours: 4 },
+      { label: 'Tomorrow', hours: 24 },
+      { label: 'This weekend', hours: 48 },
+      { label: 'Next week', hours: 168 },
+      { label: 'Custom…', hours: null },
+    ]
+    const options = presets.map((p, i) => `\${i + 1}. \${p.label}`).join('\n')
+    const choice = prompt('Snooze until:\n\n' + options)
+    if (!choice) return
+    const selected = presets.find((p, i) => choice.trim() === String(i + 1) || choice.trim().toLowerCase() === p.label.toLowerCase())
+    let untilMs = Date.now()
+    if (selected && selected.hours != null) {
+      untilMs += selected.hours * 60 * 60 * 1000
+    } else {
+      const custom = prompt('Enter date/time (e.g. 2026-12-31T14:00):')
+      if (!custom) return
+      untilMs = Date.parse(custom)
+      if (isNaN(untilMs)) { window._hermes?.toast('Invalid date format.'); return }
+    }
+    if (untilMs <= Date.now()) { window._hermes?.toast('Please choose a future time.'); return }
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    try {
+      const res = await apiFetch('/snooze', { method: 'POST', body: JSON.stringify({ emailId: this.$email.id, until: new Date(untilMs).toISOString() }) })
+      if (res?.ok) {
+        window._hermes?.toast('Snoozed until ' + new Date(untilMs).toLocaleString())
+        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+        window._hermes?.navigate('inbox')
+      } else {
+        window._hermes?.toast('Snooze failed.')
+      }
+    } catch {
+      window._hermes?.toast('Network error.')
+    }
+  }
+
   async deleteEmail() {
     if (!this.$email || !confirm('Delete this message forever?')) return
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return

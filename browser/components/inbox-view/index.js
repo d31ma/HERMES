@@ -2,11 +2,14 @@
 export default class extends Tac {
   $allEmails = []
   $loading = true
-  $selectedFolder = this.props?.folder || 'inbox'
+  $selectedFolder = this.props?.folder || (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('folder') : null) || 'inbox'
   $search = ''
   $statusFilter = 'all'
   $selectedId = ''
   $density = 'comfortable'
+  $threadedMode = false
+  $threads = []
+  $expandedThreads = {}
 
   get folderTitle() {
     const name = this.$selectedFolder || 'inbox'
@@ -15,7 +18,7 @@ export default class extends Tac {
 
   get folders() {
     const fs = new Set(this.$allEmails.map(e => e.folder || 'inbox'))
-    return ['inbox', 'archive', 'trash', ...Array.from(fs).filter(f => !['inbox', 'archive', 'trash'].includes(f)).sort()]
+    return ['inbox', 'archive', 'snoozed', 'trash', ...Array.from(fs).filter(f => !['inbox', 'archive', 'snoozed', 'trash'].includes(f)).sort()]
   }
 
   get emails() { return this.$allEmails.filter(e => (e.folder || 'inbox') === this.$selectedFolder) }
@@ -44,6 +47,13 @@ export default class extends Tac {
   async load() {
     this.$loading = true
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    // If the search term contains query syntax or the user typed a search,
+    // use the dedicated /search endpoint which supports the full query syntax
+    // (from:, to:, subject:, has:attachment, is:unread, before:, after:, etc.)
+    if (this.$search.trim() && this._looksLikeSearchQuery(this.$search)) {
+      await this.search(this.$search)
+      return
+    }
     const params = new URLSearchParams()
     if (this.$search.trim()) params.set('q', this.$search.trim())
     if (this.$statusFilter === 'unread') params.set('read', 'false')
@@ -52,6 +62,29 @@ export default class extends Tac {
     const res = await apiFetch(`/inbox${suffix}`)
     this.$allEmails = res?.ok ? await res.json() : []
     this.$loading = false
+  }
+
+  /**
+   * Performs a full-text search using the /search endpoint with Gmail-like
+   * query syntax support (from:, to:, subject:, has:attachment, is:unread,
+   * before:, after:, etc.).
+   * @param {string} q - The search query
+   */
+  async search(q) {
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    const res = await apiFetch(`/search?q=${encodeURIComponent(q)}`)
+    this.$allEmails = res?.ok ? await res.json() : []
+    this.$loading = false
+  }
+
+  /**
+   * Returns true if the search string looks like a structured search query
+   * (contains field:value patterns or boolean flags like is:unread).
+   * @param {string} s
+   * @returns {boolean}
+   */
+  _looksLikeSearchQuery(s) {
+    return /(?:from|to|subject|body|before|after|has|is|filename|attachment):/i.test(s)
   }
 
   async updateEmail(email, patch) {
@@ -69,6 +102,23 @@ export default class extends Tac {
     const cycle = { comfortable: 'compact', compact: 'default', default: 'comfortable' }
     this.$density = cycle[this.$density] || 'comfortable'
     localStorage.setItem('hermes-density', this.$density)
+  }
+
+  async toggleThreadMode() {
+    this.$threadedMode = !this.$threadedMode
+    this.$expandedThreads = {}
+    this.$selectedId = ''
+    await this.load()
+  }
+
+  toggleThread(subject) {
+    const expanded = { ...this.$expandedThreads }
+    if (expanded[subject]) {
+      delete expanded[subject]
+    } else {
+      expanded[subject] = true
+    }
+    this.$expandedThreads = expanded
   }
 
   selectEmail(id) {

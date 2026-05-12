@@ -1,0 +1,51 @@
+<logic :if="canUseApp">
+  <div class="mail-layout">
+    <div class="mail-list-panel" style="padding:1rem;">
+      <h2 class="md-typescale-headline-small" style="margin:0 0 1rem;">Scheduled</h2>
+
+      <logic :if="$loading">
+        <div class="inbox-empty"><md-circular-progress indeterminate></md-circular-progress><span class="md-typescale-body-medium" style="margin-left:1rem;">Loading…</span></div>
+      </logic>
+
+      <logic :if="!$loading && $items.length === 0">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--ms-on-surface-variant);">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <p class="empty-state-title">No scheduled messages</p>
+          <p class="empty-state-subtitle">Scheduled emails will be sent automatically at the times shown.</p>
+        </div>
+      </logic>
+
+      <loop :for="item of $items">
+        <div class="scheduled-item" style="border:1px solid var(--ms-outline-variant);border-radius:12px;padding:0.75rem;margin-bottom:0.5rem;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+            <div style="min-width:0;">
+              <p class="md-typescale-body-medium" style="margin:0;font-weight:500;">{item.subject}</p>
+              <p class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);margin:0.25rem 0;">To: {item.to?.join?.(', ') || item.to}</p>
+              <p class="md-typescale-label-small" style="color:var(--ms-primary);margin:0.25rem 0;">Scheduled for {new Date(item.sendAt).toLocaleString()}</p>
+            </div>
+            <md-text-button @click="cancelScheduled(item.id)" style="flex-shrink:0;">Cancel</md-text-button>
+          </div>
+          <logic :if="item.text">
+            <p class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);margin:0.5rem 0 0;white-space:pre-wrap;max-height:4rem;overflow:hidden;">{item.text}</p>
+          </logic>
+        </div>
+      </loop>
+    </div>
+    <div class="mail-detail-panel">
+      <div class="mail-detail-empty">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;">
+            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+          </svg>
+          <p class="empty-state-title">Scheduled messages</p>
+          <p class="empty-state-subtitle">Messages here will be sent at their scheduled times. You can cancel any pending send.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</logic>
+<logic :if="canShowLogin">
+  <div class="login-screen"><login-form_ @login="window._hermes?.handleLogin($event.detail)" /></div>
+</logic>
