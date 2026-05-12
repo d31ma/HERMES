@@ -82,6 +82,9 @@
     border-top: 1px solid var(--ms-outline-variant, #cac4d0);
   }
 
+  .passkey-spinner { margin: 1.5rem auto; display: block; }
+  .passkey-actions { display: flex; justify-content: center; gap: 0.75rem; margin-top: 0.5rem; }
+
   @media (max-width: 760px) {
     .login-card {
       max-width: none;

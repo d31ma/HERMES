@@ -89,18 +89,10 @@ export default class extends Tac {
   }
 
   updateActiveFolder() {
-    const p = location.pathname
-    if (p.startsWith('/inbox') || p === '/') this.$activeFolder = 'inbox'
-    else if (p.startsWith('/drafts')) this.$activeFolder = 'drafts'
-    else if (p.startsWith('/sent')) this.$activeFolder = 'sent'
-    else if (p.startsWith('/archive')) this.$activeFolder = 'archive'
-    else if (p.startsWith('/spam')) this.$activeFolder = 'spam'
-    else if (p.startsWith('/trash')) this.$activeFolder = 'trash'
-    else if (p.startsWith('/settings')) this.$activeFolder = 'settings'
-    else if (p.startsWith('/compose')) this.$activeFolder = 'compose'
-    else if (p.startsWith('/scheduled')) this.$activeFolder = 'scheduled'
-    else if (p.startsWith('/snoozed')) this.$activeFolder = 'snoozed'
-    else if (p.startsWith('/email')) this.$activeFolder = 'inbox'
+    const segment = location.pathname.split('/')[1]
+    const FOLDERS = new Set(['inbox', 'drafts', 'sent', 'archive', 'spam', 'trash', 'settings', 'compose', 'scheduled', 'snoozed', 'folder'])
+    if (FOLDERS.has(segment)) this.$activeFolder = segment
+    else if (segment === 'email' || location.pathname === '/') this.$activeFolder = 'inbox'
   }
 
   bindEvents() {

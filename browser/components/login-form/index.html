@@ -73,9 +73,9 @@
       </div>
       <p class="login-title md-typescale-title-medium">Verify your identity</p>
       <p class="login-subtitle md-typescale-body-small">Follow the prompt from your browser or device to sign in with your passkey.</p>
-      <md-circular-progress indeterminate style="margin:1.5rem auto;display:block;"></md-circular-progress>
+      <md-circular-progress indeterminate class="passkey-spinner"></md-circular-progress>
       <logic :if="$error"><p class="login-error">{$error}</p></logic>
-      <div style="display:flex;justify-content:center;gap:0.75rem;margin-top:0.5rem;">
+      <div class="passkey-actions">
         <md-text-button @click="back()">Cancel</md-text-button>
         <md-text-button @click="usePhoneBackup()">Use phone instead</md-text-button>
       </div>
@@ -92,7 +92,7 @@
       </div>
       <p class="login-title md-typescale-title-medium">Create a passkey</p>
       <p class="login-subtitle md-typescale-body-small">Follow the prompt from your browser to save a passkey for this account.</p>
-      <md-circular-progress indeterminate style="margin:1.5rem auto;display:block;"></md-circular-progress>
+      <md-circular-progress indeterminate class="passkey-spinner"></md-circular-progress>
       <logic :if="$error"><p class="login-error">{$error}</p></logic>
       <div style="display:flex;justify-content:center;margin-top:0.5rem;">
         <md-text-button @click="back()">Cancel</md-text-button>
