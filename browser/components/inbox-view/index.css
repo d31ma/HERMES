@@ -103,6 +103,17 @@
   .email-subject { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
   .email-time { white-space: nowrap; flex-shrink: 0; color: var(--ms-on-surface-variant); font-size: 0.75rem; }
 
+  /* ── Density modes ─────────────────────────────────────────────────── */
+  .inbox-list[data-density="compact"] .email-row { padding: 0.5rem 1.5rem; }
+  .inbox-list[data-density="compact"] .email-avatar { width: 32px; height: 32px; font-size: 13px; }
+  .inbox-list[data-density="compact"] .email-row { grid-template-columns: 32px 1fr auto; }
+  .inbox-list[data-density="compact"] .email-sender,
+  .inbox-list[data-density="compact"] .email-subject { font-size: 13px; }
+
+  .inbox-list[data-density="default"] .email-row { padding: 0.65rem 1.5rem; }
+  .inbox-list[data-density="default"] .email-avatar { width: 38px; height: 38px; font-size: 14px; }
+  .inbox-list[data-density="default"] .email-row { grid-template-columns: 38px 1fr auto; }
+
   @media (max-width: 760px) {
     .inbox-toolbar { padding: 0.75rem 1rem; }
     .inbox-search { padding: 0.65rem 1rem; gap: 0.4rem; }

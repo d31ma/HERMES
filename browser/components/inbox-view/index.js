@@ -6,6 +6,7 @@ export default class extends Tac {
   $search = ''
   $statusFilter = 'all'
   $selectedId = ''
+  $density = 'comfortable'
 
   get folderTitle() {
     const name = this.$selectedFolder || 'inbox'
@@ -22,8 +23,16 @@ export default class extends Tac {
 
   folderCount(name) { return this.$allEmails.filter(e => (e.folder || 'inbox') === name).length }
 
+  get $densityLabel() { return this.$density.charAt(0).toUpperCase() + this.$density.slice(1) }
+
   @onMount
-  async init() { await this.load() }
+  async init() {
+    const saved = localStorage.getItem('hermes-density')
+    if (saved && ['comfortable', 'compact', 'default'].includes(saved)) {
+      this.$density = saved
+    }
+    await this.load()
+  }
 
   @onMount
   bindRefresh() {
@@ -55,6 +64,12 @@ export default class extends Tac {
   }
 
   async clearSearch() { this.$search = ''; this.$statusFilter = 'all'; await this.load() }
+
+  toggleDensity() {
+    const cycle = { comfortable: 'compact', compact: 'default', default: 'comfortable' }
+    this.$density = cycle[this.$density] || 'comfortable'
+    localStorage.setItem('hermes-density', this.$density)
+  }
 
   selectEmail(id) {
     this.$selectedId = id
