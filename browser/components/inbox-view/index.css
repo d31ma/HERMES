@@ -126,3 +126,55 @@
     .email-row { padding: 0.85rem 1rem; min-height: 68px; gap: 0.75rem; grid-template-columns: 40px 1fr auto; }
     .email-avatar { width: 40px; height: 40px; font-size: 14px; }
   }
+
+  /* ── Threading ───────────────────────────────────────────────────── */
+
+  .thread-summary {
+    display: grid;
+    grid-template-columns: 44px 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.85rem 1.5rem;
+    border-bottom: 1px solid var(--ms-outline-variant);
+    cursor: pointer;
+    transition: background 0.15s;
+    border-left: 3px solid var(--ms-primary);
+    background: var(--ms-surface);
+  }
+
+  .thread-summary:hover { background: var(--ms-hover-bg); }
+
+  .thread-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    background: var(--ms-primary-container);
+    color: var(--ms-on-primary-container);
+    border-radius: 11px;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 0 6px;
+    margin-right: 0.5rem;
+  }
+
+  .thread-email-row {
+    padding: 0.6rem 1.5rem 0.6rem 3rem;
+    border-bottom: 1px solid var(--ms-outline-variant);
+    cursor: pointer;
+    transition: background 0.1s;
+    background: var(--ms-surface-container-low);
+    border-left: 3px solid transparent;
+  }
+
+  .thread-email-row:hover { background: var(--ms-surface-container-high); }
+  .thread-email-row.selected { background: var(--ms-selected-bg); color: var(--ms-selected-color); }
+  .thread-email-row.unread { border-left-color: var(--ms-primary); }
+
+  .thread-email-indent {
+    display: grid;
+    grid-template-columns: 32px 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+  }

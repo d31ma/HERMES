@@ -47,6 +47,18 @@ export default class extends Tac {
   async load() {
     this.$loading = true
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+
+    // Threaded mode: fetch from /threads
+    if (this.$threadedMode) {
+      const threadParams = new URLSearchParams()
+      if (this.$selectedFolder) threadParams.set('folder', this.$selectedFolder)
+      const threadSuffix = threadParams.toString() ? `?${threadParams.toString()}` : ''
+      const threadRes = await apiFetch(`/threads${threadSuffix}`)
+      this.$threads = threadRes?.ok ? await threadRes.json() : []
+      this.$loading = false
+      return
+    }
+
     // If the search term contains query syntax or the user typed a search,
     // use the dedicated /search endpoint which supports the full query syntax
     // (from:, to:, subject:, has:attachment, is:unread, before:, after:, etc.)

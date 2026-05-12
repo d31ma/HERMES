@@ -1,16 +1,45 @@
 import { r400, r401, r422, r429 } from "@/services/respond.js";
 import { verifyJwt, getJwtSecret } from "@/services/auth.js";
 import { getSmtpAdapter } from "@/services/smtp.js";
-import { createDb } from "@/repositories/index.js";
+import { createDb, Collections } from "@/repositories/index.js";
 import { getSuppressedSet } from "@/repositories/suppressed.js";
 import { validateSendRequest } from "@/services/mail-validation.js";
 import { checkRateLimit } from "@/services/rate-limit.js";
 import { putOutboxEntry, deleteOutboxEntry } from "@/repositories/outbox.js";
 import { putScheduled } from "@/repositories/scheduled.js";
 /**
+ * Stores a copy of the sent email in the EMAILS collection so that tracking
+ * pixels and click redirects can update it with openedAt / click records.
+ *
+ * @param {import('@d31ma/fylo').default} fylo
+ * @param {string} trackingId - The client-generated tracking UUID
+ * @param {string} senderEmail - Authenticated sender
+ * @param {string} messageId - Unique id for the stored email (e.g. SMTP messageId)
+ * @param {import('@/services/smtp').SendRequest} req - Validated send request
+ * @returns {Promise<void>}
+ */
+async function storeSentEmail(fylo, trackingId, senderEmail, messageId, req) {
+  if (!trackingId) return
+  await fylo.putData(Collections.EMAILS, {
+    id: messageId,
+    domain: senderEmail.split('@')[1] || '',
+    recipient: req.to.join(', '),
+    sender: senderEmail,
+    subject: req.subject,
+    body: req.html || req.text || '',
+    folder: 'sent',
+    read: true,
+    starred: false,
+    receivedAt: new Date().toISOString(),
+    processed: true,
+    trackingId,
+  })
+}
+
+/**
  * POST /send
  * @param {object} params
- * @param {{ to: string[], subject: string, cc?: string[], bcc?: string[], text?: string, html?: string, delayMs?: number, sendAt?: string }} params.body - Request payload
+ * @param {{ to: string[], subject: string, cc?: string[], bcc?: string[], text?: string, html?: string, delayMs?: number, sendAt?: string, trackingId?: string }} params.body - Request payload
  * @param {{ bearer?: { token: string }, ipAddress: string, requestId: string }} params.context - Request context
  * @returns {Promise<Record<string, unknown>>}
  */
