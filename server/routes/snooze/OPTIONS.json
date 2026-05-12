@@ -1,0 +1,12 @@
+{
+  "POST": {
+    "200": { "snoozed": true },
+    "400": { "error": "" },
+    "401": { "error": "", "unauthorized": true },
+    "404": { "error": "", "notFound": true }
+  },
+  "GET": {
+    "200": [],
+    "401": { "error": "", "unauthorized": true }
+  }
+}

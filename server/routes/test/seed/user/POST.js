@@ -2,6 +2,7 @@ import { r400, r403 } from "@/services/respond.js";
 import { createDb } from "@/repositories/index.js";
 import { putUser } from "@/repositories/users.js";
 import { isTestRoutesEnabled } from "@/services/security.js";
+import { signJwt } from "@/services/auth.js";
 /**
  * POST /test/seed/user
  * @param {object} params
@@ -17,5 +18,6 @@ export async function handler({ body }) {
   }
   const fylo = await createDb();
   await putUser(fylo, user);
-  return { email: user.email.toLowerCase() };
+  const token = signJwt({ email: user.email.toLowerCase(), role: user.role, domains: user.domains }, process.env.JWT_SECRET);
+  return { email: user.email.toLowerCase(), token };
 }

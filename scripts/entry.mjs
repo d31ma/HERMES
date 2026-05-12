@@ -1,8 +1,9 @@
-// HERMES standalone entry point
+// HERMES entry point — single binary for all deployment modes.
 // Compiled to binary via: bun build --compile scripts/entry.mjs --outfile hermes
 //
 // Commands:
-//   ./hermes serve                       Start the API + frontend server
+//   ./hermes serve                       Standalone server (Fargate, ECS, plain Docker)
+//   ./hermes lambda                      Lambda mode — starts the Runtime API handler
 //   ./hermes admin:create --email=...    Create admin user
 //   ./hermes domain:migrate --from=...   Migrate domain
 //   ./hermes help                        Show help
@@ -10,7 +11,12 @@
 const command = process.argv[2] || 'serve'
 const args = process.argv.slice(3)
 
-if (command === 'serve') {
+if (command === 'lambda') {
+  // Delegate to the Lambda Runtime API handler. This mode is used when the
+  // container runs in AWS Lambda (custom runtime). It starts the tachyon
+  // server, waits for readiness, then enters the Lambda Runtime API loop.
+  await import('./lambda.mjs')
+} else if (command === 'serve') {
   // ── Startup configuration summary ──────────────────────────────────────
   const sms = process.env.SMS_ADAPTER || 'console'
   const smtp = process.env.SMTP_ADAPTER || 'console'
@@ -81,17 +87,19 @@ if (command === 'serve') {
   console.log([
     'Hermes container commands:',
     '  serve           Start the Hermes API and frontend server',
+'  lambda          Start in AWS Lambda mode (Runtime API handler)',
     '  admin:create    Create the first admin for a domain',
     '  domain:migrate  Promote users from one domain suffix to another',
     '',
     'Examples:',
     '  docker run ghcr.io/d31ma/hermes:latest',
+'  docker run ghcr.io/d31ma/hermes:latest lambda',
     '  docker run -v hermes-data:/data ghcr.io/d31ma/hermes:latest admin:create --email=admin@example.com --phone=+14165550100 --domain=example.com',
     '  docker run -v hermes-data:/data ghcr.io/d31ma/hermes:latest domain:migrate --from=old.example --to=new.example --apply',
   ].join('\n'))
   process.exit(0)
 } else {
   console.error(`Unsupported Hermes container command: ${command}`)
-  console.error('Allowed commands: serve, admin:create, domain:migrate')
+  console.error('Allowed commands: serve, lambda, admin:create, domain:migrate')
   process.exit(64)
 }

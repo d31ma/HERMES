@@ -1,7 +1,7 @@
 <div class="email-toolbar">
-  <md-text-button @click="window._hermes?.navigate('inbox')" trailing-icon>
+  <md-text-button @click="goBack()">
     <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    Inbox
+    Back
   </md-text-button>
 
   <div class="email-actions">
@@ -20,26 +20,53 @@
     <logic :if="$email && $email.folder !== 'trash'">
       <md-text-button @click="updateEmail({ folder: 'trash' }, 'Moved to trash.')">Trash</md-text-button>
     </logic>
-    <md-text-button @click="reply()">Reply</md-text-button>
+    <md-text-button @click="snooze()">Snooze</md-text-button>
+    <div class="email-action-divider"></div>
+    <md-filled-tonal-button @click="reply()" style="min-width:80px;">Reply</md-filled-tonal-button>
+    <md-text-button @click="replyAll()">Reply All</md-text-button>
+    <md-text-button @click="forward()">Forward</md-text-button>
     <logic :if="$email && $email.folder === 'trash'">
-      <md-filled-tonal-button @click="deleteEmail()" style="--md-filled-tonal-button-container-color:var(--md-sys-color-error-container);">Delete forever</md-filled-tonal-button>
+      <md-filled-tonal-button @click="deleteEmail()" style="--md-filled-tonal-button-container-color:var(--ms-error-container);">Delete forever</md-filled-tonal-button>
     </logic>
   </div>
 </div>
 
-<logic :if="$email">
+<logic :if="$loading">
+  <div class="empty-state">
+    <md-circular-progress indeterminate></md-circular-progress>
+    <p class="empty-state-title" style="margin-top:1rem;">Loading email</p>
+  </div>
+</logic>
+
+<logic :if="!$loading && $loadError">
+  <div class="empty-state">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--ms-error);">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <p class="empty-state-title">Failed to load email</p>
+    <p class="empty-state-subtitle">{$loadError}</p>
+    <md-text-button @click="load()" style="margin-top:0.75rem;">Try again</md-text-button>
+  </div>
+</logic>
+
+<logic :if="!$loading && !$loadError && $email">
   <div class="email-header">
-    <h2 class="md-typescale-headline-small" style="margin:0 0 1rem;">{$email.subject}</h2>
+    <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+      <h2 class="md-typescale-headline-small" style="margin:0;">{$email.subject}</h2>
+      <logic :if="$email.openedAt">
+        <span class="md-typescale-label-small" style="color:var(--ms-primary);background:var(--ms-primary-container);padding:0.15rem 0.5rem;border-radius:0.5rem;white-space:nowrap;">Opened {new Date($email.openedAt).toLocaleString()}</span>
+      </logic>
+    </div>
     <div class="email-meta">
       <div class="email-avatar">{window._hermes?.initials($email.sender) ?? ''}</div>
       <div style="min-width:0;">
         <div class="md-typescale-body-medium" style="font-weight:500;">{$email.sender}</div>
-        <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">To: {$email.recipient}</div>
+        <div class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);">To: {$email.recipient}</div>
         <logic :if="$email.originalRecipient && $email.originalRecipient !== $email.recipient">
-          <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">Originally: {$email.originalRecipient}</div>
+          <div class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);">Originally: {$email.originalRecipient}</div>
         </logic>
       </div>
-      <span class="md-typescale-label-medium" style="color:var(--md-sys-color-on-surface-variant);margin-left:auto;">{new Date($email.receivedAt).toLocaleString()}</span>
+      <span class="md-typescale-label-medium" style="color:var(--ms-on-surface-variant);margin-left:auto;">{new Date($email.receivedAt).toLocaleString()}</span>
     </div>
   </div>
 
@@ -49,11 +76,30 @@
       <loop :for="attachment of $email.attachments">
         <button class="attachment-chip" @click="downloadAttachment(attachment)">
           <span>{attachment.filename}</span>
-          <span style="color:var(--md-sys-color-on-surface-variant);">{window._hermes?.bytesLabel(attachment.size) ?? ''}</span>
+          <span style="color:var(--ms-on-surface-variant);">{window._hermes?.bytesLabel(attachment.size) ?? ''}</span>
         </button>
       </loop>
     </div>
   </logic>
 
   <div class="email-body md-typescale-body-large">{$email.body || '(No body)'}</div>
+
+  <logic :if="$showReply">
+    <div class="inline-reply">
+      <div class="inline-reply-header">
+        <span class="md-typescale-label-large">Reply to {$email.sender}</span>
+        <md-text-button @click="$showReply = false">Cancel</md-text-button>
+      </div>
+      <md-outlined-text-field type="textarea" label="Reply" :value="$replyText" placeholder="Write your reply…" rows="4" spellcheck="true" style="width:100%;min-height:120px;"></md-outlined-text-field>
+      <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+        <md-filled-button :disabled="!$replyText" @click="sendReply()">Send reply</md-filled-button>
+      </div>
+    </div>
+  </logic>
+
+  <logic :if="!$showReply">
+    <div class="inline-reply-bar">
+      <md-filled-tonal-button @click="$showReply = true" style="width:100%;">Reply</md-filled-tonal-button>
+    </div>
+  </logic>
 </logic>

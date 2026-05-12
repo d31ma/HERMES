@@ -7,8 +7,10 @@ export default class extends Tac {
   $toastMsg = ''
   $toastVisible = false
   $isRoot = false
+  $activeFolder = 'inbox'
 
   _toastTimer = null
+  _sidebarState = { mailboxes: true, folders: true }
 
   get isAuthenticated() { return !!this.$token }
   get isRootPath() { return this.$isRoot }
@@ -27,6 +29,8 @@ export default class extends Tac {
     if (this.$isRoot && this.isAuthenticated) {
       location.replace('/inbox')
     }
+    this.updateActiveFolder()
+    this.initSidebarState()
 
     this.registerGlobals()
     this.bindEvents()
@@ -41,6 +45,7 @@ export default class extends Tac {
       get auth() { return { get token() { return self.$token }, get email() { return self.$email }, get role() { return self.$role }, get domains() { return self.$domains }, get isLoggedIn() { return !!self.$token } } },
       apiFetch: (p, o) => this.apiFetch(p, o),
       toast: (m, d) => this.toast(m, d),
+      toastAction: (msg, action, duration) => this.toastAction(msg, action, duration),
       navigate: (t) => this.navigate(t),
       openEmail: (e) => this.openEmail(e),
       openEmailId: (id) => this.openEmailId(id),
@@ -53,24 +58,83 @@ export default class extends Tac {
     }
   }
 
+  toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'light'
+    const cycle = { light: 'dark', dark: 'auto', auto: 'light' }
+    const next = cycle[current] || 'light'
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('hermes-theme', next)
+  }
+
+  initSidebarState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem('hermes-sidebar-state') || '{}')
+      this._sidebarState = { mailboxes: true, folders: true, ...saved }
+    } catch { this._sidebarState = { mailboxes: true, folders: true } }
+    for (const [name, expanded] of Object.entries(this._sidebarState)) {
+      if (expanded) continue
+      const body = document.querySelector(`.sidebar-section-body[data-section="${name}"]`)
+      const section = body?.closest('.sidebar-section')
+      if (section) section.classList.add('collapsed')
+    }
+  }
+
+  toggleSection(name) {
+    const body = document.querySelector(`.sidebar-section-body[data-section="${name}"]`)
+    const section = body?.closest('.sidebar-section')
+    if (!section) return
+    section.classList.toggle('collapsed')
+    this._sidebarState[name] = !section.classList.contains('collapsed')
+    localStorage.setItem('hermes-sidebar-state', JSON.stringify(this._sidebarState))
+  }
+
+  updateActiveFolder() {
+    const segment = location.pathname.split('/')[1]
+    const FOLDERS = new Set(['inbox', 'drafts', 'sent', 'archive', 'spam', 'trash', 'settings', 'compose', 'scheduled', 'snoozed', 'folder'])
+    if (FOLDERS.has(segment)) this.$activeFolder = segment
+    else if (segment === 'email' || location.pathname === '/') this.$activeFolder = 'inbox'
+  }
+
   bindEvents() {
     window.addEventListener('hermes:logout', () => this.signOut())
     window.addEventListener('hermes:open-email', (e) => { this.openEmail(e.detail) })
+    window.addEventListener('tachyon:navigate', () => { this.updateActiveFolder() })
     window.addEventListener('hashchange', () => {
       if (!location.hash.startsWith('#email=')) return
       this.openEmailId(decodeURIComponent(location.hash.slice('#email='.length)))
-    })
-    document.addEventListener('keydown', (e) => {
-      const el = document.activeElement
-      if (e.key === 'c' && !['INPUT', 'TEXTAREA'].includes(el?.tagName) && !el?.isContentEditable) {
-        this.compose({})
-      }
     })
     document.addEventListener('click', (e) => {
       if (!e.target?.closest?.('[data-sign-out]')) return
       e.preventDefault()
       this.signOut()
     }, true)
+
+    // ── Keyboard shortcut event listeners ──
+    this._bindShortcut('core:compose', () => this.compose({}))
+    this._bindShortcut('core:go-inbox', () => this.navigate('/inbox'))
+    this._bindShortcut('core:go-drafts', () => this.navigate('/drafts'))
+    this._bindShortcut('core:go-sent', () => this.navigate('/sent'))
+    this._bindShortcut('core:go-archive', () => this.navigate('/archive'))
+    this._bindShortcut('core:go-spam', () => this.navigate('/spam'))
+    this._bindShortcut('core:go-trash', () => this.navigate('/trash'))
+    this._bindShortcut('core:go-settings', () => this.navigate('/settings'))
+    this._bindShortcut('core:refresh', () => {
+      window.dispatchEvent(new Event('hermes:refresh-inbox'))
+    })
+    this._bindShortcut('core:search', () => {
+      const field = document.querySelector('.inbox-search md-outlined-text-field')
+      if (field) field.focus()
+    })
+    this._bindShortcut('show-help', () => {
+      if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+        console.log('[keyboard] Shortcut help panel — press ? to see all shortcuts')
+      }
+      // TODO: render shortcut-help modal or navigate to settings#shortcuts
+    })
+  }
+
+  _bindShortcut(name, handler) {
+    window.addEventListener('hermes:shortcut:' + name, handler)
   }
 
   toast(msg, duration = 2500) {
@@ -78,6 +142,15 @@ export default class extends Tac {
     this.$toastMsg = msg
     this.$toastVisible = true
     this._toastTimer = setTimeout(() => { this.$toastVisible = false }, duration)
+    window._hermesShowToast?.(msg, duration)
+  }
+
+  toastAction(msg, action, duration = 10000) {
+    clearTimeout(this._toastTimer)
+    this.$toastMsg = msg
+    this.$toastVisible = true
+    this._toastTimer = setTimeout(() => { this.$toastVisible = false }, duration)
+    window._hermesShowToast?.({ msg, duration, action })
   }
 
   navigate(target = '/inbox') {
@@ -87,6 +160,33 @@ export default class extends Tac {
     document.body.appendChild(link)
     link.click()
     link.remove()
+  }
+
+  onFolderDragOver(event) {
+    event.preventDefault()
+    event.currentTarget.classList.add('drag-over')
+  }
+
+  onFolderDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over')
+  }
+
+  async onFolderDrop(folder, event) {
+    event.preventDefault()
+    event.currentTarget.classList.remove('drag-over')
+    const emailId = event.dataTransfer.getData('text/plain')
+    if (!emailId || !folder) return
+    try {
+      const res = await this.apiFetch(`/inbox/${emailId}`, { method: 'PUT', body: JSON.stringify({ folder }) })
+      if (res?.ok) {
+        this.toast(`Moved to ${folder}`)
+        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+      } else {
+        this.toast('Failed to move email')
+      }
+    } catch {
+      this.toast('Failed to move email')
+    }
   }
 
   openEmail(email) {

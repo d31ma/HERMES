@@ -115,10 +115,25 @@ class TwilioAdapter {
 
 async function signAwsRequest(service, region, endpoint, body) {
   try {
-    const { SignatureV4 } = await import('@aws-sdk/signature-v4')
-    const { Sha256 } = await import('@aws-crypto/sha256-js')
-    const signer = new SignatureV4({ service, region, credentials: { accessKeyId: process.env.AWS_ACCESS_KEY_ID || '', secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '' }, sha256: Sha256 })
-    const { headers } = await signer.sign({ method: 'POST', hostname: new URL(endpoint).hostname, path: '/', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body })
+    const [{ SignatureV4 }, { Sha256 }, { defaultProvider }] = await Promise.all([
+      import('@aws-sdk/signature-v4'),
+      import('@aws-crypto/sha256-js'),
+      import('@aws-sdk/credential-provider-node').catch(() => ({ defaultProvider: null })),
+    ])
+    // Use the AWS credential provider chain (env vars → metadata service →
+    // container credentials) so this works in Lambda, ECS, and EC2 without
+    // hardcoding AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY env vars.
+    const credentials = defaultProvider
+      ? defaultProvider()
+      : { accessKeyId: process.env.AWS_ACCESS_KEY_ID || '', secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '' }
+    const signer = new SignatureV4({ service, region, credentials, sha256: Sha256 })
+    const { headers } = await signer.sign({
+      method: 'POST',
+      hostname: new URL(endpoint).hostname,
+      path: '/',
+      headers: { 'content-type': 'application/x-www-form-urlencoded' },
+      body,
+    })
     return headers
   } catch (e) { console.error('[sms] AWS SigV4 signing failed:', e); return {} }
 }

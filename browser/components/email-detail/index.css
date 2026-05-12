@@ -1,10 +1,11 @@
-  .email-toolbar {
+.email-toolbar {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.25rem;
     padding: 0.5rem 1rem;
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--ms-divider);
     flex-wrap: wrap;
+    background: var(--ms-toolbar-bg);
   }
 
   .email-actions {
@@ -12,11 +13,18 @@
     display: flex;
     gap: 0.25rem;
     flex-wrap: wrap;
+    align-items: center;
+  }
+
+  .email-action-divider {
+    width: 1px; height: 24px;
+    background: var(--ms-divider);
+    margin: 0 0.25rem;
   }
 
   .email-header {
     padding: 1.5rem 1.5rem 1rem;
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--ms-outline-variant);
   }
 
   .email-meta {
@@ -28,8 +36,8 @@
   .email-avatar {
     width: 40px; height: 40px;
     border-radius: 50%;
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background: var(--ms-primary-container);
+    color: var(--ms-on-primary-container);
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 600;
     flex-shrink: 0;
@@ -47,9 +55,9 @@
 
   .attachment-chip {
     width: 100%;
-    background: var(--md-sys-color-surface-container-high);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    color: var(--md-sys-color-on-surface);
+    background: var(--ms-surface-container-high);
+    border: 1px solid var(--ms-outline-variant);
+    color: var(--ms-on-surface);
     border-radius: 12px;
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
@@ -63,6 +71,18 @@
   }
   .attachment-chip span:first-child {
     min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+.inline-reply {
+    padding: 1rem 1.5rem; border-top: 1px solid var(--ms-divider);
+    background: var(--ms-sidebar-bg);
+  }
+  .inline-reply-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem;
+  }
+  .inline-reply-bar {
+    padding: 0.75rem 1.5rem; border-top: 1px solid var(--ms-divider);
   }
 
   @media (max-width: 760px) {

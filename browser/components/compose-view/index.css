@@ -10,3 +10,70 @@
       padding: 1rem max(1rem, env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
     }
   }
+
+  /* ── Rich text toolbar ────────────────────────────────────────────── */
+  .compose-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 4px 6px;
+    border: 1px solid var(--ms-outline-variant);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    background: var(--ms-surface-container-low);
+  }
+
+  .toolbar-btn {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    color: var(--ms-on-surface-variant);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.1s, color 0.1s;
+  }
+
+  .toolbar-btn:hover {
+    background: var(--ms-surface-container-high);
+    color: var(--ms-on-surface);
+  }
+
+  .toolbar-sep {
+    width: 1px;
+    height: 20px;
+    background: var(--ms-outline-variant);
+    margin: 0 4px;
+  }
+
+  /* ── Contenteditable editor ───────────────────────────────────────── */
+  [data-compose-editor] {
+    min-height: 240px;
+    padding: 12px;
+    border: 1px solid var(--ms-outline-variant);
+    border-radius: 0 0 8px 8px;
+    outline: none;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--ms-on-surface);
+    background: var(--ms-surface);
+    transition: border-color 0.2s;
+    margin-bottom: 1rem;
+  }
+
+  [data-compose-editor]:focus {
+    border-color: var(--ms-primary);
+    border-width: 2px;
+    padding: 11px;
+  }
+
+  [data-compose-editor]:empty::before {
+    content: attr(placeholder);
+    color: var(--ms-on-surface-variant);
+    opacity: 0.6;
+  }

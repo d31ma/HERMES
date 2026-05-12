@@ -15,6 +15,11 @@ export const Collections = {
   SETUP_SESSIONS:    'setup-sessions',
   PUSH_SUBSCRIPTIONS:'push-subscriptions',
   RATE_LIMITS:       'rate-limits',
+  OUTBOX:            'outbox',
+  SNOOZED:           'snoozed',
+  SCHEDULED:         'scheduled',
+  TEMPLATES:         'templates',
+  SIGNATURES:        'signatures',
 }
 
 /**

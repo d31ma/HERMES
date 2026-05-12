@@ -1,27 +1,78 @@
 // @ts-check
 export default class extends Tac {
   $email = null
+  $loading = true
+  $loadError = ''
+  $showReply = false
+  $replyText = ''
 
   @onMount
   async init() {
-    const routeEmailId = location.pathname.startsWith('/email/')
-      ? decodeURIComponent(location.pathname.slice('/email/'.length))
-      : new URLSearchParams(location.search).get('email') || new URLSearchParams(location.search).get('id') || ''
-    const incomingProps = this.props || {}
-    const propEmailId = incomingProps.emailId || incomingProps.emailid || routeEmailId
-    this.$email = incomingProps.email || (propEmailId ? { id: propEmailId } : null)
+    const props = this.props || {}
+    // Accept emailId from parent (3-panel layout) or from route (standalone page)
+    const emailId = props.emailId || props.emailid
+      || (location.pathname.startsWith('/email/') ? decodeURIComponent(location.pathname.slice('/email/'.length)) : '')
+      || new URLSearchParams(location.search).get('email')
+      || new URLSearchParams(location.search).get('id') || ''
+    this.$email = props.email || (emailId ? { id: emailId } : null)
     await this.loadEmail()
   }
 
   async loadEmail() {
     if (!this.$email?.id) return
+    this.$loading = true; this.$loadError = ''
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    try {
+      const res = await apiFetch(`/inbox/${this.$email.id}`)
+      if (res?.ok) this.$email = await res.json()
+      else this.$loadError = 'Could not load this email.'
+      if (this.$email && !this.$email.read) {
+        this.$email = { ...this.$email, read: true }
+        await apiFetch(`/inbox/${this.$email.id}`, { method: 'PUT', body: JSON.stringify({ read: true }) })
+        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+      }
+    } catch (err) {
+      this.$loadError = err.message || 'Network error'
+    } finally {
+      this.$loading = false
+    }
+  }
+
+  async snooze() {
+    if (!this.$email) return
+    const presets = [
+      { label: 'Later today', hours: 4 },
+      { label: 'Tomorrow', hours: 24 },
+      { label: 'This weekend', hours: 48 },
+      { label: 'Next week', hours: 168 },
+      { label: 'Custom…', hours: null },
+    ]
+    const options = presets.map((p, i) => `\${i + 1}. \${p.label}`).join('\n')
+    const choice = prompt('Snooze until:\n\n' + options)
+    if (!choice) return
+    const selected = presets.find((p, i) => choice.trim() === String(i + 1) || choice.trim().toLowerCase() === p.label.toLowerCase())
+    let untilMs = Date.now()
+    if (selected && selected.hours != null) {
+      untilMs += selected.hours * 60 * 60 * 1000
+    } else {
+      const custom = prompt('Enter date/time (e.g. 2026-12-31T14:00):')
+      if (!custom) return
+      untilMs = Date.parse(custom)
+      if (isNaN(untilMs)) { window._hermes?.toast('Invalid date format.'); return }
+    }
+    if (untilMs <= Date.now()) { window._hermes?.toast('Please choose a future time.'); return }
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
-    const res = await apiFetch(`/inbox/${this.$email.id}`)
-    if (res?.ok) this.$email = await res.json()
-    if (this.$email && !this.$email.read) {
-      this.$email = { ...this.$email, read: true }
-      await apiFetch(`/inbox/${this.$email.id}`, { method: 'PUT', body: JSON.stringify({ read: true }) })
-      window.dispatchEvent(new Event('hermes:refresh-inbox'))
+    try {
+      const res = await apiFetch('/snooze', { method: 'POST', body: JSON.stringify({ emailId: this.$email.id, until: new Date(untilMs).toISOString() }) })
+      if (res?.ok) {
+        window._hermes?.toast('Snoozed until ' + new Date(untilMs).toLocaleString())
+        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+        window._hermes?.navigate('inbox')
+      } else {
+        window._hermes?.toast('Snooze failed.')
+      }
+    } catch {
+      window._hermes?.toast('Network error.')
     }
   }
 
@@ -41,7 +92,51 @@ export default class extends Tac {
     else { window._hermes?.toast('Update failed.') }
   }
 
-  reply() { if (!this.$email) return; this.emit('compose', { to: this.$email.sender, subject: `Re: ${this.$email.subject}` }) }
+  @onMount
+  bindShortcuts() {
+    const on = (name, fn) => window.addEventListener('hermes:shortcut:' + name, fn)
+
+    on('email:reply', () => this.reply())
+    on('email:reply-all', () => this.replyAll())
+    on('email:forward', () => this.forward())
+    on('email:star', () => { if (this.$email) this.updateEmail({ starred: !this.$email.starred }, this.$email.starred ? 'Star removed.' : 'Starred.') })
+    on('email:archive', () => { if (this.$email) this.updateEmail({ folder: 'archive' }, 'Archived.') })
+    on('email:trash', () => { if (this.$email) this.updateEmail({ folder: 'trash' }, 'Moved to trash.') })
+    on('email:mark-read', () => { if (this.$email) this.updateEmail({ read: true }, 'Marked read.') })
+    on('email:mark-unread', () => { if (this.$email) this.updateEmail({ read: false }, 'Marked unread.') })
+    on('email:open', () => { if (this.$email) window._hermes?.openEmailId(this.$email.id) })
+  }
+
+  goBack() {
+    if (this.props?.onBack) return this.emit('back')
+    window._hermes?.navigate('inbox')
+  }
+
+  reply() {
+    if (!this.$email) return
+    window._hermes?.compose({ to: this.$email.sender, subject: `Re: ${this.$email.subject}` })
+  }
+
+  replyAll() {
+    if (!this.$email) return
+    const to = [this.$email.sender, this.$email.recipient].filter(Boolean).join(', ')
+    window._hermes?.compose({ to, subject: `Re: ${this.$email.subject}` })
+  }
+
+  forward() {
+    if (!this.$email) return
+    window._hermes?.compose({ subject: `Fwd: ${this.$email.subject}`, body: `\n\n---------- Forwarded message ----------\nFrom: ${this.$email.sender}\nDate: ${new Date(this.$email.receivedAt).toLocaleString()}\nSubject: ${this.$email.subject}\n\n${this.$email.body || ''}` })
+  }
+
+  async sendReply() {
+    if (!this.$email || !this.$replyText) return
+    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    try {
+      const res = await apiFetch('/send', { method: 'POST', body: JSON.stringify({ to: [this.$email.sender], subject: `Re: ${this.$email.subject}`, text: this.$replyText }) })
+      if (res?.ok) { window._hermes?.toast('Reply sent.'); this.$showReply = false; this.$replyText = '' }
+      else { window._hermes?.toast('Send failed.') }
+    } catch { window._hermes?.toast('Network error.') }
+  }
 
   async downloadAttachment(attachment) {
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch || !this.$email?.id) return
