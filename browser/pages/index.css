@@ -128,6 +128,16 @@
     background: var(--ms-list-bg);
   }
 
+  /* ── Login screen (rendered in shell, outside login-form component) ──── */
+  .login-screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100dvh;
+    background: var(--ms-bg, #fefbff);
+    padding: 1rem;
+  }
+
   /* ── Three-panel mail layout ──────────────────────────────────────────── */
   .mail-layout {
     display: flex; flex: 1; min-height: 0;

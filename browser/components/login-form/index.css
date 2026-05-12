@@ -37,15 +37,6 @@
     text-align: center;
   }
 
-  .login-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100dvh;
-    background: var(--ms-surface, #fefbff);
-    padding: 1rem;
-  }
-
   .passkey-prompt {
     text-align: center;
   }
