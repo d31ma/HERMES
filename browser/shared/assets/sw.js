@@ -7,6 +7,7 @@ const APP_SHELL = [
   '/routes.json',
   '/layouts.json',
   '/assets/styles.css',
+  '/assets/themes.css',
   '/assets/config.js',
   '/assets/favicon.svg',
   '/assets/manifest.webmanifest',

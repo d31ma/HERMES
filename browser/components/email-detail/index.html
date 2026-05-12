@@ -39,7 +39,7 @@
 
 <logic :if="!$loading && $loadError">
   <div class="empty-state">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--md-sys-color-error);">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--ms-error);">
       <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
     </svg>
     <p class="empty-state-title">Failed to load email</p>
@@ -55,12 +55,12 @@
       <div class="email-avatar">{window._hermes?.initials($email.sender) ?? ''}</div>
       <div style="min-width:0;">
         <div class="md-typescale-body-medium" style="font-weight:500;">{$email.sender}</div>
-        <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">To: {$email.recipient}</div>
+        <div class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);">To: {$email.recipient}</div>
         <logic :if="$email.originalRecipient && $email.originalRecipient !== $email.recipient">
-          <div class="md-typescale-body-small" style="color:var(--md-sys-color-on-surface-variant);">Originally: {$email.originalRecipient}</div>
+          <div class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);">Originally: {$email.originalRecipient}</div>
         </logic>
       </div>
-      <span class="md-typescale-label-medium" style="color:var(--md-sys-color-on-surface-variant);margin-left:auto;">{new Date($email.receivedAt).toLocaleString()}</span>
+      <span class="md-typescale-label-medium" style="color:var(--ms-on-surface-variant);margin-left:auto;">{new Date($email.receivedAt).toLocaleString()}</span>
     </div>
   </div>
 
@@ -70,7 +70,7 @@
       <loop :for="attachment of $email.attachments">
         <button class="attachment-chip" @click="downloadAttachment(attachment)">
           <span>{attachment.filename}</span>
-          <span style="color:var(--md-sys-color-on-surface-variant);">{window._hermes?.bytesLabel(attachment.size) ?? ''}</span>
+          <span style="color:var(--ms-on-surface-variant);">{window._hermes?.bytesLabel(attachment.size) ?? ''}</span>
         </button>
       </loop>
     </div>

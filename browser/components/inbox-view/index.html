@@ -2,6 +2,13 @@
   <span class="inbox-title md-typescale-title-large">{folderTitle}</span>
   <span class="inbox-count md-typescale-label-medium" style="margin-left:0.5rem;">{unreadCount} unread</span>
   <md-icon-button @click="load()" style="margin-left:auto;" aria-label="Refresh"><svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0118.8-4.3M22 12.5a10 10 0 01-18.8 4.2"/></svg></md-icon-button>
+  <md-icon-button @click="toggleDensity()" aria-label="Change density" title="Density: {$densityLabel}">
+    <svg slot="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px;">
+      <line x1="4" y1="6" x2="20" y2="6"/>
+      <line x1="4" y1="12" x2="20" y2="12"/>
+      <line x1="4" y1="18" x2="20" y2="18"/>
+    </svg>
+  </md-icon-button>
 </div>
 
 <div class="inbox-search">
@@ -29,11 +36,11 @@
 
   <logic :if="!$loading && emails.length === 0">
     <div class="inbox-empty">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--md-sys-color-on-surface-variant);">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:48px;height:48px;color:var(--ms-on-surface-variant);">
         <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
         <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
       </svg>
-      <span class="md-typescale-body-medium" style="color:var(--md-sys-color-on-surface-variant);margin-top:0.5rem;">{$search ? 'No matching mail in ' + $selectedFolder : 'No emails in ' + $selectedFolder}</span>
+      <span class="md-typescale-body-medium" style="color:var(--ms-on-surface-variant);margin-top:0.5rem;">{$search ? 'No matching mail in ' + $selectedFolder : 'No emails in ' + $selectedFolder}</span>
     </div>
   </logic>
 

@@ -47,6 +47,8 @@ async function patchHtmlShells() {
         '    <link rel="manifest" href="/shared/assets/manifest.webmanifest">',
         '    <link rel="icon" href="/shared/assets/favicon.svg" type="image/svg+xml">',
         '    <link rel="apple-touch-icon" href="/shared/assets/icon-192.png">',
+        '    <link rel="stylesheet" href="/shared/assets/styles.css">',
+        '    <link rel="stylesheet" href="/shared/assets/themes.css">',
       ].join('\n')
       html = html.replace('</head>', `${pwaHead}\n</head>`)
     }

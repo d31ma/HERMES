@@ -16,7 +16,15 @@
 
     <div class="app-layout">
       <aside class="app-sidebar">
-        <a :class="'sidebar-folder ' + ($activeFolder === 'inbox' ? 'active' : '')" href="/inbox">
+        <div class="sidebar-section">
+          <div class="sidebar-section-header" @click="toggleSection('mailboxes')">
+            <span class="section-label">Mailboxes</span>
+            <svg class="section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="sidebar-section-body" data-section="mailboxes">
+        <a :class="'sidebar-folder ' + ($activeFolder === 'inbox' ? 'active' : '')" href="/inbox" data-folder="inbox" ondragover="event.preventDefault()" @dragover="onFolderDragOver($event)" @dragleave="onFolderDragLeave($event)" @drop="onFolderDrop('inbox', $event)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/></svg>
           Inbox
         </a>
@@ -28,23 +36,45 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           Sent
         </a>
-        <a :class="'sidebar-folder ' + ($activeFolder === 'archive' ? 'active' : '')" href="/archive">
+          </div>
+        </div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-header" @click="toggleSection('folders')">
+            <span class="section-label">Folders</span>
+            <svg class="section-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+              <polyline points="6 9 12 15 18 9"/>
+            </svg>
+          </div>
+          <div class="sidebar-section-body" data-section="folders">
+        <a :class="'sidebar-folder ' + ($activeFolder === 'archive' ? 'active' : '')" href="/archive" data-folder="archive" ondragover="event.preventDefault()" @dragover="onFolderDragOver($event)" @dragleave="onFolderDragLeave($event)" @drop="onFolderDrop('archive', $event)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
           Archive
         </a>
-        <a :class="'sidebar-folder ' + ($activeFolder === 'spam' ? 'active' : '')" href="/spam">
+        <a :class="'sidebar-folder ' + ($activeFolder === 'spam' ? 'active' : '')" href="/spam" data-folder="spam" ondragover="event.preventDefault()" @dragover="onFolderDragOver($event)" @dragleave="onFolderDragLeave($event)" @drop="onFolderDrop('spam', $event)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
           Spam
         </a>
-        <a :class="'sidebar-folder ' + ($activeFolder === 'trash' ? 'active' : '')" href="/trash">
+        <a :class="'sidebar-folder ' + ($activeFolder === 'trash' ? 'active' : '')" href="/trash" data-folder="trash" ondragover="event.preventDefault()" @dragover="onFolderDragOver($event)" @dragleave="onFolderDragLeave($event)" @drop="onFolderDrop('trash', $event)">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
           Trash
         </a>
+          </div>
+        </div>
+
         <div class="sidebar-divider"></div>
+
+        <div class="sidebar-section">
+          <div class="sidebar-section-header no-collapse">
+            <span class="section-label">System</span>
+          </div>
+          <div class="sidebar-section-body" data-section="system">
         <a :class="'sidebar-folder ' + ($activeFolder === 'settings' ? 'active' : '')" href="/settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
           Settings
         </a>
+          </div>
+        </div>
       </aside>
 
       <main class="app-main">

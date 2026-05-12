@@ -51,8 +51,10 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
 
 // Global toasts — rendered as Material snackbar
 let _toastTimer
-window._hermesShowToast = (msg, duration = 2500) => {
+let _toastCountdownTimer
+window._hermesShowToast = (msgOrOpts, duration = 2500) => {
   clearTimeout(_toastTimer)
+  if (_toastCountdownTimer) clearInterval(_toastCountdownTimer)
   let el = document.getElementById('hermes-toast')
   if (!el) {
     el = document.createElement('div')
@@ -63,7 +65,47 @@ window._hermesShowToast = (msg, duration = 2500) => {
     el.style.cssText = 'position:fixed;bottom:1rem;left:50%;transform:translateX(-50%);z-index:9999;background:var(--ms-inverse-surface,#333);color:var(--ms-inverse-on-surface,#fff);padding:0.75rem 1.25rem;border-radius:8px;font-size:14px;font-family:IBM Plex Sans,sans-serif;box-shadow:0 4px 12px rgba(0,0,0,0.3);transition:opacity 0.3s;opacity:0;pointer-events:none'
     document.body.appendChild(el)
   }
-  el.textContent = msg
-  el.style.opacity = '1'
-  _toastTimer = setTimeout(() => { el.style.opacity = '0' }, duration)
+  // Support interactive toasts with action button
+  if (typeof msgOrOpts === 'object' && msgOrOpts.msg) {
+    const { msg, duration: dur, action } = msgOrOpts
+    const d = dur ?? duration
+    let seconds = Math.ceil(d / 1000)
+    el.style.pointerEvents = 'auto'
+    el.innerHTML = `<span id="hermes-toast-msg">${msg} <span id="hermes-toast-countdown">(${seconds}s)</span></span><button id="hermes-toast-action" style="margin-left:1rem;background:var(--ms-primary,#6750a4);color:#fff;border:none;border-radius:4px;padding:0.25rem 0.75rem;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;">${action.label}</button>`
+    el.style.opacity = '1'
+
+    // Countdown
+    const countdownEl = document.getElementById('hermes-toast-countdown')
+    _toastCountdownTimer = setInterval(() => {
+      seconds--
+      if (seconds <= 0) {
+        clearInterval(_toastCountdownTimer)
+        el.style.opacity = '0'; el.style.pointerEvents = 'none'
+      } else if (countdownEl) {
+        countdownEl.textContent = `(${seconds}s)`
+      }
+    }, 1000)
+
+    // Action button
+    const actionBtn = document.getElementById('hermes-toast-action')
+    if (actionBtn && action?.onClick) {
+      actionBtn.addEventListener('click', () => {
+        clearInterval(_toastCountdownTimer)
+        clearTimeout(_toastTimer)
+        el.style.opacity = '0'; el.style.pointerEvents = 'none'
+        action.onClick()
+      })
+    }
+
+    _toastTimer = setTimeout(() => {
+      clearInterval(_toastCountdownTimer)
+      el.style.opacity = '0'; el.style.pointerEvents = 'none'
+    }, d)
+  } else {
+    el.style.pointerEvents = 'none'
+    el.innerHTML = ''
+    el.textContent = msgOrOpts
+    el.style.opacity = '1'
+    _toastTimer = setTimeout(() => { el.style.opacity = '0' }, duration)
+  }
 }

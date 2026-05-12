@@ -104,7 +104,7 @@
     <p class="login-title md-typescale-title-medium">Set up authenticator</p>
     <p class="login-subtitle md-typescale-body-small">Add the key below to your authenticator app, then enter the code it generates.</p>
     <md-outlined-text-field label="Secret key" :value="$totpSecret" readonly style="width:100%;margin-bottom:0.75rem;font-family:monospace;"></md-outlined-text-field>
-    <p style="font-size:12px;margin:0 0 0.75rem;">On mobile? <a :href="$totpUri" style="color:var(--md-sys-color-primary);">Open in authenticator app</a></p>
+    <p style="font-size:12px;margin:0 0 0.75rem;">On mobile? <a :href="$totpUri" style="color:var(--ms-primary);">Open in authenticator app</a></p>
     <md-outlined-text-field data-login-device-name type="text" label="Device name (optional)" :value="$deviceName" placeholder="e.g. iPhone 15" style="width:100%;margin-bottom:0.75rem;"></md-outlined-text-field>
     <md-outlined-text-field data-login-device-code type="text" label="Confirmation code" :value="$deviceCode" inputmode="numeric" maxlength="6" placeholder="000000" autocomplete="one-time-code" style="width:100%;margin-bottom:1rem;"></md-outlined-text-field>
     <logic :if="$error"><p class="login-error">{$error}</p></logic>

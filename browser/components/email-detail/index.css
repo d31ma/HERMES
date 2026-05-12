@@ -24,7 +24,7 @@
 
   .email-header {
     padding: 1.5rem 1.5rem 1rem;
-    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+    border-bottom: 1px solid var(--ms-outline-variant);
   }
 
   .email-meta {
@@ -36,8 +36,8 @@
   .email-avatar {
     width: 40px; height: 40px;
     border-radius: 50%;
-    background: var(--md-sys-color-primary-container);
-    color: var(--md-sys-color-on-primary-container);
+    background: var(--ms-primary-container);
+    color: var(--ms-on-primary-container);
     display: flex; align-items: center; justify-content: center;
     font-size: 14px; font-weight: 600;
     flex-shrink: 0;
@@ -55,9 +55,9 @@
 
   .attachment-chip {
     width: 100%;
-    background: var(--md-sys-color-surface-container-high);
-    border: 1px solid var(--md-sys-color-outline-variant);
-    color: var(--md-sys-color-on-surface);
+    background: var(--ms-surface-container-high);
+    border: 1px solid var(--ms-outline-variant);
+    color: var(--ms-on-surface);
     border-radius: 12px;
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;

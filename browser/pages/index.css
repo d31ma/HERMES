@@ -4,6 +4,43 @@
     --mobile-nav-height: 60px;
   }
 
+  /* ── Theme toggle ────────────────────────────────────────────────────── */
+  .theme-toggle-btn {
+    margin-left: 0.25rem;
+  }
+  .theme-toggle-btn .theme-icon-sun,
+  .theme-toggle-btn .theme-icon-moon {
+    position: absolute;
+    transition: opacity 0.2s, transform 0.3s;
+  }
+
+  /* Light: show sun, hide moon */
+  .theme-icon-moon { opacity: 1; transform: rotate(0deg); }
+  .theme-icon-sun  { opacity: 0; transform: rotate(-90deg); }
+
+  html[data-theme="dark"] .theme-icon-moon,
+  [data-theme="dark"] .theme-icon-moon { opacity: 1; transform: rotate(0deg); }
+  html[data-theme="dark"] .theme-icon-sun,
+  [data-theme="dark"] .theme-icon-sun  { opacity: 0; transform: rotate(-90deg); }
+
+  html[data-theme="light"] .theme-icon-moon,
+  [data-theme="light"] .theme-icon-moon { opacity: 0; transform: rotate(90deg); }
+  html[data-theme="light"] .theme-icon-sun,
+  [data-theme="light"] .theme-icon-sun  { opacity: 1; transform: rotate(0deg); }
+
+  /* Auto: delegate to prefers-color-scheme media query */
+  html[data-theme="auto"] .theme-icon-sun,
+  [data-theme="auto"] .theme-icon-sun  { opacity: 1; transform: rotate(0deg); }
+  html[data-theme="auto"] .theme-icon-moon,
+  [data-theme="auto"] .theme-icon-moon { opacity: 0; transform: rotate(90deg); }
+
+  @media (prefers-color-scheme: dark) {
+    html[data-theme="auto"] .theme-icon-sun,
+    [data-theme="auto"] .theme-icon-sun  { opacity: 0; transform: rotate(-90deg); }
+    html[data-theme="auto"] .theme-icon-moon,
+    [data-theme="auto"] .theme-icon-moon { opacity: 1; transform: rotate(0deg); }
+  }
+
   .app-shell {
     display: flex; flex-direction: column;
     min-height: 100dvh; height: 100dvh;
@@ -56,9 +93,33 @@
   }
   .sidebar-folder:hover { background: var(--ms-hover-bg); color: var(--ms-text); }
   .sidebar-folder.active { background: var(--ms-selected-bg); color: var(--ms-selected-color); font-weight: 500; }
+  .sidebar-folder.drag-over { background: var(--ms-selected-bg); }
   .sidebar-folder svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
   .sidebar-folder .folder-count { margin-left: auto; font-size: 0.75rem; opacity: 0.6; }
   .sidebar-divider { border-top: 1px solid var(--ms-divider); margin: 0.35rem 0.5rem; }
+
+  /* ── Sidebar sections ─────────────────────────────────────────────────── */
+  .sidebar-section { margin-bottom: 0.25rem; }
+  .sidebar-section-header {
+    display: flex; align-items: center; gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.6875rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--ms-text-very-subtle);
+    cursor: pointer; user-select: none;
+    border-radius: 4px;
+    transition: background 0.1s, color 0.1s;
+  }
+  .sidebar-section-header:hover { background: var(--ms-hover-bg); color: var(--ms-text-subtle); }
+  .sidebar-section-header.no-collapse { cursor: default; }
+  .sidebar-section-header.no-collapse:hover { background: transparent; color: var(--ms-text-very-subtle); }
+  .section-label { flex: 1; }
+  .section-chevron {
+    flex-shrink: 0; opacity: 0.6;
+    transition: transform 0.2s ease;
+  }
+  .sidebar-section.collapsed .section-chevron { transform: rotate(-90deg); }
+  .sidebar-section.collapsed .sidebar-section-body { display: none; }
 
   /* ── Main area ───────────────────────────────────────────────────────── */
   .app-main {

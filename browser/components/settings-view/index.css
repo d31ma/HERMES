@@ -1,14 +1,14 @@
   .settings-panel { max-width: 700px; padding: 1.5rem; }
   .settings-section { margin-bottom: 2rem; }
   .settings-section-title { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
-  .settings-card { background: var(--md-sys-color-surface-container-low); border-radius: 12px; overflow: hidden; }
-  .settings-row { display: flex; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--md-sys-color-outline-variant); gap: 0.75rem; font-size: 14px; }
+  .settings-card { background: var(--ms-surface-container-low); border-radius: 12px; overflow: hidden; }
+  .settings-row { display: flex; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--ms-outline-variant); gap: 0.75rem; font-size: 14px; }
   .settings-row:last-child { border-bottom: none; }
   .route-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-  .route-badge.store { background: var(--md-sys-color-primary-container); color: var(--md-sys-color-on-primary-container); }
-  .route-badge.forward { background: var(--md-sys-color-tertiary-container); color: var(--md-sys-color-on-tertiary-container); }
-  .route-badge.webhook { background: var(--md-sys-color-secondary-container); color: var(--md-sys-color-on-secondary-container); }
-  .route-badge.drop { background: var(--md-sys-color-error-container); color: var(--md-sys-color-on-error-container); }
+  .route-badge.store { background: var(--ms-primary-container); color: var(--ms-on-primary-container); }
+  .route-badge.forward { background: var(--ms-tertiary-container); color: var(--ms-on-tertiary-container); }
+  .route-badge.webhook { background: var(--ms-secondary-container); color: var(--ms-on-secondary-container); }
+  .route-badge.drop { background: var(--ms-error-container); color: var(--ms-on-error-container); }
   .inbox-empty { display: flex; align-items: center; padding: 1.5rem; justify-content: center; }
   @media (max-width: 760px) {
     .settings-panel { max-width: none; padding: 1rem max(1rem, env(safe-area-inset-right)) calc(1rem + env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left)); }
