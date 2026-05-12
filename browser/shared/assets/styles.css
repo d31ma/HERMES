@@ -8,12 +8,14 @@ html {
   -webkit-tap-highlight-color: transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 body {
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 14.5px;
+  line-height: 1.6;
+  font-weight: 400;
   color: var(--ms-text);
   background: var(--ms-bg);
   overscroll-behavior: none;
@@ -22,6 +24,25 @@ body {
 
 a { color: inherit; text-decoration: none; }
 img, svg, video { max-width: 100%; display: block; }
+
+/* ── Typography scale ──────────────────────────────────────────────────── */
+:root {
+  --ms-font-xs: 0.6875rem;   /* 11px — captions, overlines */
+  --ms-font-sm: 0.75rem;     /* 12px — labels, timestamps */
+  --ms-font-base: 0.875rem;  /* 14px — body, sidebar */
+  --ms-font-md: 0.9375rem;   /* 15px — list items, buttons */
+  --ms-font-lg: 1.0625rem;   /* 17px — section headers */
+  --ms-font-xl: 1.25rem;     /* 20px — page titles */
+  --ms-font-2xl: 1.5rem;     /* 24px — headings */
+  --ms-font-3xl: 2.25rem;    /* 36px — brand/logo */
+  --ms-font-weight-normal: 400;
+  --ms-font-weight-medium: 500;
+  --ms-font-weight-semibold: 600;
+  --ms-font-weight-bold: 700;
+  --ms-letter-spacing-tight: -0.02em;
+  --ms-letter-spacing-normal: 0;
+  --ms-letter-spacing-wide: 0.04em;
+}
 
 /* ── Mailspring-aligned color system ───────────────────────────────────── */
 :root {
