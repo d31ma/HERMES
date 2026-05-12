@@ -2,9 +2,9 @@
   .settings-section { margin-bottom: 2rem; }
   .settings-section-title { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
   .settings-card { background: var(--ms-surface-container-low); border-radius: 12px; overflow: hidden; }
-  .settings-row { display: flex; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--ms-outline-variant); gap: 0.75rem; font-size: 14px; }
+  .settings-row { display: flex; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--ms-outline-variant); gap: 0.75rem; font-size: var(--ms-font-base, 0.875rem); }
   .settings-row:last-child { border-bottom: none; }
-  .route-badge { display: inline-block; padding: 2px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
+  .route-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
   .route-badge.store { background: var(--ms-primary-container); color: var(--ms-on-primary-container); }
   .route-badge.forward { background: var(--ms-tertiary-container); color: var(--ms-on-tertiary-container); }
   .route-badge.webhook { background: var(--ms-secondary-container); color: var(--ms-on-secondary-container); }

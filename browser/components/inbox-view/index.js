@@ -2,6 +2,7 @@
 export default class extends Tac {
   $allEmails = []
   $loading = true
+  $error = ''
   $selectedFolder = this.props?.folder || (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('folder') : null) || 'inbox'
   $search = ''
   $statusFilter = 'all'
@@ -45,9 +46,9 @@ export default class extends Tac {
   }
 
   async load() {
-    this.$loading = true
+    this.$loading = true; this.$error = ''
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
-
+    try {
     // Threaded mode: fetch from /threads
     if (this.$threadedMode) {
       const threadParams = new URLSearchParams()
@@ -73,6 +74,10 @@ export default class extends Tac {
     const suffix = params.toString() ? `?${params.toString()}` : ''
     const res = await apiFetch(`/inbox${suffix}`)
     this.$allEmails = res?.ok ? await res.json() : []
+    } catch (err) {
+      this.$error = err.message || 'Failed to load emails'
+      this.$allEmails = []
+    }
     this.$loading = false
   }
 
