@@ -29,8 +29,8 @@ export async function upsertPushSubscription(fylo, subscription) {
   const now = new Date().toISOString()
   const id = pushSubscriptionId(subscription.endpoint)
   const [docId, existing] = await findPushSubscriptionById(fylo, id)
-  const record = { ...subscription, userEmail: subscription.userEmail.toLowerCase(), id, createdAt: existing?.createdAt ?? now, updatedAt: now }
-  if (docId) { await fylo.patchDoc(Collections.PUSH_SUBSCRIPTIONS, { [docId]: record }) } else { await fylo.putData(Collections.PUSH_SUBSCRIPTIONS, record) }
+  const record = { ...subscription, userEmail: subscription.userEmail.toLowerCase(), id, createdAt: /** @type {any} */ (existing)?.createdAt ?? now, updatedAt: now }
+  if (docId) { await fylo.patchDoc(Collections.PUSH_SUBSCRIPTIONS, { [/** @type {string} */ (docId)]: record }) } else { await fylo.putData(Collections.PUSH_SUBSCRIPTIONS, record) }
   return record
 }
 
@@ -39,7 +39,7 @@ export async function upsertPushSubscription(fylo, subscription) {
 export async function deletePushSubscriptionByEndpoint(fylo, endpoint) {
   const [docId] = await findPushSubscriptionById(fylo, pushSubscriptionId(endpoint))
   if (!docId) return false
-  await fylo.delDoc(Collections.PUSH_SUBSCRIPTIONS, docId)
+  await fylo.delDoc(Collections.PUSH_SUBSCRIPTIONS, /** @type {string} */ (docId))
   return true
 }
 

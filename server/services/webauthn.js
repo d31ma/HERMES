@@ -151,7 +151,7 @@ export function verifyRegistration(credential, expectedChallenge) {
  * @param {string} expectedChallenge - The challenge that was sent
  * @param {Buffer} storedPublicKey - The public key stored during registration
  * @param {number} storedSignCount - The previous signature counter
- * @returns {{ valid: true, signCount: number } | { valid: false, error: string }}
+ * @returns {Promise<{ valid: true, signCount: number } | { valid: false, error: string }>}
  */
 export async function verifyAuthentication(credential, expectedChallenge, storedPublicKey, storedSignCount = 0) {
   try {
@@ -326,11 +326,12 @@ async function verifyCoseSignature(publicKeyCose, data, signature) {
     return await subtle.verify(
       { name: 'ECDSA', hash: { name: 'SHA-256' } },
       publicKey,
+      // @ts-ignore - Buffer is not directly assignable to BufferSource in Bun types
       rawSig,
       data
     )
   } catch (e) {
-    console.warn('[webauthn] signature verification failed:', e.message)
+    console.warn('[webauthn] signature verification failed:', e instanceof Error ? e.message : String(e))
     return false
   }
 }

@@ -24,6 +24,7 @@ export async function handler({ paths, context }) {
   const [docId, config] = await findDomainEntry(fylo, domain);
   if (!docId || !config)
     return r404("Domain not found");
+  // @ts-ignore - config is DomainConfig, but TS sees string | DomainConfig from findDomainEntry
   const updatedRoutes = config.routes.filter((r) => r.id !== ruleId);
   await updateDomainRoutes(fylo, docId, updatedRoutes);
   return { deleted: ruleId };

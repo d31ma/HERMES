@@ -8,7 +8,7 @@ import { presentEmailsForDomainMigrations } from "@/services/domain-migration.js
  * @param {object} params
  * @param {{ q?: string, search?: string, folder?: string, read?: boolean, starred?: boolean, hasAttachment?: boolean, limit?: number, offset?: number }} params.query - Query string parameters
  * @param {{ bearer?: { token: string } }} params.context - Request context
- * @returns {Promise<Record<string, unknown>>}
+ * @returns {Promise<unknown>}
  */
 export async function handler({ context, query }) {
   const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());

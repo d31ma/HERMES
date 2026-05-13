@@ -7,6 +7,7 @@ import { isAuthError, requireClaims } from "@/services/notifications.js";
  * @param {object} params
  * @param {{ endpoint: string, keys: { p256dh: string, auth: string } }} params.body - Request payload
  * @param {{ bearer?: { token: string } }} params.context - Request context
+ * @param {Record<string, string>} params.headers - Request headers
  * @returns {Promise<Record<string, unknown>>}
  */
 export async function handler({ body, context, headers }) {

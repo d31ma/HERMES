@@ -161,6 +161,7 @@ class GcpMailAdapter {
     if (key) {
       // Use Gmail API with service account
       try {
+        // @ts-ignore - optional dependency, may not have type declarations
         const { JWT } = await import('google-auth-library')
         const client = new JWT({
           email: process.env.GCP_SERVICE_ACCOUNT_EMAIL,

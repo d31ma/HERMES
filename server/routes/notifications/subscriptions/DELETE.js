@@ -18,9 +18,11 @@ export async function handler({ body, context }) {
     return r400("endpoint required");
   const fylo = await createDb();
   const [docId, subscription] = await findPushSubscriptionById(fylo, pushSubscriptionId(request.endpoint));
+  // @ts-ignore - subscription from Fylo inferred as string | Record<string, any>
   if (!docId || !subscription || subscription.userEmail !== claims.email.toLowerCase()) {
     return r404("Subscription not found");
   }
   await deletePushSubscriptionDoc(fylo, docId);
+  // @ts-ignore - subscription from Fylo
   return { deleted: subscription.id };
 }

@@ -6,6 +6,7 @@ import { suppressAddress } from "@/repositories/suppressed.js";
  * POST /events/bounce
  * @param {object} params
  * @param {{ address?: string, addresses?: string[] }} params.body - Request payload
+ * @param {Record<string, string>} params.headers - Request headers
  * @returns {Promise<Record<string, unknown>>}
  */
 export async function handler({ headers, body }) {

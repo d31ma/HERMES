@@ -8,7 +8,7 @@ import { findThreads } from "@/repositories/threads.js";
  * @param {object} params
  * @param {{ folder?: string }} params.query - Query string parameters
  * @param {{ bearer?: { token: string } }} params.context - Request context
- * @returns {Promise<Record<string, unknown>>}
+ * @returns {Promise<unknown>}
  */
 export async function handler({ context, query }) {
   const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());

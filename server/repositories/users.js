@@ -6,7 +6,7 @@ import { normalizeEmailAddress, normalizeDomain } from '@/services/security.js'
 /** @param {import("@d31ma/fylo").default} fylo */
 export async function listUsers(fylo) {
   const docs = await collect(fylo.findDocs(Collections.USERS, { $ops: [] }).collect())
-  return Object.entries(docs).map(([docId, u]) => ({ docId, ...normalizeUser(u) }))
+  return Object.entries(docs).map(([docId, u]) => ({ docId, ...normalizeUser(/** @type {import('@/types').User} */ (u)) }))
 }
 
 /**
@@ -20,7 +20,7 @@ export async function findUserByEmail(fylo, email) {
   if (!normalizedEmail) return [null, null]
   const docs = await collect(fylo.findDocs(Collections.USERS, { $ops: [{ email: { $eq: normalizedEmail } }] }).collect())
   const entry = Object.entries(docs)[0]
-  if (entry) return [entry[0], normalizeUser(entry[1])]
+  if (entry) return [entry[0], normalizeUser(/** @type {import('@/types').User} */ (entry[1]))]
   const users = await listUsers(fylo)
   const aliased = users.find(user => user.aliases?.includes(normalizedEmail))
   return aliased ? [aliased.docId, stripDocId(aliased)] : [null, null]
@@ -53,8 +53,8 @@ export async function deleteUser(fylo, docId) {
 /** @param {import('@/types').User} user @returns {import('@/types').User} */
 export function normalizeUser(user) {
   const email = normalizeEmailAddress(user.email) ?? user.email.trim().toLowerCase()
-  const aliases = dedupe((user.aliases ?? []).map(alias => normalizeEmailAddress(alias)).filter(Boolean).filter(alias => alias !== email))
-  const domains = dedupe(user.domains.map(domain => normalizeDomain(domain)).filter(Boolean))
+  const aliases = dedupe((user.aliases ?? []).map(alias => /** @type {string} */ (normalizeEmailAddress(alias))).filter(Boolean).filter(alias => alias !== email))
+  const domains = dedupe(user.domains.map(domain => /** @type {string} */ (normalizeDomain(domain))).filter(Boolean))
   return { ...user, id: user.id || randomUUID(), email, aliases, domains }
 }
 

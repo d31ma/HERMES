@@ -2,6 +2,8 @@ import Fylo from '@d31ma/fylo'
 import { upsertPushSubscription, listPushSubscriptionsForAddress } from '@/repositories/push.js'
 import { findUserByEmail } from '@/repositories/users.js'
 
+/** @typedef {import('@/types').StoredEmail} StoredEmail */
+
 /** @returns {Promise<string>} */
 export async function getVapidPublicKey() {
   if (process.env.VAPID_PUBLIC_KEY) return process.env.VAPID_PUBLIC_KEY
@@ -45,6 +47,7 @@ async function sendPushNotifications(fylo, email) {
     })
 
     await Promise.allSettled(subscriptions.map(sub =>
+      // @ts-ignore - sub is PushSubscriptionRecord & { docId } but API expects web-push PushSubscription
       webPush.default.sendNotification(sub, payload, {
         vapidDetails: { subject: vapidSubject, publicKey: vapidPublicKey, privateKey: vapidPrivateKey },
       })

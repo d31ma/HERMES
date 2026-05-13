@@ -29,11 +29,14 @@ export async function handler({ paths, body, context }) {
   if (!docId || !config)
     return r404("Domain not found");
   const rule = body;
+  // @ts-ignore - rule.action exists, body JSDoc doesn't include action type
   const actionResult = validateRouteAction(rule.action);
   if (!actionResult.valid)
     return r400(actionResult.error);
+  // @ts-ignore - config is DomainConfig, TS sees string | DomainConfig
+  const routes = config.routes
   const updatedRoutes = [
-    ...config.routes.filter((r) => r.id !== ruleId),
+    ...routes.filter((r) => r.id !== ruleId),
     { ...rule, id: ruleId }
   ];
   await updateDomainRoutes(fylo, docId, updatedRoutes);

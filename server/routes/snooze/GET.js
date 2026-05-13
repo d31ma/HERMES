@@ -9,7 +9,7 @@ import { findEmailById } from "@/repositories/emails.js";
  * Returns list of snoozed emails that are ready to wake.
  * @param {object} params
  * @param {{ bearer?: { token: string } }} params.context - Request context
- * @returns {Promise<Record<string, unknown>[]>}
+ * @returns {Promise<unknown>}
  */
 export async function handler({ context }) {
   const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());
@@ -22,8 +22,10 @@ export async function handler({ context }) {
 
   for (const entry of Object.values(records)) {
     const [, email] = await findEmailById(fylo, entry.emailId);
+    // @ts-ignore - email is StoredEmail from findEmailById, TS sees string | StoredEmail
     if (email && claims.domains.includes(email.domain)) {
       results.push({
+        // @ts-ignore - email is StoredEmail
         ...email,
         snoozedUntil: new Date(entry.until).toISOString(),
         snoozeDocId: entry.id,

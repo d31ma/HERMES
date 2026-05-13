@@ -13,6 +13,7 @@ import { requireEnv } from "@/services/security.js";
  * POST /inbound/webhook
  * @param {object} params
  * @param {{ recipient: string, sender: string, subject?: string, body?: string, messageId?: string }} params.body - Request payload
+ * @param {Record<string, string>} params.headers - Request headers
  * @returns {Promise<Record<string, unknown>>}
  */
 export async function handler({ headers, body }) {
@@ -39,9 +40,11 @@ export async function handler({ headers, body }) {
     return r400("Invalid recipient address");
   const fylo = await createDb();
   const [, domainConfig] = await findDomainEntry(fylo, domain);
+  // @ts-ignore - domainConfig is DomainConfig from findDomainEntry, TS sees string | DomainConfig
   if (!domainConfig || !domainConfig.inboundEnabled) {
     return { accepted: false, reason: "domain not configured" };
   }
+  // @ts-ignore - domainConfig is DomainConfig
   const rule = matchRoute(domainConfig.routes, recipient);
   if (!rule || rule.action.type === "drop") {
     return { accepted: false, reason: "dropped by route rule" };

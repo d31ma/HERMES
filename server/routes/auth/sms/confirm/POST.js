@@ -25,23 +25,28 @@ export async function handler({ body, context }) {
 
   const [docId, session] = await findOtpSession(fylo, sessionId);
   if (!session || !docId) return r401("Invalid or expired session");
+  // @ts-ignore - session is OtpSession from Fylo, TS infers string | Record<string, any>
   if (new Date(session.expiresAt) < new Date()) {
     await deleteOtpSession(fylo, docId);
     return r401("Code has expired");
   }
+  // @ts-ignore - session is OtpSession from Fylo
   if (!/^\d{6}$/.test(code) || !timingSafeStringEqual(sha256Hex(code), session.codeHash)) {
     return r401("Invalid code");
   }
   await deleteOtpSession(fylo, docId);
 
+  // @ts-ignore - session is OtpSession from Fylo
   const [, user] = await findUserByEmail(fylo, session.email);
   if (!user) return r401("Account not found");
 
+  // @ts-ignore - session is OtpSession from Fylo
   const devices = await listDevices(fylo, session.email);
   if (devices.length === 0) {
     const setupToken = randomBytes(32).toString("hex");
     await putSetupSession(fylo, {
       id: setupToken,
+      // @ts-ignore - session is OtpSession from Fylo
       email: session.email,
       totpSecret: "", // placeholder — was TOTP, now unused
       expiresAt: new Date(Date.now() + 15 * 60 * 1000).toISOString(),

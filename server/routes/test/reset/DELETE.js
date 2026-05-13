@@ -3,7 +3,6 @@ import { createDb, Collections } from "@/repositories/index.js";
 import { isTestRoutesEnabled } from "@/services/security.js";
 /**
  * DELETE /test/reset
- * @param {object} params
  * @returns {Promise<Record<string, unknown>>}
  */
 export async function handler() {

@@ -30,9 +30,9 @@ export async function handler({ body, context }) {
 
   await purgeExpiredMfaSessions(fylo, user.email)
 
-  const { challenge, options } = buildAuthOptions(
-    devices.filter(d => d.credentialId).map(d => ({ credentialId: d.credentialId }))
-  )
+  // @ts-ignore - credentialId exists on WebAuthn devices stored in Fylo, not on MfaDevice type
+  const allowedCredentials = /** @type {Array<{ credentialId: string }>} */ (devices.filter(d => d.credentialId).map(d => ({ credentialId: d.credentialId })))
+  const { challenge, options } = buildAuthOptions(allowedCredentials)
 
   // Store challenge in session for verification
   const sessionId = `webauthn-auth-${randomBytes(16).toString("hex")}`

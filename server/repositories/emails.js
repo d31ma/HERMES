@@ -16,7 +16,7 @@ export async function listEmails(fylo, allowedDomains, filters = {}) {
   const attachmentsByEmail = needsAttachmentData ? await listAttachmentSummariesByEmail(fylo, allowedDomains) : new Map()
   const offset = Math.max(0, filters.offset ?? 0)
   const limit = filters.limit == null ? undefined : Math.max(0, filters.limit)
-  const emails = Object.values(docs).map(normalizeEmail)
+  const emails = Object.values(docs).map(d => normalizeEmail(/** @type {import('@/types').StoredEmail} */ (d)))
     .filter(e => allowedDomains.includes(e.domain))
     .filter(e => !filters.folder || filters.folder === 'all' || (e.folder || 'inbox') === filters.folder)
     .filter(e => filters.read == null || e.read === filters.read)
@@ -32,7 +32,7 @@ export async function listEmails(fylo, allowedDomains, filters = {}) {
 export async function findEmailById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.EMAILS, { $ops: [{ id: { $eq: id } }] }).collect())
   const entry = Object.entries(docs)[0]
-  return entry ? [entry[0], normalizeEmail(entry[1])] : [null, null]
+  return entry ? [entry[0], normalizeEmail(/** @type {import('@/types').StoredEmail} */ (entry[1]))] : [null, null]
 }
 
 /** @returns {Promise<string>} */

@@ -22,16 +22,22 @@ export async function handler({ paths, context }) {
   const [, email] = await findEmailById(fylo, emailId);
   if (!email)
     return r404("Email not found");
+  // @ts-ignore - email is StoredEmail from findEmailById, TS sees string | StoredEmail
   if (!claims.domains.includes(email.domain))
     return r403("Access denied");
   const [, attachment] = await findAttachmentById(fylo, attachmentId);
+  // @ts-ignore - attachment is EmailAttachmentRecord from Fylo, TS infers string | Record<string, any>
   if (!attachment || attachment.emailId !== emailId)
     return r404("Attachment not found");
   const bytes = await readAttachmentContent(attachment);
   return {
+    // @ts-ignore - attachment from Fylo inferred as string | Record<string, any>
     id: attachment.id,
+    // @ts-ignore - attachment from Fylo
     filename: attachment.filename,
+    // @ts-ignore - attachment from Fylo
     contentType: attachment.contentType,
+    // @ts-ignore - attachment from Fylo
     size: attachment.size,
     contentBase64: Buffer.from(bytes).toString("base64")
   };

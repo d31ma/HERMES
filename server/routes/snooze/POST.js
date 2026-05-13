@@ -34,6 +34,7 @@ export async function handler({ body, context }) {
   const [docId, email] = await findEmailById(fylo, emailId);
   if (!docId || !email)
     return r404("Email not found");
+  // @ts-ignore - email is StoredEmail from findEmailById, TS sees string | StoredEmail
   if (!claims.domains.includes(email.domain))
     return r404("Email not found");
 

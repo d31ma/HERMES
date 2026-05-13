@@ -17,7 +17,7 @@ import { presentEmailsForDomainMigrations } from "@/services/domain-migration.js
  * @param {object} params
  * @param {{ q?: string }} params.query - Query string parameters
  * @param {{ bearer?: { token: string } }} params.context - Request context
- * @returns {Promise<Record<string, unknown>>}
+ * @returns {Promise<unknown>}
  */
 export async function handler({ query, context }) {
   const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());

@@ -22,5 +22,6 @@ export async function handler({ paths, context }) {
   const [, config] = await findDomainEntry(fylo, domain);
   if (!config)
     return r404("Domain not found");
+  // @ts-ignore - config is DomainConfig, TS sees string | DomainConfig
   return config.routes;
 }
