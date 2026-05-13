@@ -8,6 +8,9 @@ import { isTestRoutesEnabled } from "@/services/security.js";
  * POST /test/seed/device — creates a passkey device directly (bypasses WebAuthn).
  * Only available in test mode. Required for E2E tests in headless CI where
  * the browser has no real platform authenticator.
+ * @param {object} params
+ * @param {{ email: string, name?: string }} params.body - Request payload
+ * @returns {Promise<Record<string, unknown>>}
  */
 export async function handler({ body }) {
   if (!isTestRoutesEnabled())

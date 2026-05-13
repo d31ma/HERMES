@@ -38,14 +38,20 @@ export async function findUserByEmailAndPhone(fylo, email, phone) {
   return [docId, user]
 }
 
-/** @returns {Promise<string>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {import('@/types').User} user
+ * @returns {Promise<string>}
+ */
 export async function putUser(fylo, user) {
   return await fylo.putData(Collections.USERS, normalizeUser(user))
 }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} docId
+ * @returns {Promise<void>}
+ */
 export async function deleteUser(fylo, docId) {
   await fylo.delDoc(Collections.USERS, docId)
 }
