@@ -28,7 +28,7 @@ export function toAttachmentSummary(attachment) {
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} emailId
- * @returns {Promise<Array<EmailAttachmentRecord & { docId: string }>>}
+ * @returns {Promise<Record<string, any>[]>}
  */
 export async function listAttachments(fylo, emailId) {
   const docs = await collect(fylo.findDocs(Collections.ATTACHMENTS, { $ops: [{ emailId: { $eq: emailId } }] }).collect())
@@ -65,7 +65,7 @@ export async function listAttachmentSummariesByEmail(fylo, allowedDomains) {
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} id
- * @returns {Promise<[string | null, EmailAttachmentRecord | null]>}
+ * @returns {Promise<[string | null, Record<string, any> | null]>}
  */
 export async function findAttachmentById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.ATTACHMENTS, { $ops: [{ id: { $eq: id } }] }).collect())

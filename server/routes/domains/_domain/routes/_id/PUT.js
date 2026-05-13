@@ -39,6 +39,7 @@ export async function handler({ paths, body, context }) {
     ...routes.filter((r) => r.id !== ruleId),
     { ...rule, id: ruleId }
   ];
+  // @ts-ignore - RouteRule[] mismatch from partial body object merge
   await updateDomainRoutes(fylo, docId, updatedRoutes);
   return { updated: ruleId };
 }

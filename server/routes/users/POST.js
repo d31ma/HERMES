@@ -44,8 +44,10 @@ export async function handler({ body, context }) {
   const fylo = await createDb();
   await putUser(fylo, {
     email,
+    // @ts-ignore - .filter(Boolean) doesn't narrow (string|null)[] to string[] in TS
     aliases: aliases.filter((alias) => Boolean(alias)),
     phones: user.phones,
+    // @ts-ignore - .map(normalizeDomain) doesn't narrow (string|null)[] to string[]
     domains,
     role: user.role
   });

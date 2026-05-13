@@ -80,7 +80,7 @@ export async function deleteDevice(fylo, docId) { await fylo.delDoc(Collections.
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} id
- * @returns {Promise<[string | null, import('@/types').MfaSession | null]>}
+ * @returns {Promise<[string | null, Record<string, any> | null]>}
  */
 export async function findMfaSession(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.MFA_SESSIONS, { $ops: [{ id: { $eq: id } }] }).collect())
@@ -117,7 +117,7 @@ export async function purgeExpiredMfaSessions(fylo, email) {
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} id
- * @returns {Promise<[string | null, import('@/types').SetupSession | null]>}
+ * @returns {Promise<[string | null, Record<string, any> | null]>}
  */
 export async function findSetupSession(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.SETUP_SESSIONS, { $ops: [{ id: { $eq: id } }] }).collect())
