@@ -1,13 +1,59 @@
 // @ts-check
+
+/**
+ * Multi-step authentication / login component.
+ *
+ * Implements a step-based login flow that supports:
+ * - OAuth provider selection (Google, Microsoft, etc.)
+ * - WebAuthn / passkey authentication
+ * - SMS / phone-based OTP as a backup factor
+ * - Passkey registration for first-time setup
+ *
+ * The flow progresses through these steps:
+ * 1. `start` — Email input, OAuth provider buttons, and passkey detection
+ * 2. `passkey` — Biometric / PIN-based WebAuthn authentication
+ * 3. `phone-input` — Phone number entry for SMS fallback
+ * 4. `phone-code` — 6-digit SMS code verification
+ * 5. `passkey-setup` — Register a new passkey after SMS confirmation
+ *
+ * On successful authentication, emits a `login` event with the server response
+ * data so the parent app can store the session and redirect.
+ *
+ * @extends Tac
+ */
 export default class extends Tac {
+  /** @type {string} Current step in the login flow */
   $step = 'start'
-  $email = ''; $phone = ''; $otpCode = ''; $deviceCode = ''; $deviceName = ''
-  $mfaSessionId = ''; $otpSessionId = ''; $setupToken = ''; $totpSecret = ''; $totpUri = ''
-  $loading = false; $error = ''
+  /** @type {string} */
+  $email = ''; /** @type {string} */
+  $phone = ''; /** @type {string} */
+  $otpCode = ''; /** @type {string} */
+  $deviceCode = ''; /** @type {string} */
+  $deviceName = ''
+  /** @type {string} WebAuthn session ID from `/auth/webauthn/auth-request` */
+  $mfaSessionId = ''; /** @type {string} SMS OTP session ID from `/auth/sms/request` */
+  $otpSessionId = ''; /** @type {string} Setup token for passkey registration */
+  $setupToken = ''; /** @type {string} TOTP secret for QR-based authenticator setup */
+  $totpSecret = ''; /** @type {string} TOTP URI (otpauth://) for QR code rendering */
+  $totpUri = ''
+  /** @type {boolean} */
+  $loading = false; /** @type {string} */
+  $error = ''
+  /** @type {Array<{ id: string, name: string }>} Available OAuth identity providers */
   $providers = []
 
+  /**
+   * @description Base API URL from the global HERMES_CONFIG.
+   * @returns {string}
+   */
   get _api() { return window.HERMES_CONFIG?.apiUrl || '' }
 
+  /**
+   * Fetch the list of available OAuth identity providers on mount.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   @onMount
   async fetchProviders() {
     try {
@@ -18,6 +64,17 @@ export default class extends Tac {
     } catch { /* providers not available */ }
   }
 
+  /**
+   * Initiate an OAuth login flow with a specific provider.
+   *
+   * Fetches an authorization URL from the API and redirects the browser to the
+   * provider's consent screen. The OAuth state and provider are stored in
+   * sessionStorage for the callback.
+   *
+   * @async
+   * @param {string} provider - The OAuth provider ID (e.g. 'google', 'microsoft')
+   * @returns {Promise<void>}
+   */
   async initOAuth(provider) {
     this.$loading = true; this.$error = ''
     try {
@@ -33,12 +90,32 @@ export default class extends Tac {
     finally { this.$loading = false }
   }
 
+  /**
+   * Read the current value of a form input by CSS selector.
+   *
+   * Safe to call server-side (returns empty string when `document` is undefined).
+   *
+   * @param {string} selector - CSS selector for the input element
+   * @param {string} [fallback=''] - Fallback value when the element is not found
+   * @returns {string} The trimmed input value, or the fallback
+   */
   formValue(selector, fallback = '') {
     const value = typeof document !== 'undefined' ? document.querySelector(selector)?.value : ''
     return String(value ?? fallback ?? '').trim()
   }
 
   // ── Step: start → check if user has passkeys ─────────────────────────────
+
+  /**
+   * Begin the login process: submit the email address and check for passkeys.
+   *
+   * If the user has passkeys registered, the flow advances to the `passkey`
+   * step and triggers WebAuthn authentication. Otherwise it falls through to
+   * `phone-input` for SMS-based authentication.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async requestMfa() {
     this.$email = this.formValue('[data-login-email]', this.$email)
     if (!this.$email) { this.$error = 'Email is required.'; return }
@@ -62,6 +139,18 @@ export default class extends Tac {
   }
 
   // ── Step: passkey → biometric/PIN authentication ────────────────────────
+
+  /**
+   * Perform WebAuthn authentication using the provided public-key credential
+   * options.
+   *
+   * On success, emits a `login` event. On failure, the flow resets to `start`
+   * so the user can try an alternative method.
+   *
+   * @async
+   * @param {PublicKeyCredentialRequestOptions} options - WebAuthn get() options from the server
+   * @returns {Promise<void>}
+   */
   async authenticatePasskey(options) {
     try {
       if (typeof PublicKeyCredential === 'undefined') {
@@ -96,6 +185,15 @@ export default class extends Tac {
   }
 
   // ── Step: phone-input ────────────────────────────────────────────────────
+
+  /**
+   * Request an SMS OTP code to the user's phone number.
+   *
+   * Advances to the `phone-code` step on success.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async requestSms() {
     this.$phone = this.formValue('[data-login-phone]', this.$phone)
     if (!this.$phone) { this.$error = 'Phone number is required.'; return }
@@ -112,6 +210,17 @@ export default class extends Tac {
   }
 
   // ── Step: phone-code ─────────────────────────────────────────────────────
+
+  /**
+   * Confirm the 6-digit SMS OTP code.
+   *
+   * If the user does not yet have a passkey registered, the flow advances to
+   * `passkey-setup` and triggers passkey registration. Otherwise, a `login`
+   * event is emitted.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async confirmSms() {
     this.$otpCode = this.formValue('[data-login-otp]', this.$otpCode)
     if (!this.$otpCode || this.$otpCode.length !== 6) { this.$error = 'Enter the 6-digit code from your SMS.'; return }
@@ -135,6 +244,16 @@ export default class extends Tac {
   }
 
   // ── Step: passkey-setup → register a new passkey ─────────────────────────
+
+  /**
+   * Register a new WebAuthn passkey for the authenticated user.
+   *
+   * If called with a `$setupToken` (from SMS confirmation), the registration
+   * is pre-authorised. On success, emits a `login` event to complete the flow.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async registerPasskey() {
     try {
       if (typeof PublicKeyCredential === 'undefined') {
@@ -180,7 +299,25 @@ export default class extends Tac {
     finally { this.$loading = false }
   }
 
+  /**
+   * Switch from the passkey step to phone-based backup authentication.
+   *
+   * Resets phone and OTP fields and advances to `phone-input`.
+   *
+   * @returns {void}
+   */
   usePhoneBackup() { this.$phone = ''; this.$otpCode = ''; this.$error = ''; this.$step = 'phone-input' }
+
+  /**
+   * Navigate back one step in the login flow.
+   *
+   * Clears the current error. The back target depends on the current step:
+   * - `passkey` -> `start`
+   * - `phone-input` -> `start` (clears phone)
+   * - `phone-code` -> `phone-input` (clears code)
+   *
+   * @returns {void}
+   */
   back() {
     this.$error = ''
     if (this.$step === 'passkey') { this.$step = 'start' }

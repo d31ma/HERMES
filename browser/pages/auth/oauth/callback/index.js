@@ -1,8 +1,27 @@
 // @ts-check
+
+/**
+ * OAuth callback handler page.
+ *
+ * Processes the OAuth2 authorization code redirect after the user authenticates
+ * with an external provider. Validates the state parameter to prevent CSRF,
+ * exchanges the authorization code for a session token via the API, and emits
+ * a 'login' event so the root page can complete the sign-in flow.
+ */
 export default class extends Tac {
+  /** @type {string} */
   $error = ''
+  /** @type {boolean} */
   $loading = true
 
+  /**
+   * Handles the OAuth callback by extracting the authorization code and state
+   * from the query string, validating them against session storage, and
+   * exchanging them for an authenticated session via the API.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   @onMount
   async handleCallback() {
     const params = new URLSearchParams(location.search)

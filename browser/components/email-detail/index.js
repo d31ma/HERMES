@@ -1,11 +1,58 @@
 // @ts-check
+
+/**
+ * @typedef {object} EmailDetailProps
+ * @property {string} [emailId] - ID of the email to load (parent prop)
+ * @property {string} [emailid] - Alternate casing for email ID
+ * @property {object} [email] - Pre-loaded email object (avoids a fetch)
+ * @property {() => void} [onBack] - Callback invoked when the user clicks back
+ */
+
+/**
+ * Email detail / reader component.
+ *
+ * Displays a single email message with full headers, body, and attachments.
+ * Supports the following actions:
+ * - Reply, reply-all, forward
+ * - Star / unstar
+ * - Archive, trash, snooze
+ * - Mark read / unread
+ * - Attachment download
+ * - Inline quick-reply
+ *
+ * The email to display can come from a parent component (3-panel layout) via
+ * props, from the URL path (`/email/<id>`), or from query parameters.
+ *
+ * Keyboard shortcuts are bound via `hermes:shortcut:email:*` events.
+ *
+ * @extends Tac
+ *
+ * @prop {EmailDetailProps} [props] - Props for the email detail view
+ */
 export default class extends Tac {
+  /** @type {object|null} The loaded email object */
   $email = null
+  /** @type {boolean} */
   $loading = true
+  /** @type {string} */
   $loadError = ''
+  /** @type {boolean} Whether the inline reply form is visible */
   $showReply = false
+  /** @type {string} Text content of the inline reply */
   $replyText = ''
 
+  /**
+   * Initialise the email detail view by resolving the email ID and loading it.
+   *
+   * The email ID is resolved from (in priority order):
+   * 1. `props.emailId` / `props.emailid`
+   * 2. URL path `/email/<id>`
+   * 3. `?email=` or `?id=` query parameters
+   * 4. `props.email` (pre-loaded object)
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   @onMount
   async init() {
     const props = this.props || {}
@@ -18,6 +65,15 @@ export default class extends Tac {
     await this.loadEmail()
   }
 
+  /**
+   * Fetch the full email object from the API and mark it as read.
+   *
+   * If the email was previously unread, this fires a `hermes:refresh-inbox`
+   * event so the inbox list can update its unread count.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async loadEmail() {
     if (!this.$email?.id) return
     this.$loading = true; this.$loadError = ''
@@ -38,6 +94,16 @@ export default class extends Tac {
     }
   }
 
+  /**
+   * Snooze the current email until a future time.
+   *
+   * Presents the user with preset durations (later today, tomorrow, weekend,
+   * next week) or a custom date/time. On success, refreshes the inbox and
+   * navigates back.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async snooze() {
     if (!this.$email) return
     const presets = [
@@ -76,6 +142,15 @@ export default class extends Tac {
     }
   }
 
+  /**
+   * Permanently delete the current email.
+   *
+   * Prompts for confirmation before deleting. On success, refreshes the inbox
+   * and navigates back.
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async deleteEmail() {
     if (!this.$email || !confirm('Delete this message forever?')) return
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
@@ -84,6 +159,17 @@ export default class extends Tac {
     else { window._hermes?.toast('Delete failed.') }
   }
 
+  /**
+   * Apply a partial update to the current email via the API.
+   *
+   * On success, the local `$email` is replaced with the server response, the
+   * inbox is refreshed, and an optional toast message is shown.
+   *
+   * @async
+   * @param {Record<string, any>} patch - Key/value pairs to update on the email
+   * @param {string} [message] - Optional toast message shown on success
+   * @returns {Promise<void>}
+   */
   async updateEmail(patch, message) {
     if (!this.$email) return
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
@@ -92,6 +178,16 @@ export default class extends Tac {
     else { window._hermes?.toast('Update failed.') }
   }
 
+  /**
+   * Bind global keyboard-shortcut listeners for email actions.
+   *
+   * Registered shortcuts:
+   * - `email:reply`, `email:reply-all`, `email:forward`
+   * - `email:star`, `email:archive`, `email:trash`
+   * - `email:mark-read`, `email:mark-unread`, `email:open`
+   *
+   * @returns {void}
+   */
   @onMount
   bindShortcuts() {
     const on = (name, fn) => window.addEventListener('hermes:shortcut:' + name, fn)
@@ -107,27 +203,61 @@ export default class extends Tac {
     on('email:open', () => { if (this.$email) window._hermes?.openEmailId(this.$email.id) })
   }
 
+  /**
+   * Navigate back from the email detail view.
+   *
+   * Emits a `back` event to the parent when `props.onBack` is provided (3-panel
+   * layout); otherwise navigates to the inbox route.
+   *
+   * @returns {void}
+   */
   goBack() {
     if (this.props?.onBack) return this.emit('back')
     window._hermes?.navigate('inbox')
   }
 
+  /**
+   * Open the compose view pre-filled as a reply to the sender.
+   *
+   * @returns {void}
+   */
   reply() {
     if (!this.$email) return
     window._hermes?.compose({ to: this.$email.sender, subject: `Re: ${this.$email.subject}` })
   }
 
+  /**
+   * Open the compose view pre-filled as a reply-all.
+   *
+   * @returns {void}
+   */
   replyAll() {
     if (!this.$email) return
     const to = [this.$email.sender, this.$email.recipient].filter(Boolean).join(', ')
     window._hermes?.compose({ to, subject: `Re: ${this.$email.subject}` })
   }
 
+  /**
+   * Open the compose view pre-filled as a forward of the current email.
+   *
+   * Includes the original sender, date, subject, and body as a quoted block.
+   *
+   * @returns {void}
+   */
   forward() {
     if (!this.$email) return
     window._hermes?.compose({ subject: `Fwd: ${this.$email.subject}`, body: `\n\n---------- Forwarded message ----------\nFrom: ${this.$email.sender}\nDate: ${new Date(this.$email.receivedAt).toLocaleString()}\nSubject: ${this.$email.subject}\n\n${this.$email.body || ''}` })
   }
 
+  /**
+   * Send a plain-text inline reply to the current email.
+   *
+   * Uses the `$replyText` field as the message body. This is the quick-reply
+   * form rendered directly inside the email detail view (not the full composer).
+   *
+   * @async
+   * @returns {Promise<void>}
+   */
   async sendReply() {
     if (!this.$email || !this.$replyText) return
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
@@ -138,6 +268,16 @@ export default class extends Tac {
     } catch { window._hermes?.toast('Network error.') }
   }
 
+  /**
+   * Download an email attachment to the user's device.
+   *
+   * Fetches the attachment content (base64-encoded), decodes it, creates a
+   * Blob, and triggers a download via a temporary anchor element.
+   *
+   * @async
+   * @param {{ id: string, filename?: string }} attachment - The attachment metadata object
+   * @returns {Promise<void>}
+   */
   async downloadAttachment(attachment) {
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch || !this.$email?.id) return
     const res = await apiFetch(`/inbox/${this.$email.id}/attachments/${attachment.id}`)
