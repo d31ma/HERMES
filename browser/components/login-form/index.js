@@ -100,7 +100,7 @@ export default class extends Tac {
    * @returns {string} The trimmed input value, or the fallback
    */
   formValue(selector, fallback = '') {
-    const value = typeof document !== 'undefined' ? document.querySelector(selector)?.value : ''
+    const value = typeof document !== 'undefined' ? /** @type {HTMLInputElement} */ (document.querySelector(selector))?.value : ''
     return String(value ?? fallback ?? '').trim()
   }
 
@@ -171,13 +171,14 @@ export default class extends Tac {
         this.$step = 'start'
         return
       }
+      // @ts-ignore
       this.emit('login', data)
     } catch (e) {
-      if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+      if (/** @type {Error} */ (e).name === 'NotAllowedError' || /** @type {Error} */ (e).name === 'AbortError') {
         this.$error = 'Passkey authentication was cancelled.'
         this.$step = 'start'
       } else {
-        this.$error = 'Passkey error: ' + (e.message || 'Unknown')
+        this.$error = 'Passkey error: ' + (e instanceof Error ? e.message : String(e) || 'Unknown')
         this.$step = 'start'
       }
     }
@@ -237,6 +238,7 @@ export default class extends Tac {
         // Trigger passkey registration
         await this.registerPasskey()
       } else {
+        // @ts-ignore
         this.emit('login', data)
       }
     } catch { this.$error = 'Network error. Check your connection.' }
@@ -284,16 +286,17 @@ export default class extends Tac {
 
       // Success — emit login if we have a setup token
       if (this.$setupToken) {
+        // @ts-ignore
         this.emit('login', saveData)
       } else {
         this.$step = 'start'
         this.$error = ''
       }
     } catch (e) {
-      if (e.name === 'NotAllowedError' || e.name === 'AbortError') {
+      if (/** @type {Error} */ (e).name === 'NotAllowedError' || /** @type {Error} */ (e).name === 'AbortError') {
         this.$error = 'Passkey registration was cancelled.'
       } else {
-        this.$error = 'Passkey error: ' + (e.message || 'Unknown')
+        this.$error = 'Passkey error: ' + (e instanceof Error ? e.message : String(e) || 'Unknown')
       }
     }
     finally { this.$loading = false }

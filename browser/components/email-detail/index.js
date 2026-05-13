@@ -88,7 +88,7 @@ export default class extends Tac {
         window.dispatchEvent(new Event('hermes:refresh-inbox'))
       }
     } catch (err) {
-      this.$loadError = err.message || 'Network error'
+      this.$loadError = err instanceof Error ? err.message : String(err) || 'Network error'
     } finally {
       this.$loading = false
     }
@@ -212,6 +212,7 @@ export default class extends Tac {
    * @returns {void}
    */
   goBack() {
+    // @ts-ignore
     if (this.props?.onBack) return this.emit('back')
     window._hermes?.navigate('inbox')
   }

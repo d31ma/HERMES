@@ -33,7 +33,7 @@ export default class extends Tac {
   /** @type {string} */
   $error = ''
   /** @type {string} Currently selected folder name */
-  $selectedFolder = this.props?.folder || (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('folder') : null) || 'inbox'
+  $selectedFolder = /** @type {string} */ (this.props?.folder || (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('folder') : null) || 'inbox')
   /** @type {string} Current search / filter query text */
   $search = ''
   /** @type {string} Status filter: 'all', 'unread', or 'starred' */
@@ -121,7 +121,7 @@ export default class extends Tac {
    */
   @onMount
   bindRefresh() {
-    window.removeEventListener('hermes:refresh-inbox', window._hermesInboxRefresh)
+    window.removeEventListener('hermes:refresh-inbox', /** @type {() => void} */ (window._hermesInboxRefresh))
     window._hermesInboxRefresh = () => this.load()
     window.addEventListener('hermes:refresh-inbox', window._hermesInboxRefresh)
   }
@@ -168,7 +168,7 @@ export default class extends Tac {
     const res = await apiFetch(`/inbox${suffix}`)
     this.$allEmails = res?.ok ? await res.json() : []
     } catch (err) {
-      this.$error = err.message || 'Failed to load emails'
+      this.$error = (err instanceof Error ? err.message : String(err)) || 'Failed to load emails'
       this.$allEmails = []
     }
     this.$loading = false
@@ -278,6 +278,7 @@ export default class extends Tac {
    */
   selectEmail(id) {
     this.$selectedId = id
+    // @ts-ignore
     this.emit('select', id)
   }
 
@@ -289,8 +290,8 @@ export default class extends Tac {
    * @returns {void}
    */
   dragStart(id, event) {
-    event.dataTransfer.setData('text/plain', id)
-    event.dataTransfer.effectAllowed = 'move'
+    event.dataTransfer?.setData('text/plain', id)
+    if (event.dataTransfer) event.dataTransfer.effectAllowed = 'move'
   }
 
   /**
@@ -298,7 +299,7 @@ export default class extends Tac {
    *
    * @async
    * @param {string} id - The email ID to star / unstar
-   * @param {Event} e - The click event (propagation is stopped)
+   * @param {{ stopPropagation: () => void }} e - The click event (propagation is stopped)
    * @returns {Promise<void>}
    */
   async quickStar(id, e) { e.stopPropagation(); const row = this.$allEmails.find(m => m.id === id); if (!row) return; await window._hermes?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ starred: !row.starred }) }); row.starred = !row.starred; this.$allEmails = [...this.$allEmails]; window._hermes?.toast(row.starred ? 'Starred' : 'Unstarred') }
@@ -308,7 +309,7 @@ export default class extends Tac {
    *
    * @async
    * @param {string} id - The email ID to archive
-   * @param {Event} e - The click event (propagation is stopped)
+   * @param {{ stopPropagation: () => void }} e - The click event (propagation is stopped)
    * @returns {Promise<void>}
    */
   async quickArchive(id, e) { e.stopPropagation(); await window._hermes?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ folder: 'archive' }) }); this.$allEmails = this.$allEmails.filter(m => m.id !== id); window._hermes?.toast('Archived') }
@@ -318,7 +319,7 @@ export default class extends Tac {
    *
    * @async
    * @param {string} id - The email ID to trash
-   * @param {Event} e - The click event (propagation is stopped)
+   * @param {{ stopPropagation: () => void }} e - The click event (propagation is stopped)
    * @returns {Promise<void>}
    */
   async quickTrash(id, e) { e.stopPropagation(); await window._hermes?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ folder: 'trash' }) }); this.$allEmails = this.$allEmails.filter(m => m.id !== id); window._hermes?.toast('Moved to trash') }
