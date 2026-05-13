@@ -21,11 +21,14 @@ export async function handler({ body }) {
   }
 
   const state = generateOAuthState()
+  // @ts-ignore - provider validated above, getAuthorizationUrl returns discriminated union
   const result = getAuthorizationUrl(provider, state)
 
+  // @ts-ignore - discriminated union: 'error' only exists on error variant
   if (result.error) return r400(result.error)
 
   return {
+    // @ts-ignore - discriminated union: 'url' only exists on success variant
     url: result.url,
     state,
   }

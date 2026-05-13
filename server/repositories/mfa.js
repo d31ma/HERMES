@@ -5,14 +5,14 @@ import { Collections, collect } from './index.js'
 /** @returns {Promise<Array<import('@/types').MfaDevice & { docId: string }>>} */
 export async function listDevices(fylo, userEmail) {
   const docs = await collect(fylo.findDocs(Collections.MFA_DEVICES, { $ops: [{ userEmail: { $eq: userEmail } }] }).collect())
-  return Object.entries(docs).map(([docId, d]) => ({ docId, ...d }))
+  return /** @type {Array<import('@/types').MfaDevice & { docId: string }>} */ (Object.entries(docs).map(([docId, d]) => ({ docId, ...d })))
 }
 
 /** @returns {Promise<[string | null, import('@/types').MfaDevice | null]>} */
 export async function findDeviceById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.MFA_DEVICES, { $ops: [{ id: { $eq: id } }] }).collect())
   const entry = Object.entries(docs)[0]
-  return entry ? [entry[0], entry[1]] : [null, null]
+  return entry ? [entry[0], /** @type {import('@/types').MfaDevice} */ (entry[1])] : [null, null]
 }
 
 /**

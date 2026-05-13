@@ -8,7 +8,7 @@ import { listScheduled } from "@/repositories/scheduled.js";
  * Returns list of scheduled emails for the authenticated user.
  * @param {object} params
  * @param {{ bearer?: { token: string } }} params.context - Request context
- * @returns {Promise<Record<string, unknown>[]>}
+ * @returns {Promise<unknown>}
  */
 export async function handler({ context }) {
   const claims = verifyJwt(context.bearer?.token ?? "", getJwtSecret());

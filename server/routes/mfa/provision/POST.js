@@ -22,6 +22,7 @@ export async function handler({ context }) {
   const { challenge, options } = buildRegistrationOptions(
     claims.email,
     claims.email.split("@")[0],
+    // @ts-ignore - credentialId exists on WebAuthn devices stored in Fylo, not on MfaDevice type
     existingDevices.map(d => ({ credentialId: d.credentialId || d.id }))
   );
 

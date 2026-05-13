@@ -126,6 +126,7 @@ export async function getUserProfile(provider, accessToken) {
   if (!config) return { error: `${provider} OAuth is not configured` }
 
   try {
+    // @ts-ignore - userInfoUrl may not exist on apple provider config
     const res = await fetch(config.userInfoUrl, {
       headers: { Authorization: `Bearer ${accessToken}` },
     })
@@ -173,6 +174,6 @@ function isProviderConfigured(provider) {
  */
 export function getConfiguredProviders() {
   return /** @type {OAuthProvider[]} */ (
-    ['google', 'microsoft', 'apple'].filter(p => isProviderConfigured(p))
+    ['google', 'microsoft', 'apple'].filter(p => isProviderConfigured(/** @type {OAuthProvider} */ (p)))
   )
 }

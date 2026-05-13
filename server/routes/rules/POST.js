@@ -24,7 +24,8 @@ export async function handler({ body, context }) {
     return r403("Domain access denied");
   const actionError = validateInboxRuleActions(input.actions ?? []);
   if (actionError)
-    return r400(result.error);
+    // @ts-ignore - discriminated union, error only on valid:false variant
+    return r400(actionError.error);
   const ruleId = randomBytes(16).toString("hex");
   const fylo = await createDb();
   await putRule(fylo, {

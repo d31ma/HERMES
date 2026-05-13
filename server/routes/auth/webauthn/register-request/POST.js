@@ -23,9 +23,11 @@ export async function handler({ body, context }) {
   const { setupToken } = body ?? {}
   if (!claims && setupToken) {
     const [sessionDocId, session] = await findSetupSession(fylo, setupToken)
+    // @ts-ignore - session from Fylo inferred as string | Record<string, any>
     if (!session || !sessionDocId || new Date(session.expiresAt) < new Date()) {
       return r401("Invalid or expired setup token")
     }
+    // @ts-ignore - session from Fylo; claims is overridden from JwtClaims to a subset
     claims = { email: session.email }
   }
 
@@ -36,6 +38,7 @@ export async function handler({ body, context }) {
   const { challenge, options } = buildRegistrationOptions(
     claims.email,
     claims.email.split("@")[0],
+    // @ts-ignore - credentialId exists on WebAuthn devices stored in Fylo, not on MfaDevice type
     existingDevices.map(d => ({ credentialId: d.credentialId || d.id }))
   )
 

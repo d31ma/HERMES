@@ -35,6 +35,7 @@ export async function listAttachments(fylo, emailId) {
 /** @returns {Promise<EmailAttachmentSummary[]>} */
 /** @param {import("@d31ma/fylo").default} fylo */
 export async function listAttachmentSummaries(fylo, emailId) {
+  // @ts-ignore - listAttachments infers { docId: string }[] from spread but returns EmailAttachmentRecord & { docId }
   return (await listAttachments(fylo, emailId)).map(toAttachmentSummary)
 }
 
@@ -46,7 +47,7 @@ export async function listAttachmentSummariesByEmail(fylo, allowedDomains) {
   for (const attachment of Object.values(docs)) {
     if (!allowedDomains.includes(attachment.domain)) continue
     const summaries = grouped.get(attachment.emailId) ?? []
-    summaries.push(toAttachmentSummary(attachment))
+    summaries.push(toAttachmentSummary(/** @type {EmailAttachmentRecord} */ (attachment)))
     grouped.set(attachment.emailId, summaries)
   }
   return grouped
@@ -91,7 +92,7 @@ export async function readAttachmentContent(attachment) {
 /** @returns {Promise<void>} */
 /** @param {import("@d31ma/fylo").default} fylo */
 export async function deleteAttachmentsForEmail(fylo, emailId) {
-  const attachments = await listAttachments(fylo, emailId)
+  const attachments = /** @type {Array<EmailAttachmentRecord & { docId: string }>} */ (await listAttachments(fylo, emailId))
   await Promise.all(attachments.map(async ({ docId, storagePath }) => {
     await fylo.delDoc(Collections.ATTACHMENTS, docId)
     try { ensureInsideRoot(attachmentRoot(), storagePath); await rm(storagePath, { force: true }) } catch (e) { console.error('[attachments] delete attachment file failed:', e) }

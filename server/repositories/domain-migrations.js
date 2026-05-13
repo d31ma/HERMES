@@ -19,6 +19,6 @@ export async function findDomainMigration(fylo, fromDomain, toDomain) {
 /** @param {import("@d31ma/fylo").default} fylo */
 export async function putDomainMigration(fylo, migration) {
   const [docId] = await findDomainMigration(fylo, migration.fromDomain, migration.toDomain)
-  if (docId) { await fylo.patchDoc(Collections.DOMAIN_MIGRATIONS, { [docId]: migration }); return docId }
+  if (docId) { await fylo.patchDoc(Collections.DOMAIN_MIGRATIONS, { [/** @type {string} */ (docId)]: migration }); return docId }
   return await fylo.putData(Collections.DOMAIN_MIGRATIONS, migration)
 }

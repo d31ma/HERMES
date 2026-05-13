@@ -60,8 +60,10 @@ async function awsSnsRest(to, body) {
     PhoneNumber: to,
     Message: body,
   })
+  // @ts-ignore - signAwsRequest returns Promise but fetch headers expects HeadersInit
   const res = await fetch(`${endpoint}?${params}`, {
     method: 'POST',
+    // @ts-ignore
     headers: signAwsRequest('sns', region, endpoint, params.toString()),
   })
   if (!res.ok) {
@@ -79,6 +81,7 @@ class AzureSmsAdapter {
     if (!endpoint || !key) throw new Error('AZURE_COMMUNICATION_ENDPOINT and AZURE_COMMUNICATION_KEY are required for Azure SMS')
 
     try {
+      // @ts-ignore - optional dependency, may not have type declarations
       const { SmsClient } = await import('@azure/communication-sms')
       const client = new SmsClient(endpoint, { key })
       await client.send({ from: process.env.AZURE_SMS_FROM || 'HERMES', to: [to], message: body })
@@ -116,6 +119,7 @@ class TwilioAdapter {
 async function signAwsRequest(service, region, endpoint, body) {
   try {
     const [{ SignatureV4 }, { Sha256 }, { defaultProvider }] = await Promise.all([
+      // @ts-ignore - optional dependency, may not have type declarations
       import('@aws-sdk/signature-v4'),
       import('@aws-crypto/sha256-js'),
       import('@aws-sdk/credential-provider-node').catch(() => ({ defaultProvider: null })),

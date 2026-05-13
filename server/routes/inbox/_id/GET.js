@@ -22,7 +22,9 @@ export async function handler({ paths, context }) {
   const [, email] = await findEmailById(fylo, id);
   if (!email)
     return r404("Email not found");
+  // @ts-ignore - email is StoredEmail from findEmailById, TS sees string | StoredEmail
   if (!claims.domains.includes(email.domain))
     return r403("Access denied");
+  // @ts-ignore - email is StoredEmail
   return { ...await presentEmailForDomainMigrations(fylo, email), attachments: await listAttachmentSummaries(fylo, id) };
 }

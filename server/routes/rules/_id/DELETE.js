@@ -22,6 +22,7 @@ export async function handler({ paths, context }) {
   const [docId, existing] = await findRuleById(fylo, ruleId);
   if (!docId || !existing)
     return r404("Rule not found");
+  // @ts-ignore - existing is InboxRule from findRuleById, TS sees string | InboxRule
   if (!claims.domains.includes(existing.domain))
     return r403("Domain access denied");
   await deleteRule(fylo, docId);

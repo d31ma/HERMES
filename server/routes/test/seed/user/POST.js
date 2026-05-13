@@ -18,6 +18,6 @@ export async function handler({ body }) {
   }
   const fylo = await createDb();
   await putUser(fylo, user);
-  const token = signJwt({ email: user.email.toLowerCase(), role: user.role, domains: user.domains }, process.env.JWT_SECRET);
+  const token = signJwt({ email: user.email.toLowerCase(), role: /** @type {'admin' | 'viewer'} */ (user.role), domains: user.domains }, /** @type {string} */ (process.env.JWT_SECRET));
   return { email: user.email.toLowerCase(), token };
 }

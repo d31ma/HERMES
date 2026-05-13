@@ -24,13 +24,15 @@ export async function handler({ paths, body, context }) {
   const [docId, existing] = await findRuleById(fylo, ruleId);
   if (!docId || !existing)
     return r404("Rule not found");
+  // @ts-ignore - existing is InboxRule from findRuleById, TS sees string | InboxRule
   if (!claims.domains.includes(existing.domain))
     return r403("Domain access denied");
   const input = body;
   if (input.actions !== undefined) {
     const actionError = validateInboxRuleActions(input.actions);
     if (actionError)
-      return r400(result.error);
+      // @ts-ignore - discriminated union, error only on valid:false variant
+      return r400(actionError.error);
   }
   await updateRule(fylo, docId, input);
   return { updated: ruleId };

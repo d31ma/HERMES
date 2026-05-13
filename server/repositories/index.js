@@ -49,7 +49,7 @@ export async function createDb(root) {
   }
   const s3Bucket = process.env.FYLO_S3_BUCKET
 
-  /** @type {import('@d31ma/fylo').FyloOptions} */
+  /** @type {Record<string, any>} */
   const options = { root: fyloRoot }
 
   if (s3Bucket) {
@@ -82,7 +82,8 @@ export async function createDb(root) {
  * @returns {Promise<Record<string, T>>}
  */
 export async function collect(gen) {
-  const results = {}
+  /** @type {Record<string, T>} */
+  const results = /** @type {Record<string, T>} */ ({})
   for await (const doc of gen) Object.assign(results, doc)
   return results
 }

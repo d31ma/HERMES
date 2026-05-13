@@ -8,20 +8,20 @@ import { Collections, collect } from './index.js'
 /** @param {RawRuleDoc} raw @returns {import('@/types').InboxRule} */
 function deserialize(raw) { return { ...raw, conditions: typeof raw.conditions === 'string' ? JSON.parse(raw.conditions) : (raw.conditions ?? []), actions: typeof raw.actions === 'string' ? JSON.parse(raw.actions) : (raw.actions ?? []) } }
 /** @param {Omit<import('@/types').InboxRule, 'id'> & { id?: string }} rule @returns {RawRuleDoc} */
-function serialize(rule) { return { ...rule, conditions: JSON.stringify(rule.conditions ?? []), actions: JSON.stringify(rule.actions ?? []) } }
+function serialize(rule) { return /** @type {RawRuleDoc} */ ({ ...rule, conditions: JSON.stringify(rule.conditions ?? []), actions: JSON.stringify(rule.actions ?? []) }) }
 
 /** @returns {Promise<import('@/types').InboxRule[]>} */
 /** @param {import("@d31ma/fylo").default} fylo */
 export async function listRules(fylo, allowedDomains) {
   const docs = await collect(fylo.findDocs(Collections.INBOX_RULES, { $ops: [] }).collect())
-  return Object.values(docs).filter(r => allowedDomains.includes(r.domain)).map(deserialize)
+  return Object.values(docs).filter(r => allowedDomains.includes(r.domain)).map(r => deserialize(/** @type {RawRuleDoc} */ (r)))
 }
 
 /** @returns {Promise<import('@/types').InboxRule[]>} */
 /** @param {import("@d31ma/fylo").default} fylo */
 export async function listEnabledRulesForDomain(fylo, domain) {
   const docs = await collect(fylo.findDocs(Collections.INBOX_RULES, { $ops: [{ domain: { $eq: domain } }] }).collect())
-  return Object.values(docs).filter(r => r.enabled).map(deserialize)
+  return Object.values(docs).filter(r => r.enabled).map(r => deserialize(/** @type {RawRuleDoc} */ (r)))
 }
 
 /** @returns {Promise<[string | null, import('@/types').InboxRule | null]>} */
@@ -29,7 +29,7 @@ export async function listEnabledRulesForDomain(fylo, domain) {
 export async function findRuleById(fylo, ruleId) {
   const docs = await collect(fylo.findDocs(Collections.INBOX_RULES, { $ops: [{ id: { $eq: ruleId } }] }).collect())
   const entry = Object.entries(docs)[0]
-  return entry ? [entry[0], deserialize(entry[1])] : [null, null]
+  return entry ? [entry[0], deserialize(/** @type {RawRuleDoc} */ (entry[1]))] : [null, null]
 }
 
 /** @returns {Promise<string>} */

@@ -18,7 +18,7 @@ function serialize(config) { return { ...config, routes: JSON.stringify(config.r
  */
 export async function listDomains(fylo, allowedDomains) {
   const docs = await collect(fylo.findDocs(Collections.DOMAINS, { $ops: [] }).collect())
-  return Object.values(docs).filter(d => allowedDomains.includes(d.domain)).map(deserialize)
+  return Object.values(docs).filter(d => allowedDomains.includes(d.domain)).map(d => deserialize(/** @type {RawDomainDoc} */ (d)))
 }
 
 /** @returns {Promise<[string | null, import('@/types').DomainConfig | null]>} */
@@ -26,7 +26,7 @@ export async function listDomains(fylo, allowedDomains) {
 export async function findDomainEntry(fylo, domain) {
   const docs = await collect(fylo.findDocs(Collections.DOMAINS, { $ops: [{ domain: { $eq: domain } }] }).collect())
   const entry = Object.entries(docs)[0]
-  return entry ? [entry[0], deserialize(entry[1])] : [null, null]
+  return entry ? [entry[0], deserialize(/** @type {RawDomainDoc} */ (entry[1]))] : [null, null]
 }
 
 /** @returns {Promise<string>} */

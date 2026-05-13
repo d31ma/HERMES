@@ -6,7 +6,7 @@ import { hasControlChars, hasDomainClaim, normalizeDomain, normalizeEmailAddress
 /**
  * POST /users
  * @param {object} params
- * @param {{ email: string, phones: string[], domains: string[], role: string }} params.body - Request payload
+ * @param {{ email: string, phones: string[], domains: string[], role: string, aliases?: string[] }} params.body - Request payload
  * @param {{ bearer?: { token: string } }} params.context - Request context
  * @returns {Promise<Record<string, unknown>>}
  */
@@ -36,7 +36,7 @@ export async function handler({ body, context }) {
   const domains = user.domains.map((domain) => normalizeDomain(domain));
   if (domains.some((domain) => !domain))
     return r400("domains invalid");
-  if (!domains.every((domain) => hasDomainClaim(claims.domains, domain))) {
+  if (!domains.every((domain) => hasDomainClaim(claims.domains, /** @type {string} */ (domain)))) {
     return r403("Domain access denied");
   }
   if (user.phones.some((phone) => !phone || hasControlChars(phone)))
