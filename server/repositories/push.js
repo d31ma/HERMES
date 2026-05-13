@@ -4,27 +4,39 @@ import { Collections, collect } from './index.js'
 /** @param {string} endpoint @returns {string} */
 export function pushSubscriptionId(endpoint) { return createHash('sha256').update(endpoint).digest('hex') }
 
-/** @returns {Promise<Array<import('@/types').PushSubscriptionRecord & { docId: string }>>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} userEmail
+ * @returns {Promise<Array<import('@/types').PushSubscriptionRecord & { docId: string }>>}
+ */
 export async function listPushSubscriptions(fylo, userEmail) {
   const docs = await collect(fylo.findDocs(Collections.PUSH_SUBSCRIPTIONS, { $ops: [{ userEmail: { $eq: userEmail.toLowerCase() } }] }).collect())
   return Object.entries(docs).map(([docId, sub]) => ({ docId, ...sub }))
 }
 
-/** @returns {Promise<Array<import('@/types').PushSubscriptionRecord & { docId: string }>>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} address
+ * @returns {Promise<Array<import('@/types').PushSubscriptionRecord & { docId: string }>>}
+ */
 export async function listPushSubscriptionsForAddress(fylo, address) { return await listPushSubscriptions(fylo, address.toLowerCase()) }
 
-/** @returns {Promise<[string | null, import('@/types').PushSubscriptionRecord | null]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} id
+ * @returns {Promise<[string | null, import('@/types').PushSubscriptionRecord | null]>}
+ */
 export async function findPushSubscriptionById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.PUSH_SUBSCRIPTIONS, { $ops: [{ id: { $eq: id } }] }).collect())
   const entry = Object.entries(docs)[0]
   return entry ? [entry[0], entry[1]] : [null, null]
 }
 
-/** @returns {Promise<import('@/types').PushSubscriptionRecord>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {import('@/types').PushSubscriptionRecord} subscription
+ * @returns {Promise<import('@/types').PushSubscriptionRecord>}
+ */
 export async function upsertPushSubscription(fylo, subscription) {
   const now = new Date().toISOString()
   const id = pushSubscriptionId(subscription.endpoint)
@@ -34,8 +46,11 @@ export async function upsertPushSubscription(fylo, subscription) {
   return record
 }
 
-/** @returns {Promise<boolean>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} endpoint
+ * @returns {Promise<boolean>}
+ */
 export async function deletePushSubscriptionByEndpoint(fylo, endpoint) {
   const [docId] = await findPushSubscriptionById(fylo, pushSubscriptionId(endpoint))
   if (!docId) return false
@@ -43,6 +58,9 @@ export async function deletePushSubscriptionByEndpoint(fylo, endpoint) {
   return true
 }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} docId
+ * @returns {Promise<void>}
+ */
 export async function deletePushSubscriptionDoc(fylo, docId) { await fylo.delDoc(Collections.PUSH_SUBSCRIPTIONS, docId) }

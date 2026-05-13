@@ -25,22 +25,31 @@ export function toAttachmentSummary(attachment) {
   return { id, filename, contentType, size, disposition, contentId }
 }
 
-/** @returns {Promise<Array<EmailAttachmentRecord & { docId: string }>>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} emailId
+ * @returns {Promise<Array<EmailAttachmentRecord & { docId: string }>>}
+ */
 export async function listAttachments(fylo, emailId) {
   const docs = await collect(fylo.findDocs(Collections.ATTACHMENTS, { $ops: [{ emailId: { $eq: emailId } }] }).collect())
   return Object.entries(docs).map(([docId, attachment]) => ({ docId, ...attachment }))
 }
 
-/** @returns {Promise<EmailAttachmentSummary[]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} emailId
+ * @returns {Promise<EmailAttachmentSummary[]>}
+ */
 export async function listAttachmentSummaries(fylo, emailId) {
   // @ts-ignore - listAttachments infers { docId: string }[] from spread but returns EmailAttachmentRecord & { docId }
   return (await listAttachments(fylo, emailId)).map(toAttachmentSummary)
 }
 
-/** @returns {Promise<Map<string, EmailAttachmentSummary[]>>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string[]} allowedDomains
+ * @returns {Promise<Map<string, EmailAttachmentSummary[]>>}
+ */
 export async function listAttachmentSummariesByEmail(fylo, allowedDomains) {
   const docs = await collect(fylo.findDocs(Collections.ATTACHMENTS, { $ops: [] }).collect())
   const grouped = new Map()
@@ -53,16 +62,24 @@ export async function listAttachmentSummariesByEmail(fylo, allowedDomains) {
   return grouped
 }
 
-/** @returns {Promise<[string | null, EmailAttachmentRecord | null]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} id
+ * @returns {Promise<[string | null, EmailAttachmentRecord | null]>}
+ */
 export async function findAttachmentById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.ATTACHMENTS, { $ops: [{ id: { $eq: id } }] }).collect())
   const entry = Object.entries(docs)[0]
   return entry ? [entry[0], entry[1]] : [null, null]
 }
 
-/** @returns {Promise<EmailAttachmentSummary[]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} emailId
+ * @param {string} domain
+ * @param {ParsedAttachment[]} attachments
+ * @returns {Promise<EmailAttachmentSummary[]>}
+ */
 export async function saveEmailAttachments(fylo, emailId, domain, attachments) {
   const saved = []
   if (attachments.length === 0) return saved
@@ -83,14 +100,20 @@ export async function saveEmailAttachments(fylo, emailId, domain, attachments) {
   return saved
 }
 
-/** @returns {Promise<Uint8Array>} */
+/**
+ * @param {EmailAttachmentRecord} attachment
+ * @returns {Promise<Uint8Array>}
+ */
 export async function readAttachmentContent(attachment) {
   ensureInsideRoot(attachmentRoot(), attachment.storagePath)
   return await Bun.file(attachment.storagePath).bytes()
 }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} emailId
+ * @returns {Promise<void>}
+ */
 export async function deleteAttachmentsForEmail(fylo, emailId) {
   const attachments = /** @type {Array<EmailAttachmentRecord & { docId: string }>} */ (await listAttachments(fylo, emailId))
   await Promise.all(attachments.map(async ({ docId, storagePath }) => {

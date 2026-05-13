@@ -10,34 +10,50 @@ function deserialize(raw) { return { ...raw, conditions: typeof raw.conditions =
 /** @param {Omit<import('@/types').InboxRule, 'id'> & { id?: string }} rule @returns {RawRuleDoc} */
 function serialize(rule) { return /** @type {RawRuleDoc} */ ({ ...rule, conditions: JSON.stringify(rule.conditions ?? []), actions: JSON.stringify(rule.actions ?? []) }) }
 
-/** @returns {Promise<import('@/types').InboxRule[]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string[]} allowedDomains
+ * @returns {Promise<import('@/types').InboxRule[]>}
+ */
 export async function listRules(fylo, allowedDomains) {
   const docs = await collect(fylo.findDocs(Collections.INBOX_RULES, { $ops: [] }).collect())
   return Object.values(docs).filter(r => allowedDomains.includes(r.domain)).map(r => deserialize(/** @type {RawRuleDoc} */ (r)))
 }
 
-/** @returns {Promise<import('@/types').InboxRule[]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} domain
+ * @returns {Promise<import('@/types').InboxRule[]>}
+ */
 export async function listEnabledRulesForDomain(fylo, domain) {
   const docs = await collect(fylo.findDocs(Collections.INBOX_RULES, { $ops: [{ domain: { $eq: domain } }] }).collect())
   return Object.values(docs).filter(r => r.enabled).map(r => deserialize(/** @type {RawRuleDoc} */ (r)))
 }
 
-/** @returns {Promise<[string | null, import('@/types').InboxRule | null]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} ruleId
+ * @returns {Promise<[string | null, import('@/types').InboxRule | null]>}
+ */
 export async function findRuleById(fylo, ruleId) {
   const docs = await collect(fylo.findDocs(Collections.INBOX_RULES, { $ops: [{ id: { $eq: ruleId } }] }).collect())
   const entry = Object.entries(docs)[0]
   return entry ? [entry[0], deserialize(/** @type {RawRuleDoc} */ (entry[1]))] : [null, null]
 }
 
-/** @returns {Promise<string>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {import('@/types').InboxRule} rule
+ * @returns {Promise<string>}
+ */
 export async function putRule(fylo, rule) { return await fylo.putData(Collections.INBOX_RULES, serialize(rule)) }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} docId
+ * @param {Partial<import('@/types').InboxRule>} patch
+ * @returns {Promise<void>}
+ */
 export async function updateRule(fylo, docId, patch) {
   const serialized = {}
   if (patch.name !== undefined) serialized.name = patch.name
@@ -48,6 +64,9 @@ export async function updateRule(fylo, docId, patch) {
   await fylo.patchDoc(Collections.INBOX_RULES, { [docId]: serialized })
 }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} docId
+ * @returns {Promise<void>}
+ */
 export async function deleteRule(fylo, docId) { await fylo.delDoc(Collections.INBOX_RULES, docId) }

@@ -27,28 +27,42 @@ export async function listEmails(fylo, allowedDomains, filters = {}) {
   return limit == null ? emails.slice(offset) : emails.slice(offset, offset + limit)
 }
 
-/** @returns {Promise<[string | null, import('@/types').StoredEmail | null]>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} id
+ * @returns {Promise<[string | null, import('@/types').StoredEmail | null]>}
+ */
 export async function findEmailById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.EMAILS, { $ops: [{ id: { $eq: id } }] }).collect())
   const entry = Object.entries(docs)[0]
   return entry ? [entry[0], normalizeEmail(/** @type {import('@/types').StoredEmail} */ (entry[1]))] : [null, null]
 }
 
-/** @returns {Promise<string>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {import('@/types').StoredEmail} email
+ * @returns {Promise<string>}
+ */
 export async function putEmail(fylo, email) {
   return await fylo.putData(Collections.EMAILS, email)
 }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} docId
+ * @param {Partial<import('@/types').StoredEmail>} patch
+ * @returns {Promise<void>}
+ */
 export async function updateEmail(fylo, docId, patch) {
   await fylo.patchDoc(Collections.EMAILS, { [docId]: patch })
 }
 
-/** @returns {Promise<void>} */
-/** @param {import("@d31ma/fylo").default} fylo */
+/**
+ * @param {import("@d31ma/fylo").default} fylo
+ * @param {string} docId
+ * @param {string} emailId
+ * @returns {Promise<void>}
+ */
 export async function deleteEmail(fylo, docId, emailId) {
   if (emailId) await deleteAttachmentsForEmail(fylo, emailId)
   await fylo.delDoc(Collections.EMAILS, docId)
