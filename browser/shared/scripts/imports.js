@@ -1,4 +1,19 @@
-// HERMES shell bootstrap — Material Design M2 + PWA setup
+/**
+ * HERMES shell bootstrap — Material Design M2 + PWA setup.
+ *
+ * Responsibilities:
+ *   - Inject Google Fonts stylesheet (IBM Plex Sans + Mono).
+ *   - Load Material Web components via CDN (esm.sh).
+ *   - Initialize the colour-scheme theme from localStorage or OS preference.
+ *   - Register the PWA service worker.
+ *   - Chain-load Mousetrap and the HERMES keyboard shortcut manager.
+ *   - Provide a global Material-style toast / snackbar renderer.
+ *
+ * This file should be loaded synchronously in `<head>` so that fonts,
+ * theme, and the service worker start as early as possible.
+ *
+ * @module imports
+ */
 
 document.documentElement.lang = 'en'
 
@@ -16,7 +31,15 @@ if (!document.querySelector('link[data-demo-style]')) {
 }
 
 // ── Theme initialization ──────────────────────────────────────────────
-(function initTheme() {
+
+/**
+ * Apply the persisted or system-prefered colour theme.
+ *
+ * Checks localStorage key `hermes-theme` first; if unset or unrecognized,
+ * falls back to the OS `prefers-color-scheme` media query.  The result is
+ * stored on `<html data-theme>` for CSS variable switching.
+ */
+;(function initTheme() {
   const stored = localStorage.getItem('hermes-theme')
   if (stored === 'light' || stored === 'dark' || stored === 'auto') {
     document.documentElement.setAttribute('data-theme', stored)
@@ -33,6 +56,14 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
 }
 
 // ── Keyboard shortcuts ────────────────────────────────────────────────
+
+/**
+ * Chain-load Mousetrap then the HERMES keyboard manager.
+ *
+ * Appends `<script>` tags in order so that `keyboard.js` can rely on the
+ * global `Mousetrap` binding.  Once both are loaded, `_hermesKeyboard.init()`
+ * is called automatically.
+ */
 ;(function loadKeyboard() {
   var mtScript = document.createElement('script')
   mtScript.src = '/shared/scripts/mousetrap.js'
@@ -50,8 +81,33 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
 })()
 
 // Global toasts — rendered as Material snackbar
+
+/** @type {number|undefined} Auto-dismiss timeout ID */
 let _toastTimer
+
+/** @type {number|undefined} Countdown interval ID */
 let _toastCountdownTimer
+
+/**
+ * Display a Material-style toast / snackbar notification.
+ *
+ * Creates (or reuses) a fixed-position `<div id="hermes-toast">` with
+ * ARIA live-region attributes.  Supports two calling conventions:
+ *
+ * 1. **Simple string** — `_hermesShowToast('Copied!', 3000)`
+ * 2. **Interactive object** — `_hermesShowToast({ msg: 'Undo?', duration: 5000, action: { label: 'Undo', onClick: fn } })`
+ *
+ * When an action button is provided the toast becomes interactive
+ * (pointer-events enabled) and displays a countdown label.  Clicking the
+ * action button dismisses the toast early and invokes the callback.
+ *
+ * @param {string|{
+ *   msg: string,
+ *   duration?: number,
+ *   action?: { label: string, onClick: Function }
+ * }} msgOrOpts - Toast message text or configuration object.
+ * @param {number} [duration=2500] - Display duration in milliseconds (ignored when the first argument is an object that provides its own `duration`).
+ */
 window._hermesShowToast = (msgOrOpts, duration = 2500) => {
   clearTimeout(_toastTimer)
   if (_toastCountdownTimer) clearInterval(_toastCountdownTimer)

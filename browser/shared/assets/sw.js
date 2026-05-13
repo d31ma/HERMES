@@ -1,4 +1,18 @@
+/**
+ * HERMES Progressive Web App service worker.
+ *
+ * Implements install/activate lifecycle events, three cache strategies
+ * (pre-cache shell, network-first, stale-while-revalidate), push
+ * notification display, and notification-click navigation with existing-
+ * window focus reuse.
+ *
+ * @module sw
+ */
+
+/** @type {string} Cache storage key — bump to invalidate */
 const CACHE_VERSION = 'hermes-pwa-v1'
+
+/** @type {string[]} Static assets to pre-cache on install */
 const APP_SHELL = [
   '/',
   '/index.html',
@@ -16,6 +30,7 @@ const APP_SHELL = [
   '/assets/maskable-icon-512.png',
 ]
 
+/** @type {RegExp} File extensions eligible for stale-while-revalidate caching */
 const STATIC_EXTENSIONS = /\.(?:css|js|json|svg|png|webp|ico|woff2?)$/i
 
 self.addEventListener('install', event => {
@@ -100,6 +115,18 @@ self.addEventListener('notificationclick', event => {
   })())
 })
 
+/**
+ * Network-first cache strategy.
+ *
+ * Tries the network first; on success caches the response and returns it.
+ * On failure falls back to cache, then to an optional fallback path, and
+ * finally to a generic error response.
+ *
+ * @async
+ * @param {Request} request - The fetch request to serve.
+ * @param {string} [fallbackPath] - Optional fallback cache key (e.g. '/index.html').
+ * @returns {Promise<Response>} The best available response.
+ */
 async function networkFirst(request, fallbackPath) {
   const cache = await caches.open(CACHE_VERSION)
   try {
@@ -111,6 +138,16 @@ async function networkFirst(request, fallbackPath) {
   }
 }
 
+/**
+ * Stale-while-revalidate cache strategy.
+ *
+ * Returns the cached response immediately (if any) while re-fetching from
+ * the network in the background to update the cache for next time.
+ *
+ * @async
+ * @param {Request} request - The fetch request to serve.
+ * @returns {Promise<Response>} The cached response, the fresh network response, or an error.
+ */
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_VERSION)
   const cached = await cache.match(request)
@@ -124,6 +161,15 @@ async function staleWhileRevalidate(request) {
   return cached || await fresh || Response.error()
 }
 
+/**
+ * Safely parse the push event payload.
+ *
+ * Tries JSON first; falls back to plain-text body if JSON parsing fails.
+ * Returns an empty object when no data is present.
+ *
+ * @param {PushEvent} event - The push event received by the service worker.
+ * @returns {{ title?: string, body?: string, url?: string, emailId?: string }} Parsed message payload.
+ */
 function readPushMessage(event) {
   if (!event.data) return {}
   try {
