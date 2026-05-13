@@ -1,3 +1,4 @@
+/// <reference types="mousetrap" />
 /**
  * HERMES Keyboard Shortcut Manager.
  *

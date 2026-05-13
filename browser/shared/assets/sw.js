@@ -1,3 +1,4 @@
+// @ts-nocheck — ServiceWorker global scope (self.skipWaiting, clients, registration, PushEvent)
 /**
  * HERMES Progressive Web App service worker.
  *
