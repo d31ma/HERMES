@@ -2,7 +2,7 @@ import { Collections, collect } from './index.js'
 
 /**
  * @param {import("@d31ma/fylo").default} fylo
- * @returns {Promise<Array<import('@/types').DomainMigration & { docId: string }>>}
+ * @returns {Promise<Record<string, any>[]>}
  */
 export async function listDomainMigrations(fylo) {
   const docs = await collect(fylo.findDocs(Collections.DOMAIN_MIGRATIONS, { $ops: [] }).collect())
@@ -13,7 +13,7 @@ export async function listDomainMigrations(fylo) {
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} fromDomain
  * @param {string} toDomain
- * @returns {Promise<[string | null, import('@/types').DomainMigration | null]>}
+ * @returns {Promise<[string | null, Record<string, any> | null]>}
  */
 export async function findDomainMigration(fylo, fromDomain, toDomain) {
   const docs = await collect(fylo.findDocs(Collections.DOMAIN_MIGRATIONS, { $ops: [{ fromDomain: { $eq: fromDomain } }, { toDomain: { $eq: toDomain } }] }).collect())

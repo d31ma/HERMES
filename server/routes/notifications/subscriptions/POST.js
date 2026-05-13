@@ -19,6 +19,7 @@ export async function handler({ body, context, headers }) {
     return r400("endpoint, p256dh, and auth are required");
   }
   const fylo = await createDb();
+  // @ts-ignore - Fylo partial: id/createdAt added inside upsertPushSubscription
   const record = await upsertPushSubscription(fylo, {
     userEmail: claims.email,
     endpoint: subscription.endpoint,

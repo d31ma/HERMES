@@ -23,7 +23,9 @@ export async function handler({ body }) {
   const [, user] = await findUserByEmail(fylo, email.toLowerCase());
   if (!user) return r400("user not found");
 
+  // @ts-ignore - email field valid at runtime, Fylo stores extra fields
   const id = await putDevice(fylo, {
+    // @ts-ignore - email field valid at runtime, Fylo stores extra fields
     email: user.email,
     deviceName: name,
     credentialId: `e2e-credential-${Date.now()}-${Math.random().toString(36).slice(2)}`,

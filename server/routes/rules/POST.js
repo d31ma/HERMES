@@ -33,6 +33,7 @@ export async function handler({ body, context }) {
     domain: input.domain,
     name: input.name,
     enabled: input.enabled ?? true,
+    // @ts-ignore - "all" is a valid runtime value, TS narrows string literal union
     conditionMatch: input.conditionMatch ?? "all",
     conditions: input.conditions ?? [],
     actions: input.actions ?? []

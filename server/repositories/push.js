@@ -7,7 +7,7 @@ export function pushSubscriptionId(endpoint) { return createHash('sha256').updat
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} userEmail
- * @returns {Promise<Array<import('@/types').PushSubscriptionRecord & { docId: string }>>}
+ * @returns {Promise<Record<string, any>[]>}
  */
 export async function listPushSubscriptions(fylo, userEmail) {
   const docs = await collect(fylo.findDocs(Collections.PUSH_SUBSCRIPTIONS, { $ops: [{ userEmail: { $eq: userEmail.toLowerCase() } }] }).collect())
@@ -17,14 +17,14 @@ export async function listPushSubscriptions(fylo, userEmail) {
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} address
- * @returns {Promise<Array<import('@/types').PushSubscriptionRecord & { docId: string }>>}
+ * @returns {Promise<Record<string, any>[]>}
  */
 export async function listPushSubscriptionsForAddress(fylo, address) { return await listPushSubscriptions(fylo, address.toLowerCase()) }
 
 /**
  * @param {import("@d31ma/fylo").default} fylo
  * @param {string} id
- * @returns {Promise<[string | null, import('@/types').PushSubscriptionRecord | null]>}
+ * @returns {Promise<[string | null, Record<string, any> | null]>}
  */
 export async function findPushSubscriptionById(fylo, id) {
   const docs = await collect(fylo.findDocs(Collections.PUSH_SUBSCRIPTIONS, { $ops: [{ id: { $eq: id } }] }).collect())

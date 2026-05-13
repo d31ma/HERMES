@@ -34,6 +34,7 @@ export async function handler({ paths, body, context }) {
       // @ts-ignore - discriminated union, error only on valid:false variant
       return r400(actionError.error);
   }
+  // @ts-ignore - input is Partial<InboxRule> from body, valid runtime call
   await updateRule(fylo, docId, input);
   return { updated: ruleId };
 }

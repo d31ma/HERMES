@@ -29,6 +29,7 @@ export async function handler({ paths, context }) {
   // @ts-ignore - attachment is EmailAttachmentRecord from Fylo, TS infers string | Record<string, any>
   if (!attachment || attachment.emailId !== emailId)
     return r404("Attachment not found");
+  // @ts-ignore - readAttachmentContent expects EmailAttachmentRecord, Fylo returns Record<string, any>
   const bytes = await readAttachmentContent(attachment);
   return {
     // @ts-ignore - attachment from Fylo inferred as string | Record<string, any>

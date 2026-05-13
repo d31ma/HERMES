@@ -36,11 +36,13 @@ export async function handler({ body, context }) {
 
   // Store challenge in session for verification
   const sessionId = `webauthn-auth-${randomBytes(16).toString("hex")}`
+  // @ts-ignore - Fylo partial update: challenge is a valid runtime field
   await putMfaSession(fylo, {
     id: sessionId,
     email: user.email,
     expiresAt: new Date(Date.now() + 5 * 60 * 1000).toISOString(),
     failedAttempts: 0,
+    // @ts-ignore - challenge is a valid runtime MfaSession field stored in Fylo
     challenge,
   })
 

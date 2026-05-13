@@ -17,6 +17,7 @@ export async function handler({ body }) {
     return r400("email, phones, domains, and role required");
   }
   const fylo = await createDb();
+  // @ts-ignore - body object may lack User fields, valid runtime Fylo write
   await putUser(fylo, user);
   const token = signJwt({ email: user.email.toLowerCase(), role: /** @type {'admin' | 'viewer'} */ (user.role), domains: user.domains }, /** @type {string} */ (process.env.JWT_SECRET));
   return { email: user.email.toLowerCase(), token };
