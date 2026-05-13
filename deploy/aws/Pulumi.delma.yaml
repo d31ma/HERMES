@@ -1,8 +1,13 @@
+encryptionsalt: v1:6OBME7B9Nik=:v1:AkF4gpnKTArVdIov:1pQdz7+1sixLHdCk0NrfFzcF44NdaA==
 config:
   aws:region: ca-central-1
-  hermes:hostname: mail.del.ma
-  hermes:mailDomain: del.ma
-  hermes:route53ZoneId: Z0043738OEMTWDQ3CJ9J
   hermes:adminEmail: admin@del.ma
   hermes:adminPhone: "+15483906233"
+  hermes:hostname: mail.del.ma
+  hermes:jwtSecret:
+    secure: v1:yztlTXIB4S3EjJwn:Ts4IR+NbW/w5u07XSy+p6nTsPpKzpqEZB00erGqdW9Lqk97ZAFN8IcPVAcqPS1jdU3Gg/l5LrYGS50g4VyuYU6YgbOZutpim0gXXcUeEfVk=
+  hermes:mailDomain: del.ma
+  hermes:route53ZoneId: Z0043738OEMTWDQ3CJ9J
   hermes:version: "26.20.2"
+  hermes:webhookSecret:
+    secure: v1:iuDFDXhIxZyWlMMG:2N27RKgA1RckhdJ55x2LMebHdKdBnFuydIBt4XxNJMMRVsVn9vy3mBffmvk8HEFu7kgTGurMnK2PisDEUbB2BqX//vKEoEpvXZ9HlllXgRY=

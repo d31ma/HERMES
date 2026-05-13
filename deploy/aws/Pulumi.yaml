@@ -2,6 +2,6 @@ name: hermes-delma
 runtime:
   name: nodejs
   options:
-    packagemanager: bun
+    packagemanager: npm
     typescript: false
 description: HERMES mail server — mail.del.ma (ca-central-1)
