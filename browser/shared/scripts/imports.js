@@ -82,11 +82,11 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
 
 // Global toasts — rendered as Material snackbar
 
-/** @type {number|undefined} Auto-dismiss timeout ID */
-let _toastTimer
+/** @type {ReturnType<typeof setTimeout> | null} Auto-dismiss timeout ID */
+let _toastTimer = null
 
-/** @type {number|undefined} Countdown interval ID */
-let _toastCountdownTimer
+/** @type {ReturnType<typeof setInterval> | null} Countdown interval ID */
+let _toastCountdownTimer = null
 
 /**
  * Display a Material-style toast / snackbar notification.
@@ -109,8 +109,8 @@ let _toastCountdownTimer
  * @param {number} [duration=2500] - Display duration in milliseconds (ignored when the first argument is an object that provides its own `duration`).
  */
 window._hermesShowToast = (msgOrOpts, duration = 2500) => {
-  clearTimeout(_toastTimer)
-  if (_toastCountdownTimer) clearInterval(_toastCountdownTimer)
+  if (_toastTimer !== null) clearTimeout(_toastTimer)
+  if (_toastCountdownTimer) if (_toastCountdownTimer !== null) clearInterval(_toastCountdownTimer)
   let el = document.getElementById('hermes-toast')
   if (!el) {
     el = document.createElement('div')
@@ -127,7 +127,7 @@ window._hermesShowToast = (msgOrOpts, duration = 2500) => {
     const d = dur ?? duration
     let seconds = Math.ceil(d / 1000)
     el.style.pointerEvents = 'auto'
-    el.innerHTML = `<span id="hermes-toast-msg">${msg} <span id="hermes-toast-countdown">(${seconds}s)</span></span><button id="hermes-toast-action" style="margin-left:1rem;background:var(--ms-primary,#6750a4);color:#fff;border:none;border-radius:4px;padding:0.25rem 0.75rem;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;">${action.label}</button>`
+    el.innerHTML = `<span id="hermes-toast-msg">${msg} <span id="hermes-toast-countdown">(${seconds}s)</span></span><button id="hermes-toast-action" style="margin-left:1rem;background:var(--ms-primary,#6750a4);color:#fff;border:none;border-radius:4px;padding:0.25rem 0.75rem;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;">${action?.label || ''}</button>`
     el.style.opacity = '1'
 
     // Countdown
@@ -135,7 +135,7 @@ window._hermesShowToast = (msgOrOpts, duration = 2500) => {
     _toastCountdownTimer = setInterval(() => {
       seconds--
       if (seconds <= 0) {
-        clearInterval(_toastCountdownTimer)
+        if (_toastCountdownTimer !== null) clearInterval(_toastCountdownTimer)
         el.style.opacity = '0'; el.style.pointerEvents = 'none'
       } else if (countdownEl) {
         countdownEl.textContent = `(${seconds}s)`
@@ -146,21 +146,21 @@ window._hermesShowToast = (msgOrOpts, duration = 2500) => {
     const actionBtn = document.getElementById('hermes-toast-action')
     if (actionBtn && action?.onClick) {
       actionBtn.addEventListener('click', () => {
-        clearInterval(_toastCountdownTimer)
-        clearTimeout(_toastTimer)
+        if (_toastCountdownTimer !== null) clearInterval(_toastCountdownTimer)
+        if (_toastTimer !== null) clearTimeout(_toastTimer)
         el.style.opacity = '0'; el.style.pointerEvents = 'none'
         action.onClick()
       })
     }
 
     _toastTimer = setTimeout(() => {
-      clearInterval(_toastCountdownTimer)
+      if (_toastCountdownTimer !== null) clearInterval(_toastCountdownTimer)
       el.style.opacity = '0'; el.style.pointerEvents = 'none'
     }, d)
   } else {
     el.style.pointerEvents = 'none'
     el.innerHTML = ''
-    el.textContent = msgOrOpts
+  el.textContent = typeof msgOrOpts === "string" ? msgOrOpts : msgOrOpts.msg
     el.style.opacity = '1'
     _toastTimer = setTimeout(() => { el.style.opacity = '0' }, duration)
   }
