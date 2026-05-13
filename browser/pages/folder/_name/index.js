@@ -18,7 +18,7 @@ export default class extends Tac {
    */
   get folderName() {
     const p = this.props || {}
-    return p.folder || location.pathname.split('/')[1] || 'inbox'
+    return /** @type {string} */ (p.folder) || location.pathname.split('/')[1] || 'inbox'
   }
 
   /**

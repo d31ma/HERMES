@@ -207,6 +207,7 @@ export default class extends Tac {
     if (!this.$notificationSupported) { this.$notificationError = 'This browser cannot receive Web Push notifications.'; return }
     this.$notificationLoading = true
     const apiFetch = window._hermes?.apiFetch
+    if (!apiFetch) { this.$notificationLoading = false; return }
     try {
       const permission = await Notification.requestPermission(); this.$notificationPermission = permission
       if (permission !== 'granted') { this.$notificationError = 'Notifications were not allowed.'; return }
@@ -234,6 +235,7 @@ export default class extends Tac {
   async disableNotifications() {
     this.$notificationError = ''; this.syncNotificationState(); if (!this.$notificationSupported) return
     this.$notificationLoading = true; const apiFetch = window._hermes?.apiFetch
+    if (!apiFetch) { this.$notificationLoading = false; return }
     try {
       const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription()
       if (sub) { await apiFetch('/notifications/subscriptions', { method: 'DELETE', body: JSON.stringify({ endpoint: sub.endpoint }) }); await sub.unsubscribe() }
@@ -387,7 +389,7 @@ export default class extends Tac {
     this.$deviceLoading = true; this.$deviceError = ''
     const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
     try {
-      const res = await apiFetch('/auth/mfa/setup', { method: 'POST', body: JSON.stringify({ setupToken: this.$deviceProvision.setupToken, code: this.$newDeviceCode, name: this.$newDeviceName.trim() || 'Authenticator' }) })
+      const res = await apiFetch('/auth/mfa/setup', { method: 'POST', body: JSON.stringify({ setupToken: /** @type {{setupToken: string}} */ (this.$deviceProvision).setupToken, code: this.$newDeviceCode, name: this.$newDeviceName.trim() || 'Authenticator' }) })
       if (res?.ok) { window._hermes?.toast('Device added.'); this.$showAddDevice = false; this.$deviceProvision = null; this.$newDeviceName = this.$newDeviceCode = ''; this.clearMfaSetupState(); const mr = await apiFetch('/mfa/devices'); this.$mfaDevices = mr?.ok ? await mr.json() : [] }
       else { const data = await res?.json(); this.$deviceError = data?.error || 'Invalid code.'; this.saveMfaSetupState() }
     } catch { this.$deviceError = 'Network error.'; this.saveMfaSetupState() } finally { this.$deviceLoading = false }
@@ -427,7 +429,7 @@ export default class extends Tac {
       this.$newSigDomain = this.$newSigName = this.$newSigText = ''
       window._hermes?.toast('Signature saved.')
     } else {
-      const data = await res.json()
+      const data = await res?.json()
       this.$signatureError = data?.error || 'Failed to save signature.'
     }
   }

@@ -60,7 +60,7 @@ export default class extends Tac {
   @onMount
   async initFromPrefill() {
     const routePrefill = window._hermes?.consumeComposePrefill?.() || {}
-    const prefill = (this.props || {}).prefill || routePrefill
+    const prefill = /** @type {{to?: string, subject?: string}} */ ((this.props || {}).prefill || routePrefill)
     this.$to = prefill.to || ''
     this.$subject = prefill.subject || ''
     await this.loadTemplates()
@@ -126,7 +126,7 @@ export default class extends Tac {
    */
   _getEditorText() {
     const editor = document.querySelector('[data-compose-editor]')
-    return editor ? (editor.innerText || editor.textContent || '') : (this.$text || '')
+    return editor ? (/** @type {HTMLElement} */ (editor).innerText || editor.textContent || '') : (this.$text || '')
   }
 
   /**
@@ -147,7 +147,7 @@ export default class extends Tac {
    */
   execBold() {
     const editor = document.querySelector('[data-compose-editor]')
-    if (editor) { editor.focus(); document.execCommand('bold') }
+    if (editor) { /** @type {HTMLElement} */ (editor).focus(); document.execCommand('bold') }
   }
 
   /**
@@ -157,7 +157,7 @@ export default class extends Tac {
    */
   execItalic() {
     const editor = document.querySelector('[data-compose-editor]')
-    if (editor) { editor.focus(); document.execCommand('italic') }
+    if (editor) { /** @type {HTMLElement} */ (editor).focus(); document.execCommand('italic') }
   }
 
   /**
@@ -167,7 +167,7 @@ export default class extends Tac {
    */
   execBulletList() {
     const editor = document.querySelector('[data-compose-editor]')
-    if (editor) { editor.focus(); document.execCommand('insertUnorderedList') }
+    if (editor) { /** @type {HTMLElement} */ (editor).focus(); document.execCommand('insertUnorderedList') }
   }
 
   /**
@@ -177,7 +177,7 @@ export default class extends Tac {
    */
   execNumberedList() {
     const editor = document.querySelector('[data-compose-editor]')
-    if (editor) { editor.focus(); document.execCommand('insertOrderedList') }
+    if (editor) { /** @type {HTMLElement} */ (editor).focus(); document.execCommand('insertOrderedList') }
   }
 
   /**
@@ -188,7 +188,7 @@ export default class extends Tac {
   execLink() {
     const editor = document.querySelector('[data-compose-editor]')
     if (!editor) return
-    editor.focus()
+    /** @type {HTMLElement} */ (editor).focus()
     const url = prompt('Enter URL:')
     if (url) document.execCommand('createLink', false, url)
   }
@@ -243,13 +243,14 @@ export default class extends Tac {
    * @returns {void}
    */
   loadTemplate(event) {
-    const id = event?.target?.value
+    const id = /** @type {HTMLInputElement} */ (event?.target)?.value
     if (!id) return
     const tpl = this.$templates.find(t => t.id === id)
     if (!tpl) return
     if (this.$to || this.$subject || this.$text) {
       if (!confirm('Loading a template will replace current fields. Continue?')) {
-        event.target.value = ''
+        const targetEl2 = /** @type {HTMLInputElement} */ (event.target);
+        targetEl2.value = '';
         return
       }
     }
@@ -257,7 +258,8 @@ export default class extends Tac {
     this.$cc = tpl.cc || this.$cc
     this.$subject = tpl.subject || this.$subject
     this.$text = tpl.text || this.$text
-    event.target.value = ''
+    const targetEl = /** @type {HTMLInputElement} */ (event.target);
+    targetEl.value = '';
     this._syncEditorContent()
   }
 
@@ -303,7 +305,7 @@ export default class extends Tac {
         window._hermes?.toast('Scheduled for ' + new Date(sendAt).toLocaleString())
         window._hermes?.navigate('inbox')
       } else {
-        const data = await res.json(); this.$error = data.error || 'Schedule failed.'
+        const data = await res?.json(); this.$error = data?.error || 'Schedule failed.'
       }
     } catch { this.$error = 'Network error.' }
     finally { this.$loading = false }
@@ -404,7 +406,7 @@ export default class extends Tac {
         this.$to = this.$cc = this.$subject = ''; this._clearEditor()
         window._hermes?.navigate('inbox')
         this._showUndoToast(data.undoId, 'Message sent. Undo')
-      } else { const data = await res.json(); this.$error = data.error || 'Send failed.' }
+      } else { const data = await res?.json(); this.$error = data?.error || 'Send failed.' }
     } catch { this.$error = 'Network error.' }
     finally { this.$loading = false }
   }
@@ -430,7 +432,7 @@ export default class extends Tac {
         this.$to = this.$cc = this.$subject = ''; this._clearEditor()
         window._hermes?.navigate('inbox')
         this._showUndoToast(data.undoId, 'Sent & archived. Undo')
-      } else { const data = await res.json(); this.$error = data.error || 'Send failed.' }
+      } else { const data = await res?.json(); this.$error = data?.error || 'Send failed.' }
     } catch { this.$error = 'Network error.' }
     finally { this.$loading = false }
   }

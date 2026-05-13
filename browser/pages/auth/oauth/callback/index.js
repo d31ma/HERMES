@@ -62,6 +62,7 @@ export default class extends Tac {
       }
 
       // Emit login event — the root page handles it via @login handler
+      // @ts-ignore
       this.emit('login', data)
     } catch {
       this.$error = 'Network error. Please try again.'

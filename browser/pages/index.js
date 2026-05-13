@@ -64,8 +64,7 @@ export default class extends Tac {
    * folder highlight, restores sidebar collapse state, registers the global
    * `window._hermes` API, and binds all event listeners.
    *
-   * @async
-   * @returns {Promise<void>}
+   * @returns {void}
    */
   @onMount
   init() {
@@ -190,7 +189,7 @@ export default class extends Tac {
       this.openEmailId(decodeURIComponent(location.hash.slice('#email='.length)))
     })
     document.addEventListener('click', (e) => {
-      if (!e.target?.closest?.('[data-sign-out]')) return
+      if (!/** @type {Element} */ (e.target)?.closest?.('[data-sign-out]')) return
       e.preventDefault()
       this.signOut()
     }, true)
@@ -209,7 +208,7 @@ export default class extends Tac {
     })
     this._bindShortcut('core:search', () => {
       const field = document.querySelector('.inbox-search md-outlined-text-field')
-      if (field) field.focus()
+      if (field) /** @type {HTMLElement} */ (field).focus()
     })
     this._bindShortcut('show-help', () => {
       if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
@@ -236,7 +235,7 @@ export default class extends Tac {
    * @param {number} [duration=2500] - How long the toast stays visible (ms).
    */
   toast(msg, duration = 2500) {
-    clearTimeout(this._toastTimer)
+    if (this._toastTimer !== null) clearTimeout(this._toastTimer)
     this.$toastMsg = msg
     this.$toastVisible = true
     this._toastTimer = setTimeout(() => { this.$toastVisible = false }, duration)
@@ -251,7 +250,7 @@ export default class extends Tac {
    * @param {number} [duration=10000] - How long the toast stays visible (ms).
    */
   toastAction(msg, action, duration = 10000) {
-    clearTimeout(this._toastTimer)
+    if (this._toastTimer !== null) clearTimeout(this._toastTimer)
     this.$toastMsg = msg
     this.$toastVisible = true
     this._toastTimer = setTimeout(() => { this.$toastVisible = false }, duration)
@@ -280,7 +279,8 @@ export default class extends Tac {
    */
   onFolderDragOver(event) {
     event.preventDefault()
-    event.currentTarget.classList.add('drag-over')
+    const el = /** @type {HTMLElement} */ (event.currentTarget);
+    el.classList.add('drag-over')
   }
 
   /**
@@ -289,7 +289,8 @@ export default class extends Tac {
    * @param {DragEvent} event - The native drag-leave event.
    */
   onFolderDragLeave(event) {
-    event.currentTarget.classList.remove('drag-over')
+    const el = /** @type {HTMLElement} */ (event.currentTarget);
+    el.classList.remove('drag-over')
   }
 
   /**
@@ -305,8 +306,9 @@ export default class extends Tac {
    */
   async onFolderDrop(folder, event) {
     event.preventDefault()
-    event.currentTarget.classList.remove('drag-over')
-    const emailId = event.dataTransfer.getData('text/plain')
+    const el = /** @type {HTMLElement} */ (event.currentTarget);
+    el.classList.remove('drag-over')
+    const emailId = event.dataTransfer?.getData('text/plain')
     if (!emailId || !folder) return
     try {
       const res = await this.apiFetch(`/inbox/${emailId}`, { method: 'PUT', body: JSON.stringify({ folder }) })
