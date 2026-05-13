@@ -1,0 +1,8 @@
+config:
+  aws:region: ca-central-1
+  hermes:hostname: mail.del.ma
+  hermes:mailDomain: del.ma
+  hermes:route53ZoneId: Z0043738OEMTWDQ3CJ9J
+  hermes:adminEmail: admin@del.ma
+  hermes:adminPhone: "+15483906233"
+  hermes:version: "26.20.2"
