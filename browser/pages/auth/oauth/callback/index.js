@@ -27,12 +27,12 @@ export default class extends Tac {
     const params = new URLSearchParams(location.search)
     const code = params.get('code')
     const state = params.get('state')
-    const savedState = sessionStorage.getItem('hermes_oauth_state')
-    const provider = sessionStorage.getItem('hermes_oauth_provider')
+    const savedState = sessionStorage.getItem('caduceus_oauth_state')
+    const provider = sessionStorage.getItem('caduceus_oauth_provider')
 
     // Clean up session storage
-    sessionStorage.removeItem('hermes_oauth_state')
-    sessionStorage.removeItem('hermes_oauth_provider')
+    sessionStorage.removeItem('caduceus_oauth_state')
+    sessionStorage.removeItem('caduceus_oauth_provider')
 
     if (!code || !state || !provider) {
       this.$error = 'Invalid OAuth callback — missing parameters.'
@@ -47,7 +47,7 @@ export default class extends Tac {
     }
 
     try {
-      const apiUrl = window.HERMES_CONFIG?.apiUrl || ''
+      const apiUrl = window.CADUCEUS_CONFIG?.apiUrl || ''
       const res = await fetch(`${apiUrl}/auth/oauth/callback`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

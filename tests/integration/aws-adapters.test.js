@@ -1,14 +1,14 @@
-// LocalStack integration tests for AWS SMS (SNS) and Email (SES) adapters.
-// Run via: docker compose --profile test up --abort-on-container-exit
+// Floci integration tests for AWS SMS (SNS) and Email (SES) adapters.
+// Run via: bun run test:floci
 //
-// Requires HERMES + LocalStack running via docker-compose.
-// The HERMES_URL and LOCALSTACK_URL env vars are set by docker-compose.
+// Requires CADUCEUS + Floci running via docker-compose.
+// The CADUCEUS_URL and AWS_ENDPOINT_URL env vars are set by docker-compose.
 
 import { describe, it, expect, beforeAll } from 'bun:test'
 
-const HERMES_URL = process.env.HERMES_URL || 'http://localhost:8080'
+const CADUCEUS_URL = process.env.CADUCEUS_URL || 'http://localhost:8080'
 const AWS_URL = process.env.AWS_ENDPOINT_URL || process.env.LOCALSTACK_URL || 'http://localhost:4566'
-const JWT_SECRET = 'hermes-local-test-secret'
+const JWT_SECRET = process.env.JWT_SECRET || 'caduceus-local-test-secret'
 
 // Helper: sign a JWT for admin access
 import { signJwt } from '../../server/services/auth.js'
@@ -19,14 +19,9 @@ let testEmail
 beforeAll(async () => {
   testEmail = `test-${Date.now()}@example.com`
 
-  // Wait for LocalStack to be healthy
-  const healthRes = await fetch(`${AWS_URL}/_localstack/health`)
-  if (!healthRes.ok) {
-    console.warn('LocalStack not healthy yet, tests may fail')
-    await new Promise(r => setTimeout(r, 5000))
-  }
+  await waitForAwsEndpoint()
 
-  // Verify email addresses in LocalStack SES (required before sending)
+  // Verify email addresses in Floci SES (matches the AWS SES Query API).
   const fromAddress = 'admin@example.com'
   const verifyParams = new URLSearchParams({
     Action: 'VerifyEmailIdentity',
@@ -34,7 +29,7 @@ beforeAll(async () => {
     EmailAddress: fromAddress,
   })
   try {
-    await fetch(`${AWS_URL}/?${verifyParams}`, { method: 'POST' })
+    await awsQuery(verifyParams)
   } catch { /* non-critical */ }
 
   // Create admin token
@@ -43,8 +38,8 @@ beforeAll(async () => {
     JWT_SECRET
   )
 
-  // Create domain in HERMES
-  const domainRes = await fetch(`${HERMES_URL}/domains`, {
+  // Create domain in CADUCEUS
+  const domainRes = await fetch(`${CADUCEUS_URL}/domains`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +56,7 @@ beforeAll(async () => {
   }
 
   // Create a test user
-  await fetch(`${HERMES_URL}/users`, {
+  await fetch(`${CADUCEUS_URL}/users`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -74,12 +69,33 @@ beforeAll(async () => {
       role: 'admin',
     }),
   })
-}, 30000)
+}, 60000)
 
-describe('AWS SMS adapter (SNS via LocalStack)', () => {
-  it('sends SMS via LocalStack SNS', async () => {
+async function waitForAwsEndpoint() {
+  const deadline = Date.now() + 30000
+  let lastError
+  while (Date.now() < deadline) {
+    try {
+      const params = new URLSearchParams({ Action: 'ListIdentities', Version: '2010-12-01' })
+      const res = await awsQuery(params)
+      if (res.ok || res.status < 500) return
+      lastError = new Error(`AWS emulator returned ${res.status}`)
+    } catch (err) {
+      lastError = err
+    }
+    await new Promise(r => setTimeout(r, 500))
+  }
+  throw lastError || new Error('AWS emulator did not become ready')
+}
+
+async function awsQuery(params) {
+  return await fetch(`${AWS_URL}/?${params.toString()}`, { method: 'POST' })
+}
+
+describe('AWS SMS adapter (SNS via Floci)', () => {
+  it('sends SMS via Floci SNS', async () => {
     // Request SMS code
-    const res = await fetch(`${HERMES_URL}/auth/sms/request`, {
+    const res = await fetch(`${CADUCEUS_URL}/auth/sms/request`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -93,17 +109,21 @@ describe('AWS SMS adapter (SNS via LocalStack)', () => {
     expect(body.sent).toBe(true)
   })
 
-  it('verifies SNS topic exists in LocalStack', async () => {
-    // Check that LocalStack received the SNS publish request
-    // LocalStack stores published messages — we can query them
-    const res = await fetch(`${AWS_URL}/_localstack/sns`)
-    expect(res.ok || res.status === 404).toBe(true)
+  it('accepts direct SNS Publish through the AWS Query API', async () => {
+    const params = new URLSearchParams({
+      Action: 'Publish',
+      Version: '2010-03-31',
+      PhoneNumber: '+15551234567',
+      Message: 'direct floci sns smoke',
+    })
+    const res = await awsQuery(params)
+    expect(res.status).toBeLessThan(500)
   })
 })
 
-describe('AWS SES adapter (SES via LocalStack)', () => {
-  it('sends email via LocalStack SES', async () => {
-    const sendRes = await fetch(`${HERMES_URL}/send`, {
+describe('AWS SES adapter (SES via Floci)', () => {
+  it('sends email via Floci SES', async () => {
+    const sendRes = await fetch(`${CADUCEUS_URL}/send`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -111,45 +131,38 @@ describe('AWS SES adapter (SES via LocalStack)', () => {
       },
       body: JSON.stringify({
         to: ['recipient@example.com'],
-        subject: 'LocalStack SES Test',
-        text: 'This email was sent via LocalStack SES adapter.',
+        subject: 'Floci SES Test',
+        text: 'This email was sent via Floci SES adapter.',
       }),
     })
 
-    expect(sendRes.status === 200 || sendRes.status === 500).toBe(true)
-
+    expect(sendRes.status).toBe(200)
     const body = await sendRes.json()
-    if (sendRes.status === 200) {
-      expect(typeof body.messageId).toBe('string')
-    } else {
-      // SES may reject if sender not verified — still confirms adapter codepath
-      expect(body.error).toBeDefined()
-    }
+    expect(typeof body.messageId).toBe('string')
   })
 
-  it('verifies SES sent emails in LocalStack', async () => {
-    // LocalStack SES stores sent emails — query them
-    const res = await fetch(`${AWS_URL}/_localstack/ses`)
-    // Even if the endpoint doesn't return data, it confirms LocalStack SES is running
-    expect(res.ok || res.status === 404).toBe(true)
+  it('lists SES identities through the AWS Query API', async () => {
+    const params = new URLSearchParams({ Action: 'ListIdentities', Version: '2010-12-01' })
+    const res = await awsQuery(params)
+    expect(res.status).toBeLessThan(500)
   })
 })
 
-describe('HERMES health checks', () => {
+describe('CADUCEUS health checks', () => {
   it('returns ok on /health', async () => {
-    const res = await fetch(`${HERMES_URL}/health`)
+    const res = await fetch(`${CADUCEUS_URL}/health`)
     expect(res.status).toBe(200)
     const health = await res.json()
     expect(health.status).toBe('ok')
   })
 
   it('returns ready on /ready when secrets are set', async () => {
-    const res = await fetch(`${HERMES_URL}/ready`)
+    const res = await fetch(`${CADUCEUS_URL}/ready`)
     expect(res.status).toBe(200)
   })
 
   it('creates and lists domains', async () => {
-    const res = await fetch(`${HERMES_URL}/domains`, {
+    const res = await fetch(`${CADUCEUS_URL}/domains`, {
       headers: { 'Authorization': `Bearer ${adminToken}` },
     })
     expect(res.status).toBe(200)

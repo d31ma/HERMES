@@ -18,14 +18,14 @@ import { fileURLToPath } from 'node:url'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const projectRoot = resolve(__dirname, '..')
-const fyloRoot = mkdtempSync(join(tmpdir(), 'hermes-e2e-'))
+const fyloRoot = mkdtempSync(join(tmpdir(), 'caduceus-e2e-'))
 const tachUrl = 'http://127.0.0.1:9877'
 const proxyUrl = 'http://127.0.0.1:9876'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Hermes-Signature',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Caduceus-Signature',
   'Access-Control-Max-Age': '86400',
 }
 
@@ -35,9 +35,9 @@ const tach = spawn(join(projectRoot, 'node_modules', '.bin', 'yon.serve'), [], {
   env: {
     ...process.env,
     FYLO_ROOT:    fyloRoot,
-    JWT_SECRET:   'hermes-e2e-test-secret',
-    INBOUND_WEBHOOK_SECRET: 'hermes-e2e-inbound-secret',
-    HERMES_ENABLE_TEST_ROUTES: 'true',
+    JWT_SECRET:   'caduceus-e2e-test-secret',
+    INBOUND_WEBHOOK_SECRET: 'caduceus-e2e-inbound-secret',
+    CADUCEUS_ENABLE_TEST_ROUTES: 'true',
     NODE_ENV:     'test',
     SMS_ADAPTER:  'console',
     SMTP_ADAPTER: 'console',

@@ -58,7 +58,7 @@
       </logic>
     </div>
     <div class="email-meta">
-      <div class="email-avatar">{window._hermes?.initials($email.sender) ?? ''}</div>
+      <div class="email-avatar">{window._caduceus?.initials($email.sender) ?? ''}</div>
       <div style="min-width:0;">
         <div class="md-typescale-body-medium" style="font-weight:500;">{$email.sender}</div>
         <div class="md-typescale-body-small" style="color:var(--ms-on-surface-variant);">To: {$email.recipient}</div>
@@ -76,7 +76,7 @@
       <loop :for="attachment of $email.attachments">
         <button class="attachment-chip" @click="downloadAttachment(attachment)">
           <span>{attachment.filename}</span>
-          <span style="color:var(--ms-on-surface-variant);">{window._hermes?.bytesLabel(attachment.size) ?? ''}</span>
+          <span style="color:var(--ms-on-surface-variant);">{window._caduceus?.bytesLabel(attachment.size) ?? ''}</span>
         </button>
       </loop>
     </div>

@@ -1,0 +1,90 @@
+# CADUCEUS — AWS adapter E2E with Floci
+#
+# Start: docker compose -f tests/docker-compose.yml up -d
+# Logs:  docker compose -f tests/docker-compose.yml logs -f caduceus
+# Stop:  docker compose -f tests/docker-compose.yml down -v
+#
+# Test with:
+#   bun run test:floci
+
+services:
+  # ── Floci: local AWS emulator ───────────────────────────────────────────
+  floci:
+    image: floci/floci:latest
+    container_name: caduceus-floci
+    ports:
+      - '4566:4566'
+    environment:
+      - FLOCI_HOSTNAME=floci
+      - FLOCI_DEFAULT_REGION=us-east-1
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - floci-data:/app/data
+    healthcheck:
+      test: ['CMD-SHELL', 'true']
+      interval: 2s
+      timeout: 1s
+      retries: 3
+      start_period: 2s
+
+  # ── CADUCEUS: mail server ────────────────────────────────────────────────
+  caduceus:
+    build: ..
+    container_name: caduceus-server
+    ports:
+      - '8080:8080'
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=8080
+      - FYLO_ROOT=/data
+      - ATTACHMENT_ROOT=/data/attachments
+      - JWT_SECRET=${JWT_SECRET:-caduceus-local-test-secret}
+      - INBOUND_WEBHOOK_SECRET=${INBOUND_WEBHOOK_SECRET:-caduceus-local-inbound-secret}
+      - EVENTS_WEBHOOK_SECRET=${EVENTS_WEBHOOK_SECRET:-caduceus-local-events-secret}
+      # AWS adapters through Floci
+      - SMS_ADAPTER=aws
+      - SMTP_ADAPTER=aws
+      - AWS_ENDPOINT_URL=http://floci:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - SES_FROM_ADDRESS=admin@example.com
+      # Web Push disabled in local testing
+      - WEB_PUSH_DISABLED=true
+    volumes:
+      - caduceus-data:/data
+    depends_on:
+      floci:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'bun', '-e', "const r = await fetch('http://localhost:8080/health'); process.exit(r.ok ? 0 : 1)"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 15s
+
+  # ── Test runner: smoke tests against CADUCEUS ───────────────────────────
+  test:
+    build:
+      context: ..
+      dockerfile: tests/Dockerfile
+    container_name: caduceus-test-runner
+    environment:
+      - CADUCEUS_URL=http://caduceus:8080
+      - AWS_ENDPOINT_URL=http://floci:4566
+      - AWS_REGION=us-east-1
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - JWT_SECRET=caduceus-local-test-secret
+    depends_on:
+      caduceus:
+        condition: service_healthy
+      floci:
+        condition: service_healthy
+    profiles:
+      - test
+
+volumes:
+  caduceus-data:
+  floci-data:

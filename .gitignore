@@ -14,10 +14,13 @@ CLAUDE.md
 AGENTS.md
 .github/copilot-instructions.md
 
+# Environment files
+.env
+
 # Untrack markdown except README and DEPLOY
 *.md
 !README.md
 !DEPLOY.md
 dist-bin/
-hermes-darwin-arm64
-hermes-lambda
+caduceus-darwin-arm64
+caduceus-lambda

@@ -1,0 +1,9 @@
+{
+  "name": "caduceus-linode-kubernetes-infra",
+  "private": true,
+  "dependencies": {
+    "@pulumi/kubernetes": "^4.0.0",
+    "@pulumi/linode": "^4.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  }
+}

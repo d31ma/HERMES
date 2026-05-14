@@ -1,6 +1,6 @@
 {
-  "name": "hermes",
-  "version": "26.19.7",
+  "name": "caduceus",
+  "version": "26.20.4",
   "private": true,
   "description": "Open-source multi-domain mail server",
   "type": "module",
@@ -18,9 +18,10 @@
     "extract-static": "bun scripts/extract-static.mjs",
     "preview": "bun ./scripts/preview.mjs",
     "compile": "bun scripts/compile.mjs",
-    "compile:lambda": "bun build --compile --target bun-linux-arm64 scripts/lambda.mjs --outfile hermes-lambda",
+    "compile:lambda": "bun build --compile --target bun-linux-arm64 scripts/lambda.mjs --outfile caduceus-lambda",
     "test:integration": "bun test tests/integration --timeout 30000",
-    "test:localstack": "docker compose --profile test up --build --abort-on-container-exit",
+    "test:floci": "docker compose -f tests/docker-compose.yml --profile test up --build --abort-on-container-exit --exit-code-from test",
+    "test:localstack": "bun run test:floci",
     "test:e2e": "bun run bundle && bun node_modules/.bin/playwright test",
     "test:e2e:ui": "bun run bundle && bun node_modules/.bin/playwright test --ui"
   },

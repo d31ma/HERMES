@@ -1,5 +1,5 @@
   .compose-panel {
-    max-width: 700px;
+    max-width: 760px;
     width: 100%;
     margin: 1.5rem auto;
     padding: 0 1.5rem;
@@ -52,14 +52,14 @@
 
   /* ── Contenteditable editor ───────────────────────────────────────── */
 [data-compose-editor] {
-    min-height: 240px;
-    padding: 12px;
+    min-height: 300px;
+    padding: 14px;
     border: 1px solid var(--ms-outline-variant);
     border-radius: 0 0 8px 8px;
     outline: none;
     font-family: inherit;
     font-size: var(--ms-font-base, 0.875rem);
-    line-height: 1.6;
+    line-height: 1.7;
     color: var(--ms-on-surface);
     background: var(--ms-surface);
     transition: border-color 0.2s;
@@ -69,7 +69,7 @@
   [data-compose-editor]:focus {
     border-color: var(--ms-primary);
     border-width: 2px;
-    padding: 12px;
+    padding: 13px;
   }
 
   [data-compose-editor]:empty::before {

@@ -41,7 +41,12 @@ ENV NODE_ENV=production \
     HOST=0.0.0.0 \
     PORT=8080 \
     FYLO_ROOT=/data \
-    ATTACHMENT_ROOT=/data/attachments
+    ATTACHMENT_ROOT=/data/attachments \
+    SMS_ADAPTER=console \
+    SMTP_ADAPTER=console
+# Override SMS_ADAPTER / SMTP_ADAPTER at runtime:
+#   SMS:  twilio → TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER
+#   SMTP: mailgun → MAILGUN_API_KEY, MAILGUN_DOMAIN, MAILGUN_FROM
 
 VOLUME ["/data"]
 EXPOSE 8080

@@ -94,19 +94,19 @@ describe("GET /inbox", () => {
     await setupDomain();
     const msgId = `attachment-search-${Date.now()}`;
     const mime = [
-      'Content-Type: multipart/mixed; boundary="hermes-search-boundary"',
+      'Content-Type: multipart/mixed; boundary="caduceus-search-boundary"',
       "",
-      "--hermes-search-boundary",
+      "--caduceus-search-boundary",
       "Content-Type: text/plain",
       "",
       "Body",
-      "--hermes-search-boundary",
+      "--caduceus-search-boundary",
       'Content-Type: text/plain; name="quarterly-report.txt"',
       'Content-Disposition: attachment; filename="quarterly-report.txt"',
       "Content-Transfer-Encoding: base64",
       "",
       Buffer.from("report").toString("base64"),
-      "--hermes-search-boundary--",
+      "--caduceus-search-boundary--",
       ""
     ].join(`\r
 `);
@@ -197,19 +197,19 @@ describe("GET /inbox/:id", () => {
     await setupDomain();
     const msgId = `attachment-test-${Date.now()}`;
     const mime = [
-      'Content-Type: multipart/mixed; boundary="hermes-boundary"',
+      'Content-Type: multipart/mixed; boundary="caduceus-boundary"',
       "",
-      "--hermes-boundary",
+      "--caduceus-boundary",
       "Content-Type: text/plain; charset=utf-8",
       "",
       "Message with attachment",
-      "--hermes-boundary",
+      "--caduceus-boundary",
       'Content-Type: text/plain; name="hello.txt"',
       'Content-Disposition: attachment; filename="hello.txt"',
       "Content-Transfer-Encoding: base64",
       "",
       Buffer.from("hello attachment").toString("base64"),
-      "--hermes-boundary--",
+      "--caduceus-boundary--",
       ""
     ].join(`\r
 `);
@@ -263,19 +263,19 @@ describe("DELETE /inbox/:id", () => {
     await setupDomain();
     const msgId = `del-attachment-${Date.now()}`;
     const mime = [
-      'Content-Type: multipart/mixed; boundary="hermes-delete-boundary"',
+      'Content-Type: multipart/mixed; boundary="caduceus-delete-boundary"',
       "",
-      "--hermes-delete-boundary",
+      "--caduceus-delete-boundary",
       "Content-Type: text/plain",
       "",
       "Body",
-      "--hermes-delete-boundary",
+      "--caduceus-delete-boundary",
       'Content-Type: text/plain; name="delete-me.txt"',
       'Content-Disposition: attachment; filename="delete-me.txt"',
       "Content-Transfer-Encoding: base64",
       "",
       Buffer.from("remove me").toString("base64"),
-      "--hermes-delete-boundary--",
+      "--caduceus-delete-boundary--",
       ""
     ].join(`\r
 `);

@@ -1,0 +1,9 @@
+# Pulumi stack configs (contain secrets)
+Pulumi.*.yaml
+!Pulumi.yaml
+
+# Node modules
+node_modules/
+
+# Bun lockfile (reproducible from package.json)
+bun.lock

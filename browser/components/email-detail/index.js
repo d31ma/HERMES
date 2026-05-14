@@ -23,7 +23,7 @@
  * The email to display can come from a parent component (3-panel layout) via
  * props, from the URL path (`/email/<id>`), or from query parameters.
  *
- * Keyboard shortcuts are bound via `hermes:shortcut:email:*` events.
+ * Keyboard shortcuts are bound via `caduceus:shortcut:email:*` events.
  *
  * @extends Tac
  *
@@ -68,7 +68,7 @@ export default class extends Tac {
   /**
    * Fetch the full email object from the API and mark it as read.
    *
-   * If the email was previously unread, this fires a `hermes:refresh-inbox`
+   * If the email was previously unread, this fires a `caduceus:refresh-inbox`
    * event so the inbox list can update its unread count.
    *
    * @async
@@ -77,7 +77,7 @@ export default class extends Tac {
   async loadEmail() {
     if (!this.$email?.id) return
     this.$loading = true; this.$loadError = ''
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) { this.$loading = false; return }
     try {
       const res = await apiFetch(`/inbox/${this.$email.id}`)
       if (res?.ok) this.$email = await res.json()
@@ -85,7 +85,7 @@ export default class extends Tac {
       if (this.$email && !this.$email.read) {
         this.$email = { ...this.$email, read: true }
         await apiFetch(`/inbox/${this.$email.id}`, { method: 'PUT', body: JSON.stringify({ read: true }) })
-        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+        window.dispatchEvent(new Event('caduceus:refresh-inbox'))
       }
     } catch (err) {
       this.$loadError = err instanceof Error ? err.message : String(err) || 'Network error'
@@ -124,21 +124,21 @@ export default class extends Tac {
       const custom = prompt('Enter date/time (e.g. 2026-12-31T14:00):')
       if (!custom) return
       untilMs = Date.parse(custom)
-      if (isNaN(untilMs)) { window._hermes?.toast('Invalid date format.'); return }
+      if (isNaN(untilMs)) { window._caduceus?.toast('Invalid date format.'); return }
     }
-    if (untilMs <= Date.now()) { window._hermes?.toast('Please choose a future time.'); return }
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    if (untilMs <= Date.now()) { window._caduceus?.toast('Please choose a future time.'); return }
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     try {
       const res = await apiFetch('/snooze', { method: 'POST', body: JSON.stringify({ emailId: this.$email.id, until: new Date(untilMs).toISOString() }) })
       if (res?.ok) {
-        window._hermes?.toast('Snoozed until ' + new Date(untilMs).toLocaleString())
-        window.dispatchEvent(new Event('hermes:refresh-inbox'))
-        window._hermes?.navigate('inbox')
+        window._caduceus?.toast('Snoozed until ' + new Date(untilMs).toLocaleString())
+        window.dispatchEvent(new Event('caduceus:refresh-inbox'))
+        window._caduceus?.navigate('inbox')
       } else {
-        window._hermes?.toast('Snooze failed.')
+        window._caduceus?.toast('Snooze failed.')
       }
     } catch {
-      window._hermes?.toast('Network error.')
+      window._caduceus?.toast('Network error.')
     }
   }
 
@@ -153,10 +153,10 @@ export default class extends Tac {
    */
   async deleteEmail() {
     if (!this.$email || !confirm('Delete this message forever?')) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch(`/inbox/${this.$email.id}`, { method: 'DELETE' })
-    if (res?.ok) { window._hermes?.toast('Message deleted.'); window.dispatchEvent(new Event('hermes:refresh-inbox')); window._hermes?.navigate('inbox'); this.$email = null }
-    else { window._hermes?.toast('Delete failed.') }
+    if (res?.ok) { window._caduceus?.toast('Message deleted.'); window.dispatchEvent(new Event('caduceus:refresh-inbox')); window._caduceus?.navigate('inbox'); this.$email = null }
+    else { window._caduceus?.toast('Delete failed.') }
   }
 
   /**
@@ -172,10 +172,10 @@ export default class extends Tac {
    */
   async updateEmail(patch, message) {
     if (!this.$email) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch(`/inbox/${this.$email.id}`, { method: 'PUT', body: JSON.stringify(patch) })
-    if (res?.ok) { this.$email = await res.json(); window.dispatchEvent(new Event('hermes:refresh-inbox')); if (message) window._hermes?.toast(message) }
-    else { window._hermes?.toast('Update failed.') }
+    if (res?.ok) { this.$email = await res.json(); window.dispatchEvent(new Event('caduceus:refresh-inbox')); if (message) window._caduceus?.toast(message) }
+    else { window._caduceus?.toast('Update failed.') }
   }
 
   /**
@@ -190,7 +190,7 @@ export default class extends Tac {
    */
   @onMount
   bindShortcuts() {
-    const on = (name, fn) => window.addEventListener('hermes:shortcut:' + name, fn)
+    const on = (name, fn) => window.addEventListener('caduceus:shortcut:' + name, fn)
 
     on('email:reply', () => this.reply())
     on('email:reply-all', () => this.replyAll())
@@ -200,7 +200,7 @@ export default class extends Tac {
     on('email:trash', () => { if (this.$email) this.updateEmail({ folder: 'trash' }, 'Moved to trash.') })
     on('email:mark-read', () => { if (this.$email) this.updateEmail({ read: true }, 'Marked read.') })
     on('email:mark-unread', () => { if (this.$email) this.updateEmail({ read: false }, 'Marked unread.') })
-    on('email:open', () => { if (this.$email) window._hermes?.openEmailId(this.$email.id) })
+    on('email:open', () => { if (this.$email) window._caduceus?.openEmailId(this.$email.id) })
   }
 
   /**
@@ -214,7 +214,7 @@ export default class extends Tac {
   goBack() {
     // @ts-ignore
     if (this.props?.onBack) return this.emit('back')
-    window._hermes?.navigate('inbox')
+    window._caduceus?.navigate('inbox')
   }
 
   /**
@@ -224,7 +224,7 @@ export default class extends Tac {
    */
   reply() {
     if (!this.$email) return
-    window._hermes?.compose({ to: this.$email.sender, subject: `Re: ${this.$email.subject}` })
+    window._caduceus?.compose({ to: this.$email.sender, subject: `Re: ${this.$email.subject}` })
   }
 
   /**
@@ -235,7 +235,7 @@ export default class extends Tac {
   replyAll() {
     if (!this.$email) return
     const to = [this.$email.sender, this.$email.recipient].filter(Boolean).join(', ')
-    window._hermes?.compose({ to, subject: `Re: ${this.$email.subject}` })
+    window._caduceus?.compose({ to, subject: `Re: ${this.$email.subject}` })
   }
 
   /**
@@ -247,7 +247,7 @@ export default class extends Tac {
    */
   forward() {
     if (!this.$email) return
-    window._hermes?.compose({ subject: `Fwd: ${this.$email.subject}`, body: `\n\n---------- Forwarded message ----------\nFrom: ${this.$email.sender}\nDate: ${new Date(this.$email.receivedAt).toLocaleString()}\nSubject: ${this.$email.subject}\n\n${this.$email.body || ''}` })
+    window._caduceus?.compose({ subject: `Fwd: ${this.$email.subject}`, body: `\n\n---------- Forwarded message ----------\nFrom: ${this.$email.sender}\nDate: ${new Date(this.$email.receivedAt).toLocaleString()}\nSubject: ${this.$email.subject}\n\n${this.$email.body || ''}` })
   }
 
   /**
@@ -261,12 +261,12 @@ export default class extends Tac {
    */
   async sendReply() {
     if (!this.$email || !this.$replyText) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     try {
       const res = await apiFetch('/send', { method: 'POST', body: JSON.stringify({ to: [this.$email.sender], subject: `Re: ${this.$email.subject}`, text: this.$replyText }) })
-      if (res?.ok) { window._hermes?.toast('Reply sent.'); this.$showReply = false; this.$replyText = '' }
-      else { window._hermes?.toast('Send failed.') }
-    } catch { window._hermes?.toast('Network error.') }
+      if (res?.ok) { window._caduceus?.toast('Reply sent.'); this.$showReply = false; this.$replyText = '' }
+      else { window._caduceus?.toast('Send failed.') }
+    } catch { window._caduceus?.toast('Network error.') }
   }
 
   /**
@@ -280,9 +280,9 @@ export default class extends Tac {
    * @returns {Promise<void>}
    */
   async downloadAttachment(attachment) {
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch || !this.$email?.id) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch || !this.$email?.id) return
     const res = await apiFetch(`/inbox/${this.$email.id}/attachments/${attachment.id}`)
-    if (!res?.ok) { window._hermes?.toast('Attachment download failed.'); return }
+    if (!res?.ok) { window._caduceus?.toast('Attachment download failed.'); return }
     const data = await res.json()
     const bytes = Uint8Array.from(atob(data.contentBase64), char => char.charCodeAt(0))
     const blob = new Blob([bytes], { type: data.contentType || 'application/octet-stream' })

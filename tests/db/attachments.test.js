@@ -15,7 +15,7 @@ let testRoot;
 let previousFyloRoot;
 let previousAttachmentRoot;
 beforeEach(async () => {
-  testRoot = mkdtempSync(join(tmpdir(), "hermes-attachments-test-"));
+  testRoot = mkdtempSync(join(tmpdir(), "caduceus-attachments-test-"));
   previousFyloRoot = process.env.FYLO_ROOT;
   previousAttachmentRoot = process.env.ATTACHMENT_ROOT;
   process.env.FYLO_ROOT = testRoot;

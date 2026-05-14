@@ -5,7 +5,7 @@
 import { createHmac } from 'node:crypto'
 
 export const API = 'http://localhost:9876'
-const INBOUND_WEBHOOK_SECRET = 'hermes-e2e-inbound-secret'
+const INBOUND_WEBHOOK_SECRET = 'caduceus-e2e-inbound-secret'
 
 // ── Unique test email ─────────────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ async function post(path, data) {
   const headers = { 'Content-Type': 'application/json' }
   if (path === '/inbound/webhook') {
     const body = JSON.stringify(data ?? {})
-    headers['X-Hermes-Signature'] = createHmac('sha256', INBOUND_WEBHOOK_SECRET).update(body).digest('hex')
+    headers['X-Caduceus-Signature'] = createHmac('sha256', INBOUND_WEBHOOK_SECRET).update(body).digest('hex')
   }
   const res = await fetch(`${API}${path}`, {
     method: 'POST',
@@ -106,16 +106,16 @@ export async function getToken(email, phone = '+14165550100') {
  */
 export async function useTestApi(page) {
   await page.addInitScript(() => {
-    window.__HERMES_DISABLE_SW = true
+    window.__CADUCEUS_DISABLE_SW = true
   })
   await page.addInitScript(api => {
-    window.HERMES_CONFIG = { apiUrl: api }
+    window.CADUCEUS_CONFIG = { apiUrl: api }
   }, API)
   await page.route('**/assets/config.js', route =>
     route.fulfill({
       status: 200,
       contentType: 'application/javascript',
-      body: `window.HERMES_CONFIG={apiUrl:"${API}"};`,
+      body: `window.CADUCEUS_CONFIG={apiUrl:"${API}"};`,
     })
   )
 }
@@ -126,9 +126,9 @@ export async function useTestApi(page) {
  */
 export async function loginAs(page, token, email, role = 'admin', domains = ['example.com']) {
   await page.addInitScript(({ token, email, role, domains }) => {
-    sessionStorage.setItem('hermes_token', token)
-    sessionStorage.setItem('hermes_email', email)
-    sessionStorage.setItem('hermes_role', role)
-    sessionStorage.setItem('hermes_domains', JSON.stringify(domains))
+    sessionStorage.setItem('caduceus_token', token)
+    sessionStorage.setItem('caduceus_email', email)
+    sessionStorage.setItem('caduceus_role', role)
+    sessionStorage.setItem('caduceus_domains', JSON.stringify(domains))
   }, { token, email, role, domains })
 }

@@ -21,8 +21,8 @@ function start(cmd, cmdArgs) {
 async function ensureConfigJs() {
   const configPath = new URL('../browser/shared/assets/config.js', import.meta.url).pathname
   try { await access(configPath) } catch {
-    const apiUrl = process.env.HERMES_API_URL || ''
-    await writeFile(configPath, `window.HERMES_CONFIG={apiUrl:"${apiUrl}"};\n`)
+    const apiUrl = process.env.CADUCEUS_API_URL || ''
+    await writeFile(configPath, `window.CADUCEUS_CONFIG={apiUrl:"${apiUrl}"};\n`)
   }
 }
 
@@ -43,7 +43,7 @@ async function patchHtmlShells() {
         '    <meta name="mobile-web-app-capable" content="yes">',
         '    <meta name="apple-mobile-web-app-capable" content="yes">',
         '    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">',
-        '    <meta name="apple-mobile-web-app-title" content="HERMES">',
+        '    <meta name="apple-mobile-web-app-title" content="CADUCEUS">',
         '    <link rel="manifest" href="/shared/assets/manifest.webmanifest">',
         '    <link rel="icon" href="/shared/assets/favicon.svg" type="image/svg+xml">',
         '    <link rel="apple-touch-icon" href="/shared/assets/icon-192.png">',
@@ -57,7 +57,7 @@ async function patchHtmlShells() {
       /<meta\s+name=["']viewport["']\s+content=["']width=device-width,\s*initial-scale=1\.0["']\s*\/?>/i,
       '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">',
     )
-    html = html.replace('<title>Tachyon</title>', '<title>HERMES</title>')
+    html = html.replace('<title>Tachyon</title>', '<title>CADUCEUS</title>')
 
     if (!outerHead.includes('/shared/assets/config.js')) {
       html = html.replace(

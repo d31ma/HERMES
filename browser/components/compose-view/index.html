@@ -51,6 +51,6 @@
     <md-filled-button :disabled="$loading" @click="send()">{$loading ? 'Sending…' : 'Send'}</md-filled-button>
     <md-filled-tonal-button :disabled="$loading" @click="sendAndArchive()">Send & Archive</md-filled-tonal-button>
     <md-filled-tonal-button :disabled="$loading" @click="sendLater()">Send later</md-filled-tonal-button>
-    <md-text-button @click="window._hermes?.navigate('inbox')">Discard</md-text-button>
+    <md-text-button @click="window._caduceus?.navigate('inbox')">Discard</md-text-button>
   </div>
 </div>

@@ -16,14 +16,14 @@ export default class extends Tac {
    * Whether the current user is authenticated and the app can be used.
    * @type {boolean}
    */
-  get canUseApp() { return !!window._hermes?.auth?.isLoggedIn }
+  get canUseApp() { return !!window._caduceus?.auth?.isLoggedIn }
 
   /**
    * Whether the login prompt should be shown (app is loaded but user is not
    * authenticated).
    * @type {boolean}
    */
-  get canShowLogin() { return !!window._hermes && !this.canUseApp }
+  get canShowLogin() { return !!window._caduceus && !this.canUseApp }
 
   /**
    * Handles the mail-selected event from the email list.
@@ -34,7 +34,7 @@ export default class extends Tac {
     if (e?.detail) this.$selectedMail = e.detail
     // On mobile, navigate to email detail page
     if (window.innerWidth <= 760 && this.$selectedMail) {
-      window._hermes?.navigate(`/email/${encodeURIComponent(this.$selectedMail)}`)
+      window._caduceus?.navigate(`/email/${encodeURIComponent(this.$selectedMail)}`)
     }
   }
 

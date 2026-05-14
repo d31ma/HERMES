@@ -19,14 +19,14 @@ export function getRpInfo() {
   const publicUrl = process.env.PUBLIC_URL
   if (publicUrl) {
     const u = new URL(publicUrl)
-    return { rpName: 'HERMES', rpId: u.hostname, origin: u.origin }
+    return { rpName: 'CADUCEUS', rpId: u.hostname, origin: u.origin }
   }
   // Fallback for local dev
   const host = process.env.HOST || 'localhost'
   const port = process.env.PORT || '8080'
   const isLocal = host === '127.0.0.1' || host === 'localhost' || host === '::1'
   return {
-    rpName: 'HERMES',
+    rpName: 'CADUCEUS',
     rpId: isLocal ? 'localhost' : host,
     origin: isLocal ? `http://${host}:${port}` : `https://${host}`,
   }

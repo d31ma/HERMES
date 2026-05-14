@@ -104,7 +104,7 @@ export default class extends Tac {
    */
   @onMount
   async init() {
-    const saved = localStorage.getItem('hermes-density')
+    const saved = localStorage.getItem('caduceus-density')
     if (saved && ['comfortable', 'compact', 'default'].includes(saved)) {
       this.$density = saved
     }
@@ -112,7 +112,7 @@ export default class extends Tac {
   }
 
   /**
-   * Bind a global `hermes:refresh-inbox` listener that reloads the email list.
+   * Bind a global `caduceus:refresh-inbox` listener that reloads the email list.
    *
    * Any previously bound handler is removed first to prevent duplicate listeners
    * when the component re-mounts.
@@ -121,9 +121,9 @@ export default class extends Tac {
    */
   @onMount
   bindRefresh() {
-    window.removeEventListener('hermes:refresh-inbox', /** @type {() => void} */ (window._hermesInboxRefresh))
-    window._hermesInboxRefresh = () => this.load()
-    window.addEventListener('hermes:refresh-inbox', window._hermesInboxRefresh)
+    window.removeEventListener('caduceus:refresh-inbox', /** @type {() => void} */ (window._caduceusInboxRefresh))
+    window._caduceusInboxRefresh = () => this.load()
+    window.addEventListener('caduceus:refresh-inbox', window._caduceusInboxRefresh)
   }
 
   /**
@@ -140,7 +140,7 @@ export default class extends Tac {
    */
   async load() {
     this.$loading = true; this.$error = ''
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) { this.$loading = false; return }
     try {
     // Threaded mode: fetch from /threads
     if (this.$threadedMode) {
@@ -184,7 +184,7 @@ export default class extends Tac {
    * @returns {Promise<void>}
    */
   async search(q) {
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) { this.$loading = false; return }
     const res = await apiFetch(`/search?q=${encodeURIComponent(q)}`)
     this.$allEmails = res?.ok ? await res.json() : []
     this.$loading = false
@@ -210,7 +210,7 @@ export default class extends Tac {
    * @returns {Promise<object>} The updated email object, or the original on failure
    */
   async updateEmail(email, patch) {
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return email
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return email
     const res = await apiFetch(`/inbox/${email.id}`, { method: 'PUT', body: JSON.stringify(patch) })
     if (!res?.ok) return email
     const updated = await res.json()
@@ -236,7 +236,7 @@ export default class extends Tac {
   toggleDensity() {
     const cycle = { comfortable: 'compact', compact: 'default', default: 'comfortable' }
     this.$density = cycle[this.$density] || 'comfortable'
-    localStorage.setItem('hermes-density', this.$density)
+    localStorage.setItem('caduceus-density', this.$density)
   }
 
   /**
@@ -302,7 +302,7 @@ export default class extends Tac {
    * @param {{ stopPropagation: () => void }} e - The click event (propagation is stopped)
    * @returns {Promise<void>}
    */
-  async quickStar(id, e) { e.stopPropagation(); const row = this.$allEmails.find(m => m.id === id); if (!row) return; await window._hermes?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ starred: !row.starred }) }); row.starred = !row.starred; this.$allEmails = [...this.$allEmails]; window._hermes?.toast(row.starred ? 'Starred' : 'Unstarred') }
+  async quickStar(id, e) { e.stopPropagation(); const row = this.$allEmails.find(m => m.id === id); if (!row) return; await window._caduceus?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ starred: !row.starred }) }); row.starred = !row.starred; this.$allEmails = [...this.$allEmails]; window._caduceus?.toast(row.starred ? 'Starred' : 'Unstarred') }
 
   /**
    * Archive an email via a quick inline action.
@@ -312,7 +312,7 @@ export default class extends Tac {
    * @param {{ stopPropagation: () => void }} e - The click event (propagation is stopped)
    * @returns {Promise<void>}
    */
-  async quickArchive(id, e) { e.stopPropagation(); await window._hermes?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ folder: 'archive' }) }); this.$allEmails = this.$allEmails.filter(m => m.id !== id); window._hermes?.toast('Archived') }
+  async quickArchive(id, e) { e.stopPropagation(); await window._caduceus?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ folder: 'archive' }) }); this.$allEmails = this.$allEmails.filter(m => m.id !== id); window._caduceus?.toast('Archived') }
 
   /**
    * Move an email to trash via a quick inline action.
@@ -322,7 +322,7 @@ export default class extends Tac {
    * @param {{ stopPropagation: () => void }} e - The click event (propagation is stopped)
    * @returns {Promise<void>}
    */
-  async quickTrash(id, e) { e.stopPropagation(); await window._hermes?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ folder: 'trash' }) }); this.$allEmails = this.$allEmails.filter(m => m.id !== id); window._hermes?.toast('Moved to trash') }
+  async quickTrash(id, e) { e.stopPropagation(); await window._caduceus?.apiFetch(`/inbox/${id}`, { method: 'PUT', body: JSON.stringify({ folder: 'trash' }) }); this.$allEmails = this.$allEmails.filter(m => m.id !== id); window._caduceus?.toast('Moved to trash') }
 
   // ── Keyboard shortcuts ────────────────────────────────────────────
 
@@ -351,13 +351,13 @@ export default class extends Tac {
       'email:trash': () => this._shortcutAction('trash'),
       'email:mark-read': () => this._shortcutAction('mark-read'),
       'email:mark-unread': () => this._shortcutAction('mark-unread'),
-      'email:open': () => { if (this.$selectedId) window._hermes?.openEmailId(this.$selectedId) },
+      'email:open': () => { if (this.$selectedId) window._caduceus?.openEmailId(this.$selectedId) },
       'core:select-all': () => this._selectAll(),
       'core:deselect-all': () => { this.$selectedId = '' },
     }
 
     for (const [name, handler] of Object.entries(this._shortcuts)) {
-      window.addEventListener('hermes:shortcut:' + name, handler)
+      window.addEventListener('caduceus:shortcut:' + name, handler)
     }
   }
 

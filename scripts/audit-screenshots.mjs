@@ -19,7 +19,7 @@ const auditDir = join(projectRoot, 'screenshots', 'audit')
 if (existsSync(auditDir)) rmSync(auditDir, { recursive: true, force: true })
 mkdirSync(auditDir, { recursive: true })
 
-const fyloRoot = mkdtempSync(join(tmpdir(), 'hermes-audit-'))
+const fyloRoot = mkdtempSync(join(tmpdir(), 'caduceus-audit-'))
 const PROXY_PORT = 9876
 const API_PORT = 9877
 const PREVIEW_PORT = 3000
@@ -27,7 +27,7 @@ const PROXY_URL = `http://127.0.0.1:${PROXY_PORT}`
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Hermes-Signature',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Caduceus-Signature',
   'Access-Control-Max-Age': '86400',
 }
 
@@ -52,7 +52,7 @@ const apiProc = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'yon.ser
     ...process.env, FYLO_ROOT: fyloRoot,
     JWT_SECRET: 'audit-secret', INBOUND_WEBHOOK_SECRET: 'audit-secret',
     EVENTS_WEBHOOK_SECRET: 'audit-events-secret',
-    HERMES_ENABLE_TEST_ROUTES: 'true', NODE_ENV: 'test',
+    CADUCEUS_ENABLE_TEST_ROUTES: 'true', NODE_ENV: 'test',
     SMS_ADAPTER: 'console', SMTP_ADAPTER: 'console',
     PORT: String(API_PORT), HOST: '127.0.0.1',
   },
@@ -104,14 +104,14 @@ const PREVIEW_URL = `http://127.0.0.1:${PREVIEW_PORT}`
 // ── Step 4: Seed admin user and get JWT ──────────────────────────────────
 console.log('Seeding admin user...')
 let jwtToken = ''
-let adminEmail = 'audit@hermes.test'
+let adminEmail = 'audit@caduceus.test'
 
 try {
   // Create admin via test seed
   const seedResp = await fetch(`${PROXY_URL}/test/seed/user`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ email: adminEmail, phones: ['+10000000000'], role: 'admin', domains: ['hermes.test'] }),
+    body: JSON.stringify({ email: adminEmail, phones: ['+10000000000'], role: 'admin', domains: ['caduceus.test'] }),
   })
   const seedData = await seedResp.json()
   console.log(`  seed: ${JSON.stringify(seedData)}`)
@@ -149,12 +149,12 @@ async function capture(name, urlPath, { width = 1280, height = 800, waitMs = 200
 
   // Inject CORS-friendly API URL (use proxy) and auth token
   await page.addInitScript(({ apiUrl, token, email, role }) => {
-    window.HERMES_CONFIG = { apiUrl }
+    window.CADUCEUS_CONFIG = { apiUrl }
     if (token) {
-      sessionStorage.setItem('hermes_token', token)
-      sessionStorage.setItem('hermes_email', email)
-      sessionStorage.setItem('hermes_role', role || 'admin')
-      sessionStorage.setItem('hermes_domains', JSON.stringify(['hermes.test']))
+      sessionStorage.setItem('caduceus_token', token)
+      sessionStorage.setItem('caduceus_email', email)
+      sessionStorage.setItem('caduceus_role', role || 'admin')
+      sessionStorage.setItem('caduceus_domains', JSON.stringify(['caduceus.test']))
     }
   }, { apiUrl: PROXY_URL, token: auth ? jwtToken : '', email: adminEmail, role: 'admin' })
 

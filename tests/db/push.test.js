@@ -14,7 +14,7 @@ import {
 let fylo;
 let testRoot;
 beforeEach(async () => {
-  testRoot = mkdtempSync(join(tmpdir(), "hermes-push-test-"));
+  testRoot = mkdtempSync(join(tmpdir(), "caduceus-push-test-"));
   fylo = await createDb(testRoot);
 });
 afterEach(() => {

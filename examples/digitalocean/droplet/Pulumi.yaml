@@ -1,0 +1,7 @@
+name: caduceus-droplet
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on DigitalOcean Droplet with Block Storage volume

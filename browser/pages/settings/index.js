@@ -12,12 +12,12 @@ export default class extends Tac {
    * Whether the current user is authenticated and the app can be used.
    * @type {boolean}
    */
-  get canUseApp() { return !!window._hermes?.auth?.isLoggedIn }
+  get canUseApp() { return !!window._caduceus?.auth?.isLoggedIn }
 
   /**
    * Whether the login prompt should be shown (app is loaded but user is not
    * authenticated).
    * @type {boolean}
    */
-  get canShowLogin() { return !!window._hermes && !this.canUseApp }
+  get canShowLogin() { return !!window._caduceus && !this.canUseApp }
 }

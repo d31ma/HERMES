@@ -10,7 +10,7 @@ import { API, useTestApi } from './helpers.mjs'
 test('preview server loads the login page', async ({ page }) => {
   await useTestApi(page)
   await page.goto('/')
-  // The page should render the HERMES shell (SPA renderer loads)
+  // The page should render the CADUCEUS shell (SPA renderer loads)
   await expect(page.locator('body')).not.toBeEmpty()
 })
 
@@ -18,7 +18,7 @@ test('API server responds to health-like request', async ({ page }) => {
   // The preview server proxies API requests or the page loads API-bound config
   await useTestApi(page)
   await page.goto('/')
-  // Should at minimum load a page with the HERMES config pointing to the test API
-  const config = await page.evaluate(() => window.HERMES_CONFIG?.apiUrl)
+  // Should at minimum load a page with the CADUCEUS config pointing to the test API
+  const config = await page.evaluate(() => window.CADUCEUS_CONFIG?.apiUrl)
   expect(config).toBe(API)
 })

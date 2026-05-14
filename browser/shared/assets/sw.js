@@ -1,6 +1,6 @@
 // @ts-nocheck — ServiceWorker global scope (self.skipWaiting, clients, registration, PushEvent)
 /**
- * HERMES Progressive Web App service worker.
+ * CADUCEUS Progressive Web App service worker.
  *
  * Implements install/activate lifecycle events, three cache strategies
  * (pre-cache shell, network-first, stale-while-revalidate), push
@@ -11,7 +11,7 @@
  */
 
 /** @type {string} Cache storage key — bump to invalidate */
-const CACHE_VERSION = 'hermes-pwa-v1'
+const CACHE_VERSION = 'caduceus-pwa-v1'
 
 /** @type {string[]} Static assets to pre-cache on install */
 const APP_SHELL = [
@@ -81,7 +81,7 @@ self.addEventListener('push', event => {
   const title = message.title || 'New email'
   const body = message.body || 'You have new mail.'
   const url = message.url || '/inbox'
-  const tag = message.emailId ? `email-${message.emailId}` : 'hermes-email'
+  const tag = message.emailId ? `email-${message.emailId}` : 'caduceus-email'
 
   event.waitUntil(
     self.registration.showNotification(title, {

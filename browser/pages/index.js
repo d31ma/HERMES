@@ -3,9 +3,9 @@
 /**
  * Main application shell page.
  *
- * Serves as the root layout and global state manager for the HERMES email
+ * Serves as the root layout and global state manager for the CADUCEUS email
  * client. On mount it restores the authentication session from session storage,
- * registers the global `window._hermes` API surface, binds keyboard shortcuts
+ * registers the global `window._caduceus` API surface, binds keyboard shortcuts
  * and navigation event listeners, and manages toast notifications, theme
  * toggling, sidebar state, drag-and-drop folder moves, and the compose
  * prefill pipeline.
@@ -62,17 +62,17 @@ export default class extends Tac {
    *
    * Restores session state, determines the current route, updates the active
    * folder highlight, restores sidebar collapse state, registers the global
-   * `window._hermes` API, and binds all event listeners.
+   * `window._caduceus` API, and binds all event listeners.
    *
    * @returns {void}
    */
   @onMount
   init() {
     const ss = sessionStorage
-    this.$token   = ss.getItem('hermes_token') ?? null
-    this.$email   = ss.getItem('hermes_email') ?? null
-    this.$role    = ss.getItem('hermes_role') ?? null
-    try { this.$domains = JSON.parse(ss.getItem('hermes_domains') || '[]') } catch { this.$domains = [] }
+    this.$token   = ss.getItem('caduceus_token') ?? null
+    this.$email   = ss.getItem('caduceus_email') ?? null
+    this.$role    = ss.getItem('caduceus_role') ?? null
+    try { this.$domains = JSON.parse(ss.getItem('caduceus_domains') || '[]') } catch { this.$domains = [] }
 
     this.$isRoot = location.pathname === '/'
     if (this.$isRoot && this.isAuthenticated) {
@@ -86,7 +86,7 @@ export default class extends Tac {
   }
 
   /**
-   * Registers the global `window._hermes` API surface once.
+   * Registers the global `window._caduceus` API surface once.
    *
    * Exposes reactive auth state, API fetch helpers, toast notifications,
    * navigation, email composition, and formatting utilities so that child
@@ -94,11 +94,11 @@ export default class extends Tac {
    * directly.
    */
   registerGlobals() {
-    if (window._hermesInitialised) return
-    window._hermesInitialised = true
+    if (window._caduceusInitialised) return
+    window._caduceusInitialised = true
 
     const self = this
-    window._hermes = {
+    window._caduceus = {
       get auth() { return { get token() { return self.$token }, get email() { return self.$email }, get role() { return self.$role }, get domains() { return self.$domains }, get isLoggedIn() { return !!self.$token } } },
       apiFetch: (p, o) => this.apiFetch(p, o),
       toast: (m, d) => this.toast(m, d),
@@ -126,7 +126,7 @@ export default class extends Tac {
     const cycle = { light: 'dark', dark: 'auto', auto: 'light' }
     const next = cycle[current] || 'light'
     document.documentElement.setAttribute('data-theme', next)
-    localStorage.setItem('hermes-theme', next)
+    localStorage.setItem('caduceus-theme', next)
   }
 
   /**
@@ -135,7 +135,7 @@ export default class extends Tac {
    */
   initSidebarState() {
     try {
-      const saved = JSON.parse(localStorage.getItem('hermes-sidebar-state') || '{}')
+      const saved = JSON.parse(localStorage.getItem('caduceus-sidebar-state') || '{}')
       this._sidebarState = { mailboxes: true, folders: true, ...saved }
     } catch { this._sidebarState = { mailboxes: true, folders: true } }
     for (const [name, expanded] of Object.entries(this._sidebarState)) {
@@ -157,7 +157,7 @@ export default class extends Tac {
     if (!section) return
     section.classList.toggle('collapsed')
     this._sidebarState[name] = !section.classList.contains('collapsed')
-    localStorage.setItem('hermes-sidebar-state', JSON.stringify(this._sidebarState))
+    localStorage.setItem('caduceus-sidebar-state', JSON.stringify(this._sidebarState))
   }
 
   /**
@@ -181,8 +181,8 @@ export default class extends Tac {
    * changes, sign-out clicks, and keyboard shortcuts.
    */
   bindEvents() {
-    window.addEventListener('hermes:logout', () => this.signOut())
-    window.addEventListener('hermes:open-email', (e) => { this.openEmail(e.detail) })
+    window.addEventListener('caduceus:logout', () => this.signOut())
+    window.addEventListener('caduceus:open-email', (e) => { this.openEmail(e.detail) })
     window.addEventListener('tachyon:navigate', () => { this.updateActiveFolder() })
     window.addEventListener('hashchange', () => {
       if (!location.hash.startsWith('#email=')) return
@@ -204,7 +204,7 @@ export default class extends Tac {
     this._bindShortcut('core:go-trash', () => this.navigate('/trash'))
     this._bindShortcut('core:go-settings', () => this.navigate('/settings'))
     this._bindShortcut('core:refresh', () => {
-      window.dispatchEvent(new Event('hermes:refresh-inbox'))
+      window.dispatchEvent(new Event('caduceus:refresh-inbox'))
     })
     this._bindShortcut('core:search', () => {
       const field = document.querySelector('.inbox-search md-outlined-text-field')
@@ -225,7 +225,7 @@ export default class extends Tac {
    * @param {() => void} handler - The callback to invoke when the shortcut fires.
    */
   _bindShortcut(name, handler) {
-    window.addEventListener('hermes:shortcut:' + name, handler)
+    window.addEventListener('caduceus:shortcut:' + name, handler)
   }
 
   /**
@@ -239,7 +239,7 @@ export default class extends Tac {
     this.$toastMsg = msg
     this.$toastVisible = true
     this._toastTimer = setTimeout(() => { this.$toastVisible = false }, duration)
-    window._hermesShowToast?.(msg, duration)
+    window._caduceusShowToast?.(msg, duration)
   }
 
   /**
@@ -254,7 +254,7 @@ export default class extends Tac {
     this.$toastMsg = msg
     this.$toastVisible = true
     this._toastTimer = setTimeout(() => { this.$toastVisible = false }, duration)
-    window._hermesShowToast?.({ msg, duration, action })
+    window._caduceusShowToast?.({ msg, duration, action })
   }
 
   /**
@@ -314,7 +314,7 @@ export default class extends Tac {
       const res = await this.apiFetch(`/inbox/${emailId}`, { method: 'PUT', body: JSON.stringify({ folder }) })
       if (res?.ok) {
         this.toast(`Moved to ${folder}`)
-        window.dispatchEvent(new Event('hermes:refresh-inbox'))
+        window.dispatchEvent(new Event('caduceus:refresh-inbox'))
       } else {
         this.toast('Failed to move email')
       }
@@ -384,9 +384,9 @@ export default class extends Tac {
    */
   compose(prefill = {}) {
     if (Object.keys(prefill || {}).length > 0) {
-      sessionStorage.setItem('hermes_compose_prefill', JSON.stringify(prefill))
+      sessionStorage.setItem('caduceus_compose_prefill', JSON.stringify(prefill))
     } else {
-      sessionStorage.removeItem('hermes_compose_prefill')
+      sessionStorage.removeItem('caduceus_compose_prefill')
     }
     this.navigate('/compose')
   }
@@ -398,17 +398,17 @@ export default class extends Tac {
    */
   consumeComposePrefill() {
     try {
-      const value = JSON.parse(sessionStorage.getItem('hermes_compose_prefill') || '{}')
-      sessionStorage.removeItem('hermes_compose_prefill')
+      const value = JSON.parse(sessionStorage.getItem('caduceus_compose_prefill') || '{}')
+      sessionStorage.removeItem('caduceus_compose_prefill')
       return value
     } catch {
-      sessionStorage.removeItem('hermes_compose_prefill')
+      sessionStorage.removeItem('caduceus_compose_prefill')
       return {}
     }
   }
 
   /**
-   * Makes an authenticated API request to the HERMES backend.
+   * Makes an authenticated API request to the CADUCEUS backend.
    *
    * Automatically attaches the Bearer token and handles 401 responses by
    * signing the user out and redirecting to the landing page.
@@ -423,7 +423,7 @@ export default class extends Tac {
     if (!this.$token) return null
     const headers = { 'Content-Type': 'application/json', ...options.headers }
     headers['Authorization'] = `Bearer ${this.$token}`
-    const apiUrl = window.HERMES_CONFIG?.apiUrl || ''
+    const apiUrl = window.CADUCEUS_CONFIG?.apiUrl || ''
     const res = await fetch(apiUrl + path, { ...options, headers })
     if (res.status === 401) { this.signOut(); this.navigate('/'); return null }
     return res
@@ -434,8 +434,8 @@ export default class extends Tac {
    */
   signOut() {
     this.$token = null; this.$email = null; this.$role = null; this.$domains = []
-    sessionStorage.removeItem('hermes_token'); sessionStorage.removeItem('hermes_email')
-    sessionStorage.removeItem('hermes_role'); sessionStorage.removeItem('hermes_domains')
+    sessionStorage.removeItem('caduceus_token'); sessionStorage.removeItem('caduceus_email')
+    sessionStorage.removeItem('caduceus_role'); sessionStorage.removeItem('caduceus_domains')
     this.navigate('/')
   }
 
@@ -454,8 +454,8 @@ export default class extends Tac {
   handleLogin(data, returnTo = '/inbox') {
     if (!data?.token || !data?.email) { this.toast('Login failed: invalid response'); return }
     this.$token = data.token; this.$email = data.email; this.$role = data.role || ''; this.$domains = data.domains || []
-    sessionStorage.setItem('hermes_token', data.token); sessionStorage.setItem('hermes_email', data.email)
-    sessionStorage.setItem('hermes_role', data.role || ''); sessionStorage.setItem('hermes_domains', JSON.stringify(data.domains || []))
+    sessionStorage.setItem('caduceus_token', data.token); sessionStorage.setItem('caduceus_email', data.email)
+    sessionStorage.setItem('caduceus_role', data.role || ''); sessionStorage.setItem('caduceus_domains', JSON.stringify(data.domains || []))
     location.replace(returnTo)
   }
 }

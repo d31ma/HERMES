@@ -1,0 +1,8 @@
+{
+  "name": "caduceus-azure-vm-infra",
+  "private": true,
+  "dependencies": {
+    "@pulumi/azure-native": "^2.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  }
+}

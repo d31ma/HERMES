@@ -1,9 +1,9 @@
   .nav-item {
     --md-text-button-container-height: 40px;
     margin: 0 0.5rem;
-    border-radius: 24px;
+    border-radius: 8px;
   }
   .nav-item.active {
-    background: var(--ms-secondary-container, #e8def8);
-    color: var(--ms-on-secondary-container, #1d192b);
+    background: var(--ms-secondary-container, #e8ebe6);
+    color: var(--ms-on-secondary-container, #29342f);
   }

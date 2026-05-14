@@ -1,0 +1,7 @@
+name: caduceus-azure-vm
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on Azure Linux VM with managed disk and systemd

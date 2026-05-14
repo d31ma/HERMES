@@ -1,0 +1,7 @@
+name: caduceus-eks
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on AWS EKS (Kubernetes) with ALB Ingress, EFS CSI, and IRSA

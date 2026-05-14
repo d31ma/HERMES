@@ -12,7 +12,7 @@ import {
 let fylo;
 let testRoot;
 beforeEach(async () => {
-  testRoot = mkdtempSync(join(tmpdir(), "hermes-test-"));
+  testRoot = mkdtempSync(join(tmpdir(), "caduceus-test-"));
   fylo = await createDb(testRoot);
 });
 afterEach(() => {

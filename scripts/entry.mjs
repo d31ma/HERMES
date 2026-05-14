@@ -1,12 +1,12 @@
-// HERMES entry point — single binary for all deployment modes.
-// Compiled to binary via: bun build --compile scripts/entry.mjs --outfile hermes
+// CADUCEUS entry point — single binary for all deployment modes.
+// Compiled to binary via: bun build --compile scripts/entry.mjs --outfile caduceus
 //
 // Commands:
-//   ./hermes serve                       Standalone server (Fargate, ECS, plain Docker)
-//   ./hermes lambda                      Lambda mode — starts the Runtime API handler
-//   ./hermes admin:create --email=...    Create admin user
-//   ./hermes domain:migrate --from=...   Migrate domain
-//   ./hermes help                        Show help
+//   ./caduceus serve                       Standalone server (Fargate, ECS, plain Docker)
+//   ./caduceus lambda                      Lambda mode — starts the Runtime API handler
+//   ./caduceus admin:create --email=...    Create admin user
+//   ./caduceus domain:migrate --from=...   Migrate domain
+//   ./caduceus help                        Show help
 
 const command = process.argv[2] || 'serve'
 const args = process.argv.slice(3)
@@ -30,7 +30,7 @@ if (command === 'lambda') {
 
   console.log('')
   console.log('╔══════════════════════════════════════╗')
-  console.log('║         HERMES mail server           ║')
+  console.log('║         CADUCEUS mail server           ║')
   console.log('╚══════════════════════════════════════╝')
   console.log('')
   console.log('Secrets:')
@@ -53,7 +53,7 @@ if (command === 'lambda') {
   }
   if (!hasJwt || !hasInbound) {
     console.error('ERROR: JWT_SECRET and INBOUND_WEBHOOK_SECRET are required.')
-    console.error('Set them as environment variables before starting HERMES.')
+    console.error('Set them as environment variables before starting CADUCEUS.')
     process.exit(1)
   }
 
@@ -85,21 +85,21 @@ if (command === 'lambda') {
   await import('./migrate-domain.mjs')
 } else if (command === 'help' || command === '--help' || command === '-h') {
   console.log([
-    'Hermes container commands:',
-    '  serve           Start the Hermes API and frontend server',
+    'Caduceus container commands:',
+    '  serve           Start the Caduceus API and frontend server',
 '  lambda          Start in AWS Lambda mode (Runtime API handler)',
     '  admin:create    Create the first admin for a domain',
     '  domain:migrate  Promote users from one domain suffix to another',
     '',
     'Examples:',
-    '  docker run ghcr.io/d31ma/hermes:latest',
-'  docker run ghcr.io/d31ma/hermes:latest lambda',
-    '  docker run -v hermes-data:/data ghcr.io/d31ma/hermes:latest admin:create --email=admin@example.com --phone=+14165550100 --domain=example.com',
-    '  docker run -v hermes-data:/data ghcr.io/d31ma/hermes:latest domain:migrate --from=old.example --to=new.example --apply',
+    '  docker run ghcr.io/d31ma/caduceus:latest',
+'  docker run ghcr.io/d31ma/caduceus:latest lambda',
+    '  docker run -v caduceus-data:/data ghcr.io/d31ma/caduceus:latest admin:create --email=admin@example.com --phone=+14165550100 --domain=example.com',
+    '  docker run -v caduceus-data:/data ghcr.io/d31ma/caduceus:latest domain:migrate --from=old.example --to=new.example --apply',
   ].join('\n'))
   process.exit(0)
 } else {
-  console.error(`Unsupported Hermes container command: ${command}`)
+  console.error(`Unsupported Caduceus container command: ${command}`)
   console.error('Allowed commands: serve, lambda, admin:create, domain:migrate')
   process.exit(64)
 }

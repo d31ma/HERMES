@@ -1,4 +1,4 @@
-# HERMES
+# CADUCEUS
 
 Open-source multi-domain mail server built with Tachyon for HTTP/frontend routes and Fylo for local file-backed persistence.
 
@@ -16,6 +16,14 @@ bun run test
 bun run test:e2e
 ```
 
+Run the AWS adapter E2E suite against Floci:
+
+```sh
+bun run test:floci
+```
+
+This starts Floci, CADUCEUS, and the integration test runner through Docker Compose. The suite exercises the AWS SNS and SES adapters through `AWS_ENDPOINT_URL=http://floci:4566` using dummy local credentials.
+
 Run the API server:
 
 ```sh
@@ -28,7 +36,7 @@ bun run serve
 Build the frontend for CDN/static hosting:
 
 ```sh
-HERMES_API_URL=https://api.example.com bun run bundle
+CADUCEUS_API_URL=https://api.example.com bun run bundle
 ```
 
 The static frontend build is written to `dist/`.
@@ -47,7 +55,7 @@ The existing web manifest provides standalone display metadata, theme colors, sh
 
 ## Docker
 
-Published images are available on GitHub Container Registry at [`ghcr.io/d31ma/hermes`](https://ghcr.io/d31ma/hermes). Every push to `main` builds and publishes a multi-arch image (`linux/amd64`, `linux/arm64`) tagged with a [CalVer](https://calver.org) date (`YY.WW.DD`) and `latest`.
+Published images are available on GitHub Container Registry at [`ghcr.io/d31ma/caduceus`](https://ghcr.io/d31ma/caduceus). Every push to `main` builds and publishes a multi-arch image (`linux/amd64`, `linux/arm64`) tagged with a [CalVer](https://calver.org) date (`YY.WW.DD`) and `latest`.
 
 ### Run the published image
 
@@ -58,15 +66,15 @@ docker run --rm \
   -e INBOUND_WEBHOOK_SECRET=change-me-too \
   -e WEB_PUSH_DISABLED=true \
   -e FYLO_ROOT=/data \
-  -v hermes-data:/data \
-  ghcr.io/d31ma/hermes:latest
+  -v caduceus-data:/data \
+  ghcr.io/d31ma/caduceus:latest
 ```
 
 The container serves the API on `PORT` and stores data under `FYLO_ROOT`. Build the frontend separately with `bun run bundle` when distributing it through a CDN.
 
 The image uses a narrow entrypoint. By default it only accepts these commands:
 
-- `serve`: start Hermes
+- `serve`: start Caduceus
 - `admin:create`: create the first admin for a domain
 - `domain:migrate`: promote users from one domain suffix to another
 
@@ -75,7 +83,7 @@ Any other command is rejected by the default entrypoint unless an operator delib
 ### Build locally
 
 ```sh
-docker build -t hermes:local .
+docker build -t caduceus:local .
 ```
 
 ### Image hardening
@@ -88,24 +96,24 @@ The runtime image is built on `oven/bun:<version>-distroless` for a minimal atta
 - Test-only routes under `routes/test/**` are omitted from the production image.
 - Merge-gating image blackbox tests are loaded from a private CI-only repository, not from this public source tree.
 
-Trade-offs: `docker exec -it <container> sh` will not work, and the image is not intended for interactive debugging. For troubleshooting, reproduce the failure locally with `hermes:local` built from the repo, or run a sidecar built on a full Bun image.
+Trade-offs: `docker exec -it <container> sh` will not work, and the image is not intended for interactive debugging. For troubleshooting, reproduce the failure locally with `caduceus:local` built from the repo, or run a sidecar built on a full Bun image.
 
 ### Private Blackbox Tests
 
 The CI workflow builds the production Docker image, starts it, and then checks out a private blackbox test suite into `.blackbox-tests/`. The test source is intentionally not committed to this repository. Configure these GitHub settings before requiring the `Image blackbox tests` check:
 
-- `HERMES_BLACKBOX_REPOSITORY` variable or secret: private repository name, for example `d31ma/NightJar`
-- `HERMES_BLACKBOX_SSH_KEY` secret: private half of a read-only deploy key for that private repository
-- `HERMES_BLACKBOX_REF` variable: optional branch, tag, or SHA; defaults to `main`
+- `CADUCEUS_BLACKBOX_REPOSITORY` variable or secret: private repository name, for example `d31ma/NightJar`
+- `CADUCEUS_BLACKBOX_SSH_KEY` secret: private half of a read-only deploy key for that private repository
+- `CADUCEUS_BLACKBOX_REF` variable: optional branch, tag, or SHA; defaults to `main`
 
-The private suite receives `HERMES_IMAGE`, `HERMES_URL`, and `INBOUND_WEBHOOK_SECRET`. If its `package.json` defines a `blackbox` script, CI runs `bun run blackbox`; otherwise it runs `bun test . --timeout 120000`.
+The private suite receives `CADUCEUS_IMAGE`, `CADUCEUS_URL`, and `INBOUND_WEBHOOK_SECRET`. If its `package.json` defines a `blackbox` script, CI runs `bun run blackbox`; otherwise it runs `bun test . --timeout 120000`.
 
 ### Extending the image
 
 Because the runtime base is distroless, downstream Dockerfiles can add files and configuration but cannot run shell commands. This works:
 
 ```dockerfile
-FROM ghcr.io/d31ma/hermes:latest
+FROM ghcr.io/d31ma/caduceus:latest
 
 COPY --chown=65532:65532 my-routes/   /app/routes/custom/
 COPY --chown=65532:65532 my-config.json /app/config.json
@@ -114,7 +122,7 @@ ENV CUSTOM_FLAG=true
 
 Files placed under `/app/routes/` are picked up automatically by Tachyon's file-system router. Static assets, components, and configuration work the same way.
 
-`RUN` commands that require a shell will not work (`bun install`, `apt-get`, shell scripts). To add new npm dependencies, do a multi-stage build yourself: run `bun install` in a full Bun image and copy `node_modules` into a layer on top of `ghcr.io/d31ma/hermes`.
+`RUN` commands that require a shell will not work (`bun install`, `apt-get`, shell scripts). To add new npm dependencies, do a multi-stage build yourself: run `bun install` in a full Bun image and copy `node_modules` into a layer on top of `ghcr.io/d31ma/caduceus`.
 
 Bind-mounting at runtime is always an option for ad-hoc additions:
 
@@ -125,9 +133,9 @@ docker run --rm \
   -e INBOUND_WEBHOOK_SECRET=change-me-too \
   -e WEB_PUSH_DISABLED=true \
   -e FYLO_ROOT=/data \
-  -v hermes-data:/data \
+  -v caduceus-data:/data \
   -v $(pwd)/my-routes:/app/routes/custom:ro \
-  ghcr.io/d31ma/hermes:latest
+  ghcr.io/d31ma/caduceus:latest
 ```
 
 Bind-mount sources should be owned by uid `65532` on the host (or world-readable) to satisfy the non-root container user.
@@ -140,7 +148,7 @@ The inbox API returns attachment metadata with message details, and authenticate
 
 ## Push Notifications
 
-Hermes can notify installed desktop and mobile PWA users when new mail is delivered. For production, generate VAPID keys and provide them to the API process:
+Caduceus can notify installed desktop and mobile PWA users when new mail is delivered. For production, generate VAPID keys and provide them to the API process:
 
 ```sh
 bun node_modules/.bin/web-push generate-vapid-keys
@@ -160,14 +168,14 @@ For the hardened Docker image, run the same bootstrap as an explicit one-shot co
 
 ```sh
 docker run --rm \
-  -v hermes-data:/data \
-  ghcr.io/d31ma/hermes:latest \
+  -v caduceus-data:/data \
+  ghcr.io/d31ma/caduceus:latest \
   admin:create --email=admin@example.com --phone=+14165550100 --domain=example.com
 ```
 
 Run this before starting the API container, or stop the API container briefly while bootstrapping the first account against an existing volume. The command creates the domain with a default `*@domain` store route if it does not already exist, then creates an admin user scoped to that domain. After the first admin exists, use the Settings screen or `POST /users` to add more users for domains that admin is allowed to manage.
 
-Inbound relay integrations must sign the exact JSON payload with HMAC-SHA256 using `INBOUND_WEBHOOK_SECRET` and send it as `X-Hermes-Signature`.
+Inbound relay integrations must sign the exact JSON payload with HMAC-SHA256 using `INBOUND_WEBHOOK_SECRET` and send it as `X-Caduceus-Signature`.
 
 ## Domain Migration
 
@@ -189,8 +197,8 @@ For Docker:
 
 ```sh
 docker run --rm \
-  -v hermes-data:/data \
-  ghcr.io/d31ma/hermes:latest \
+  -v caduceus-data:/data \
+  ghcr.io/d31ma/caduceus:latest \
   domain:migrate --from=old.example --to=new.example --apply
 ```
 

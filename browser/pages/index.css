@@ -50,16 +50,17 @@
 
   .app-topbar {
     display: flex; align-items: center; gap: 0.75rem;
-    height: var(--app-topbar-height); padding: 0 1rem;
+    height: var(--app-topbar-height); padding: 0 1rem 0 1.1rem;
     border-bottom: 1px solid var(--ms-divider);
-    background: var(--ms-bg);
+    background: color-mix(in srgb, var(--ms-bg) 88%, white);
     flex-shrink: 0;
+    box-shadow: 0 1px 0 rgba(24,33,37,0.02);
   }
 
   .app-brand {
     font-weight: var(--ms-font-weight-bold, 700);
     font-size: var(--ms-font-lg, 1.0625rem);
-    letter-spacing: var(--ms-letter-spacing-tight, -0.02em);
+    letter-spacing: 0;
     color: var(--ms-primary);
     user-select: none;
   }
@@ -81,24 +82,25 @@
     border-right: 1px solid var(--ms-divider);
     background: var(--ms-sidebar-bg);
     display: flex; flex-direction: column;
-    padding: 0.5rem;
+    padding: 0.65rem 0.55rem;
     user-select: none;
   }
 
   .sidebar-folder {
     display: flex; align-items: center; gap: 0.5rem;
-    padding: 0.4rem 0.75rem; border-radius: 6px;
+    min-height: 36px;
+    padding: 0.45rem 0.7rem; border-radius: 7px;
     color: var(--ms-text-subtle);
     font-size: var(--ms-font-base, 0.875rem);
     font-weight: var(--ms-font-weight-normal, 400);
     cursor: pointer; text-decoration: none;
-    transition: background 150ms, color 150ms;
+    transition: background 150ms, color 150ms, transform 150ms;
     width: 100%; border: none; background: none; text-align: left;
     font-family: inherit;
   }
   .sidebar-folder:hover { background: var(--ms-hover-bg); color: var(--ms-text); }
-  .sidebar-folder.active { background: var(--ms-selected-bg); color: var(--ms-selected-color); font-weight: 500; }
-  .sidebar-folder.drag-over { background: var(--ms-selected-bg); }
+  .sidebar-folder.active { background: var(--ms-selected-bg); color: var(--ms-selected-color); font-weight: 600; box-shadow: inset 3px 0 0 var(--ms-primary); }
+  .sidebar-folder.drag-over { background: var(--ms-selected-bg); transform: translateX(2px); }
   .sidebar-folder svg { width: 18px; height: 18px; flex-shrink: 0; opacity: 0.7; }
   .sidebar-folder .folder-count { margin-left: auto; font-size: var(--ms-font-sm, 0.75rem); opacity: 0.6; }
   .sidebar-divider { border-top: 1px solid var(--ms-divider); margin: 0.35rem 0.5rem; }
@@ -107,9 +109,9 @@
   .sidebar-section { margin-bottom: 0.25rem; }
   .sidebar-section-header {
     display: flex; align-items: center; gap: 0.35rem;
-    padding: 0.35rem 0.75rem;
+    padding: 0.45rem 0.7rem 0.3rem;
     font-size: var(--ms-font-xs, 0.6875rem); font-weight: 600;
-    text-transform: uppercase; letter-spacing: 0.04em;
+    text-transform: uppercase; letter-spacing: 0;
     color: var(--ms-text-very-subtle);
     cursor: pointer; user-select: none;
     border-radius: 4px;
@@ -130,7 +132,7 @@
   .app-main {
     flex: 1; min-width: 0;
     display: flex; flex-direction: column;
-    background: var(--ms-list-bg);
+    background: linear-gradient(180deg, var(--ms-list-bg), var(--ms-surface-container-low));
   }
 
   /* ── Login screen (rendered in shell, outside login-form component) ──── */
@@ -139,7 +141,7 @@
     align-items: center;
     justify-content: center;
     min-height: 100dvh;
-    background: var(--ms-bg, #fefbff);
+    background: radial-gradient(circle at top, var(--ms-surface-container-high), var(--ms-bg, #f8faf9) 42%);
     padding: 1rem;
   }
 
@@ -148,10 +150,11 @@
     display: flex; flex: 1; min-height: 0;
   }
   .mail-list-panel {
-    width: 360px; flex-shrink: 0;
+    width: 380px; flex-shrink: 0;
     border-right: 1px solid var(--ms-divider);
     display: flex; flex-direction: column;
     overflow: hidden;
+    background: var(--ms-surface);
   }
   .mail-detail-panel {
     flex: 1; min-width: 0;
@@ -173,7 +176,19 @@
     border-top: 1px solid var(--ms-divider);
     z-index: 20; padding: 0 0.25rem;
     padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -10px 24px rgba(24,33,37,0.08);
   }
+
+  .mobile-nav .sidebar-folder {
+    flex: 1;
+    justify-content: center;
+    flex-direction: column;
+    gap: 0.15rem;
+    min-height: 52px;
+    font-size: var(--ms-font-xs, 0.6875rem);
+  }
+
+  .mobile-nav .sidebar-folder svg { width: 20px; height: 20px; }
 
   @media (max-width: 900px) {
     .mail-list-panel { width: 280px; }
@@ -186,5 +201,6 @@
     .mail-layout.show-detail .mail-detail-panel { display: flex; }
     .mobile-nav { display: flex; align-items: center; justify-content: space-around; }
     .app-main { padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); }
-    .app-topbar { padding: 0 0.75rem; height: 44px; }
+    .app-topbar { padding: 0 0.75rem; height: 48px; }
+    .app-user { max-width: 36vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   }

@@ -1,8 +1,8 @@
-  .settings-panel { max-width: 700px; padding: 1.5rem; }
+  .settings-panel { max-width: 760px; padding: 1.5rem; }
   .settings-section { margin-bottom: 2rem; }
-  .settings-section-title { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
-  .settings-card { background: var(--ms-surface-container-low); border-radius: 12px; overflow: hidden; }
-  .settings-row { display: flex; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--ms-outline-variant); gap: 0.75rem; font-size: var(--ms-font-base, 0.875rem); }
+  .settings-section-title { font-weight: 600; text-transform: uppercase; letter-spacing: 0; margin-bottom: 0.75rem; color: var(--ms-text-subtle); }
+  .settings-card { background: var(--ms-surface); border: 1px solid var(--ms-outline-variant); border-radius: 8px; overflow: hidden; box-shadow: 0 8px 24px rgba(24,33,37,0.04); }
+  .settings-row { display: flex; align-items: center; min-height: 52px; padding: 0.8rem 1rem; border-bottom: 1px solid var(--ms-outline-variant); gap: 0.75rem; font-size: var(--ms-font-base, 0.875rem); }
   .settings-row:last-child { border-bottom: none; }
   .route-badge { display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 600; text-transform: uppercase; }
   .route-badge.store { background: var(--ms-primary-container); color: var(--ms-on-primary-container); }

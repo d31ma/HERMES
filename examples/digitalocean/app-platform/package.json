@@ -1,0 +1,8 @@
+{
+  "name": "caduceus-do-app-platform-infra",
+  "private": true,
+  "dependencies": {
+    "@pulumi/digitalocean": "^4.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  }
+}

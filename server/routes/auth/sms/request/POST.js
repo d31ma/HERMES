@@ -39,6 +39,6 @@ export async function handler({ body, context }) {
     codeHash: createHash("sha256").update(code).digest("hex"),
     expiresAt
   });
-  await getSmsAdapter().send(phone, `Your HERMES code: ${code}. Expires in 5 minutes.`);
+  await getSmsAdapter().send(phone, `Your CADUCEUS code: ${code}. Expires in 5 minutes.`);
   return { sent: true, sessionId };
 }

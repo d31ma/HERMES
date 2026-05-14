@@ -7,8 +7,8 @@
 export function getSmsAdapter() {
   const adapter = process.env.SMS_ADAPTER || 'console'
   if (adapter === 'console' && process.env.NODE_ENV === 'production') {
-    console.error('[hermes] WARNING: SMS_ADAPTER=console — SMS messages will be logged but NOT delivered.')
-    console.error('[hermes] Set SMS_ADAPTER to aws, azure, or twilio for production SMS delivery.')
+    console.error('[caduceus] WARNING: SMS_ADAPTER=console — SMS messages will be logged but NOT delivered.')
+    console.error('[caduceus] Set SMS_ADAPTER to aws, azure, or twilio for production SMS delivery.')
   }
   switch (adapter) {
     case 'console': return new ConsoleSmsAdapter()
@@ -40,7 +40,7 @@ class AwsSnsAdapter {
         PhoneNumber: to,
         Message: body,
         MessageAttributes: {
-          'AWS.SNS.SMS.SenderID': { DataType: 'String', StringValue: 'HERMES' },
+          'AWS.SNS.SMS.SenderID': { DataType: 'String', StringValue: 'CADUCEUS' },
           'AWS.SNS.SMS.SMSType': { DataType: 'String', StringValue: 'Transactional' },
         },
       }))
@@ -84,13 +84,13 @@ class AzureSmsAdapter {
       // @ts-ignore - optional dependency, may not have type declarations
       const { SmsClient } = await import('@azure/communication-sms')
       const client = new SmsClient(endpoint, { key })
-      await client.send({ from: process.env.AZURE_SMS_FROM || 'HERMES', to: [to], message: body })
+      await client.send({ from: process.env.AZURE_SMS_FROM || 'CADUCEUS', to: [to], message: body })
     } catch (e) {
       console.error('[sms] Azure SMS SDK send failed, falling back to REST:', e)
       await fetch(`${endpoint}/sms?api-version=2023-03-31`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
-        body: JSON.stringify({ from: process.env.AZURE_SMS_FROM || 'HERMES', to: [{ phone: to }], message: body }),
+        body: JSON.stringify({ from: process.env.AZURE_SMS_FROM || 'CADUCEUS', to: [{ phone: to }], message: body }),
       })
     }
   }
@@ -105,12 +105,20 @@ class TwilioAdapter {
     const from = process.env.TWILIO_PHONE_NUMBER
     if (!sid || !token || !from) throw new Error('TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, and TWILIO_PHONE_NUMBER are required')
 
-    const auth = btoa(`${sid}:${token}`)
-    await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+    const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
       method: 'POST',
-      headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/x-www-form-urlencoded' },
+      headers: { 'Authorization': `Basic ${btoa(`${sid}:${token}`)}`, 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({ To: to, From: from, Body: body }).toString(),
     })
+    const text = await res.text()
+    let data = {}
+    try { data = text ? JSON.parse(text) : {} } catch { data = { message: text } }
+    if (!res.ok) {
+      const message = data.message || text || `HTTP ${res.status}`
+      console.error(`[sms] Twilio error: ${data.code || 'unknown'} — ${message} (status=${res.status})`)
+      throw new Error(`Twilio send failed: ${message}`)
+    }
+    console.log(`[sms] Twilio queued: sid=${data.sid || 'unknown'} to=${to} status=${data.status || 'accepted'}`)
   }
 }
 

@@ -18,7 +18,7 @@
       </logic>
 
       <loop :for="item of $items">
-        <div class="scheduled-item" style="border:1px solid var(--ms-outline-variant);border-radius:12px;padding:0.75rem;margin-bottom:0.5rem;">
+        <div class="scheduled-item" style="border:1px solid var(--ms-outline-variant);border-radius:8px;padding:0.75rem;margin-bottom:0.5rem;background:var(--ms-surface);">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;">
             <div style="min-width:0;">
               <p class="md-typescale-body-medium" style="margin:0;font-weight:500;">{item.subject}</p>
@@ -47,5 +47,5 @@
   </div>
 </logic>
 <logic :if="canShowLogin">
-  <div class="login-screen"><login-form_ @login="window._hermes?.handleLogin($event.detail)" /></div>
+  <div class="login-screen"><login-form_ @login="window._caduceus?.handleLogin($event.detail)" /></div>
 </logic>

@@ -1,5 +1,5 @@
-// AWS Lambda handler for HERMES
-// Compile with: bun build --compile scripts/lambda.mjs --outfile hermes-lambda
+// AWS Lambda handler for CADUCEUS
+// Compile with: bun build --compile scripts/lambda.mjs --outfile caduceus-lambda
 //
 // Deploy as a Lambda function with:
 //   - Runtime: Custom runtime on Amazon Linux 2023
@@ -21,7 +21,7 @@ process.env.YON_TRUST_PROXY = process.env.YON_TRUST_PROXY || 'loopback'
 // Bootstrap the Lambda runtime API
 const RUNTIME_API = `http://${process.env.AWS_LAMBDA_RUNTIME_API || '127.0.0.1:9001'}/2018-06-01`
 
-// Start the HERMES server in the background.
+// Start the CADUCEUS server in the background.
 // Use a relative import to bypass the @d31ma/tachyon exports map, which does
 // not expose ./src/cli/serve.js (see package.json "exports" field). The
 // relative path works because Bun resolves it at compile time before the

@@ -1,0 +1,8 @@
+{
+  "name": "caduceus-linode-instance-infra",
+  "private": true,
+  "dependencies": {
+    "@pulumi/linode": "^4.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  }
+}

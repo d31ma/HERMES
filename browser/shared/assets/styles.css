@@ -1,4 +1,4 @@
-/* HERMES — Mailspring-inspired Mail Client CSS foundation */
+/* CADUCEUS — Mailspring-inspired Mail Client CSS foundation */
 
 /* ── Base reset ────────────────────────────────────────────────────────── */
 *, :before, :after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,63 +39,80 @@ img, svg, video { max-width: 100%; display: block; }
   --ms-font-weight-medium: 500;
   --ms-font-weight-semibold: 600;
   --ms-font-weight-bold: 700;
-  --ms-letter-spacing-tight: -0.02em;
+  --ms-letter-spacing-tight: 0;
   --ms-letter-spacing-normal: 0;
   --ms-letter-spacing-wide: 0.04em;
 }
 
 /* ── Mailspring-aligned color system ───────────────────────────────────── */
 :root {
-  --ms-primary: var(--ms-primary, #6750a4);
-  --ms-primary-container: var(--ms-primary-container, #eaddff);
-  --ms-on-primary-container: var(--ms-on-primary-container, #21005d);
+  --ms-primary: var(--ms-primary, #26667f);
+  --ms-primary-container: var(--ms-primary-container, #d8edf4);
+  --ms-on-primary-container: var(--ms-on-primary-container, #0b3442);
 
-  --ms-bg: var(--ms-surface, #fefbff);
-  --ms-sidebar-bg: var(--ms-sidebar, #f7f2fa);
-  --ms-list-bg: var(--ms-surface, #fefbff);
-  --ms-detail-bg: var(--ms-surface, #fefbff);
-  --ms-toolbar-bg: var(--ms-toolbar, #ece6f0);
+  --ms-bg: var(--ms-surface, #f8faf9);
+  --ms-sidebar-bg: var(--ms-sidebar, #eef3f1);
+  --ms-list-bg: var(--ms-surface, #f8faf9);
+  --ms-detail-bg: var(--ms-surface, #ffffff);
+  --ms-toolbar-bg: var(--ms-toolbar, #f1f5f4);
 
-  --ms-text: var(--ms-text, #1c1b1f);
-  --ms-text-subtle: var(--ms-text-subtle, #49454f);
-  --ms-text-very-subtle: var(--ms-text-very-subtle, #79747e);
+  --ms-text: var(--ms-text, #182125);
+  --ms-text-subtle: var(--ms-text-subtle, #526066);
+  --ms-text-very-subtle: var(--ms-text-very-subtle, #7b878c);
 
-  --ms-divider: var(--ms-divider, #cac4d0);
-  --ms-border: var(--ms-border, #cac4d0);
+  --ms-divider: var(--ms-divider, #d8e0de);
+  --ms-border: var(--ms-border, #d0dbd8);
 
-  --ms-hover-bg: var(--ms-hover-bg, #f3edf7);
-  --ms-selected-bg: var(--ms-selected-bg, #e8def8);
-  --ms-selected-color: var(--ms-selected-color, #1d192b);
-  --ms-active-color: var(--ms-active-color, #e8def8);
+  --ms-hover-bg: var(--ms-hover-bg, #eaf1ef);
+  --ms-selected-bg: var(--ms-selected-bg, #dceff3);
+  --ms-selected-color: var(--ms-selected-color, #102f3a);
+  --ms-active-color: var(--ms-active-color, #dceff3);
 
-  --ms-avatar-bg: var(--ms-avatar-bg, #eaddff);
-  --ms-avatar-text: var(--ms-avatar-text, #21005d);
-  --ms-unread-indicator: var(--ms-unread-indicator, #6750a4);
+  --ms-avatar-bg: var(--ms-avatar-bg, #d8edf4);
+  --ms-avatar-text: var(--ms-avatar-text, #0b3442);
+  --ms-unread-indicator: var(--ms-unread-indicator, #26667f);
 
   --ms-error: var(--ms-error, #b3261e);
   --ms-error-container: var(--ms-error-container, #f9dedc);
 
-  --ms-secondary-container: var(--ms-secondary-container, #e8def8);
-  --ms-on-secondary-container: var(--ms-on-secondary-container, #1d192b);
-  --ms-surface-container-low: var(--ms-surface-container-low, #f7f2fa);
-  --ms-surface-container-high: var(--ms-surface-container-high, #ece6f0);
-  --ms-surface-container: var(--ms-surface-container, #f3edf7);
+  --ms-secondary-container: var(--ms-secondary-container, #e8ebe6);
+  --ms-on-secondary-container: var(--ms-on-secondary-container, #29342f);
+  --ms-surface-container-low: var(--ms-surface-container-low, #f3f7f5);
+  --ms-surface-container-high: var(--ms-surface-container-high, #e5ece9);
+  --ms-surface-container: var(--ms-surface-container, #edf3f1);
   --ms-inverse-surface: var(--ms-inverse-surface, #313033);
   --ms-inverse-on-surface: var(--ms-inverse-on-surface, #f4eff4);
   --ms-on-surface: var(--ms-on-surface, #1c1b1f);
   --ms-on-surface-variant: var(--ms-on-surface-variant, #49454f);
-  --ms-outline-variant: var(--ms-outline-variant, #cac4d0);
-  --ms-tertiary-container: var(--ms-tertiary-container, #ffd8e4);
-  --ms-on-tertiary-container: var(--ms-on-tertiary-container, #3e001d);
+  --ms-outline-variant: var(--ms-outline-variant, #d8e0de);
+  --ms-tertiary-container: var(--ms-tertiary-container, #ffe4bf);
+  --ms-on-tertiary-container: var(--ms-on-tertiary-container, #4b2b00);
   --ms-on-error-container: var(--ms-on-error-container, #410e0b);
 
   --ms-toolbar-height: 48px;
   --ms-sidebar-width: 220px;
+
+  --md-sys-color-primary: var(--ms-primary);
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: var(--ms-primary-container);
+  --md-sys-color-on-primary-container: var(--ms-on-primary-container);
+  --md-sys-color-secondary-container: var(--ms-secondary-container);
+  --md-sys-color-on-secondary-container: var(--ms-on-secondary-container);
+  --md-sys-color-surface: var(--ms-surface);
+  --md-sys-color-on-surface: var(--ms-text);
+  --md-sys-color-on-surface-variant: var(--ms-text-subtle);
+  --md-sys-color-outline: var(--ms-border);
+  --md-sys-color-outline-variant: var(--ms-outline-variant);
+  --md-filled-button-container-shape: 8px;
+  --md-filled-tonal-button-container-shape: 8px;
+  --md-outlined-button-container-shape: 8px;
+  --md-text-button-container-shape: 8px;
+  --md-outlined-text-field-container-shape: 8px;
 }
 
 /* ── Focus ─────────────────────────────────────────────────────────────── */
 :focus-visible {
-  outline: 2px solid var(--ms-primary, #6750a4);
+  outline: 2px solid var(--ms-primary, #26667f);
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -109,7 +126,7 @@ img, svg, video { max-width: 100%; display: block; }
 .toolbar-btn:focus-visible,
 .attachment-chip:focus-visible,
 .sidebar-section-header:focus-visible {
-  outline: 2px solid var(--ms-primary, #6750a4);
+  outline: 2px solid var(--ms-primary, #26667f);
   outline-offset: -2px;
   border-radius: 6px;
 }

@@ -1,12 +1,12 @@
 /**
- * HERMES shell bootstrap — Material Design M2 + PWA setup.
+ * CADUCEUS shell bootstrap — Material Design M2 + PWA setup.
  *
  * Responsibilities:
  *   - Inject Google Fonts stylesheet (IBM Plex Sans + Mono).
  *   - Load Material Web components via CDN (esm.sh).
  *   - Initialize the colour-scheme theme from localStorage or OS preference.
  *   - Register the PWA service worker.
- *   - Chain-load Mousetrap and the HERMES keyboard shortcut manager.
+ *   - Chain-load Mousetrap and the CADUCEUS keyboard shortcut manager.
  *   - Provide a global Material-style toast / snackbar renderer.
  *
  * This file should be loaded synchronously in `<head>` so that fonts,
@@ -35,12 +35,12 @@ if (!document.querySelector('link[data-demo-style]')) {
 /**
  * Apply the persisted or system-prefered colour theme.
  *
- * Checks localStorage key `hermes-theme` first; if unset or unrecognized,
+ * Checks localStorage key `caduceus-theme` first; if unset or unrecognized,
  * falls back to the OS `prefers-color-scheme` media query.  The result is
  * stored on `<html data-theme>` for CSS variable switching.
  */
 ;(function initTheme() {
-  const stored = localStorage.getItem('hermes-theme')
+  const stored = localStorage.getItem('caduceus-theme')
   if (stored === 'light' || stored === 'dark' || stored === 'auto') {
     document.documentElement.setAttribute('data-theme', stored)
   } else {
@@ -49,7 +49,7 @@ if (!document.querySelector('link[data-demo-style]')) {
   }
 })()
 
-if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
+if ('serviceWorker' in navigator && !window.__CADUCEUS_DISABLE_SW) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {})
   })
@@ -58,10 +58,10 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
 // ── Keyboard shortcuts ────────────────────────────────────────────────
 
 /**
- * Chain-load Mousetrap then the HERMES keyboard manager.
+ * Chain-load Mousetrap then the CADUCEUS keyboard manager.
  *
  * Appends `<script>` tags in order so that `keyboard.js` can rely on the
- * global `Mousetrap` binding.  Once both are loaded, `_hermesKeyboard.init()`
+ * global `Mousetrap` binding.  Once both are loaded, `_caduceusKeyboard.init()`
  * is called automatically.
  */
 ;(function loadKeyboard() {
@@ -71,8 +71,8 @@ if ('serviceWorker' in navigator && !window.__HERMES_DISABLE_SW) {
     var kbScript = document.createElement('script')
     kbScript.src = '/shared/scripts/keyboard.js'
     kbScript.onload = function () {
-      if (window._hermesKeyboard) {
-        window._hermesKeyboard.init()
+      if (window._caduceusKeyboard) {
+        window._caduceusKeyboard.init()
       }
     }
     document.head.appendChild(kbScript)
@@ -91,11 +91,11 @@ let _toastCountdownTimer = null
 /**
  * Display a Material-style toast / snackbar notification.
  *
- * Creates (or reuses) a fixed-position `<div id="hermes-toast">` with
+ * Creates (or reuses) a fixed-position `<div id="caduceus-toast">` with
  * ARIA live-region attributes.  Supports two calling conventions:
  *
- * 1. **Simple string** — `_hermesShowToast('Copied!', 3000)`
- * 2. **Interactive object** — `_hermesShowToast({ msg: 'Undo?', duration: 5000, action: { label: 'Undo', onClick: fn } })`
+ * 1. **Simple string** — `_caduceusShowToast('Copied!', 3000)`
+ * 2. **Interactive object** — `_caduceusShowToast({ msg: 'Undo?', duration: 5000, action: { label: 'Undo', onClick: fn } })`
  *
  * When an action button is provided the toast becomes interactive
  * (pointer-events enabled) and displays a countdown label.  Clicking the
@@ -108,13 +108,13 @@ let _toastCountdownTimer = null
  * }} msgOrOpts - Toast message text or configuration object.
  * @param {number} [duration=2500] - Display duration in milliseconds (ignored when the first argument is an object that provides its own `duration`).
  */
-window._hermesShowToast = (msgOrOpts, duration = 2500) => {
+window._caduceusShowToast = (msgOrOpts, duration = 2500) => {
   if (_toastTimer !== null) clearTimeout(_toastTimer)
   if (_toastCountdownTimer) if (_toastCountdownTimer !== null) clearInterval(_toastCountdownTimer)
-  let el = document.getElementById('hermes-toast')
+  let el = document.getElementById('caduceus-toast')
   if (!el) {
     el = document.createElement('div')
-    el.id = 'hermes-toast'
+    el.id = 'caduceus-toast'
     el.setAttribute('role', 'status')
     el.setAttribute('aria-live', 'polite')
     el.setAttribute('aria-atomic', 'true')
@@ -127,11 +127,11 @@ window._hermesShowToast = (msgOrOpts, duration = 2500) => {
     const d = dur ?? duration
     let seconds = Math.ceil(d / 1000)
     el.style.pointerEvents = 'auto'
-    el.innerHTML = `<span id="hermes-toast-msg">${msg} <span id="hermes-toast-countdown">(${seconds}s)</span></span><button id="hermes-toast-action" style="margin-left:1rem;background:var(--ms-primary,#6750a4);color:#fff;border:none;border-radius:4px;padding:0.25rem 0.75rem;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;">${action?.label || ''}</button>`
+    el.innerHTML = `<span id="caduceus-toast-msg">${msg} <span id="caduceus-toast-countdown">(${seconds}s)</span></span><button id="caduceus-toast-action" style="margin-left:1rem;background:var(--ms-primary,#26667f);color:#fff;border:none;border-radius:4px;padding:0.25rem 0.75rem;font-size:13px;cursor:pointer;font-family:inherit;font-weight:500;">${action?.label || ''}</button>`
     el.style.opacity = '1'
 
     // Countdown
-    const countdownEl = document.getElementById('hermes-toast-countdown')
+    const countdownEl = document.getElementById('caduceus-toast-countdown')
     _toastCountdownTimer = setInterval(() => {
       seconds--
       if (seconds <= 0) {
@@ -143,7 +143,7 @@ window._hermesShowToast = (msgOrOpts, duration = 2500) => {
     }, 1000)
 
     // Action button
-    const actionBtn = document.getElementById('hermes-toast-action')
+    const actionBtn = document.getElementById('caduceus-toast-action')
     if (actionBtn && action?.onClick) {
       actionBtn.addEventListener('click', () => {
         if (_toastCountdownTimer !== null) clearInterval(_toastCountdownTimer)

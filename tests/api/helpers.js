@@ -3,8 +3,8 @@ import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { createHmac } from "node:crypto";
 import { signJwt } from "@/services/auth.js";
-const HERMES_ROOT = join(import.meta.dir, "..", "..");
-const TACH_SERVE = join(HERMES_ROOT, "node_modules", ".bin", "yon.serve");
+const CADUCEUS_ROOT = join(import.meta.dir, "..", "..");
+const TACH_SERVE = join(CADUCEUS_ROOT, "node_modules", ".bin", "yon.serve");
 const JWT_SECRET = process.env.JWT_SECRET || "test-secret";
 const INBOUND_WEBHOOK_SECRET = process.env.INBOUND_WEBHOOK_SECRET || "test-inbound-secret";
 const EVENTS_WEBHOOK_SECRET = process.env.EVENTS_WEBHOOK_SECRET || "test-events-secret";
@@ -12,11 +12,19 @@ const PORT_BASE = 19000;
 let portCounter = 0;
 export async function startTestServer() {
   const port = PORT_BASE + portCounter++ % 100;
-  const testRoot = mkdtempSync(join(tmpdir(), "hermes-api-test-"));
+  const testRoot = mkdtempSync(join(tmpdir(), "caduceus-api-test-"));
   const proc = Bun.spawn(["bun", TACH_SERVE], {
-    cwd: HERMES_ROOT,
+    cwd: CADUCEUS_ROOT,
     env: {
       ...process.env,
+      NODE_ENV: "test",
+      CADUCEUS_ENABLE_TEST_ROUTES: "true",
+      JWT_SECRET,
+      INBOUND_WEBHOOK_SECRET,
+      EVENTS_WEBHOOK_SECRET,
+      SMTP_ADAPTER: "console",
+      SMS_ADAPTER: "console",
+      WEB_PUSH_DISABLED: "true",
       PORT: String(port),
       FYLO_ROOT: testRoot,
     },
@@ -50,7 +58,7 @@ export async function startTestServer() {
     if (opts?.secret)
       h["X-Webhook-Secret"] = opts.secret;
     if (opts?.secret)
-      h["X-Hermes-Signature"] = createHmac("sha256", opts.secret).update(JSON.stringify(body ?? {})).digest("hex");
+      h["X-Caduceus-Signature"] = createHmac("sha256", opts.secret).update(JSON.stringify(body ?? {})).digest("hex");
     return h;
   };
   return {

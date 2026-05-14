@@ -18,7 +18,7 @@ import { requireEnv } from "@/services/security.js";
  */
 export async function handler({ headers, body }) {
   const webhookSecret = requireEnv("INBOUND_WEBHOOK_SECRET");
-  const signature = (headers ?? {})["x-hermes-signature"] ?? (headers ?? {})["X-Hermes-Signature"] ?? "";
+  const signature = (headers ?? {})["x-caduceus-signature"] ?? (headers ?? {})["X-Caduceus-Signature"] ?? "";
   const jsonBody = JSON.stringify(body ?? {});
   const expected = createHmac("sha256", webhookSecret).update(jsonBody).digest("hex");
   // Timing-safe comparison to prevent timing attacks on HMAC verification
