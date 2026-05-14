@@ -1,0 +1,8 @@
+{
+  "name": "caduceus-fly-infra",
+  "private": true,
+  "dependencies": {
+    "@pulumi/fly": "^0.0.14",
+    "@pulumi/pulumi": "^3.0.0"
+  }
+}

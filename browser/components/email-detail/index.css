@@ -2,10 +2,13 @@
     display: flex;
     align-items: center;
     gap: 0.25rem;
-    padding: 0.5rem 1rem;
+    padding: 0.55rem 1rem;
     border-bottom: 1px solid var(--ms-divider);
     flex-wrap: wrap;
-    background: var(--ms-toolbar-bg);
+    background: color-mix(in srgb, var(--ms-toolbar-bg) 92%, white);
+    position: sticky;
+    top: 0;
+    z-index: 4;
   }
 
   .email-actions {
@@ -23,8 +26,9 @@
   }
 
   .email-header {
-    padding: 1.5rem 1.5rem 1rem;
+    padding: 1.35rem 1.5rem 1rem;
     border-bottom: 1px solid var(--ms-outline-variant);
+    background: var(--ms-detail-bg);
   }
 
   .email-meta {
@@ -35,7 +39,7 @@
 
   .email-avatar {
     width: 40px; height: 40px;
-    border-radius: 50%;
+    border-radius: 8px;
     background: var(--ms-primary-container);
     color: var(--ms-on-primary-container);
     display: flex; align-items: center; justify-content: center;
@@ -48,8 +52,9 @@
     flex: 1;
     white-space: pre-wrap;
     word-break: break-word;
-    line-height: 1.8;
-    font-size: var(--ms-font-base, 0.875rem);
+    line-height: 1.75;
+    font-size: var(--ms-font-md, 0.9375rem);
+    max-width: 76ch;
   }
 
   .email-attachments { padding: 1rem 1.5rem 0; }
@@ -59,7 +64,7 @@
     background: var(--ms-surface-container-high);
     border: 1px solid var(--ms-outline-variant);
     color: var(--ms-on-surface);
-    border-radius: 12px;
+    border-radius: 8px;
     padding: 0.75rem 1rem;
     margin-bottom: 0.5rem;
     display: flex;
@@ -76,7 +81,7 @@
 
 .inline-reply {
     padding: 1rem 1.5rem; border-top: 1px solid var(--ms-divider);
-    background: var(--ms-sidebar-bg);
+    background: var(--ms-surface-container-low);
   }
   .inline-reply-header {
     display: flex; align-items: center; justify-content: space-between;
@@ -91,5 +96,5 @@
     .email-toolbar { padding: 0.5rem; }
     .email-actions { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 0.25rem; scrollbar-width: none; }
     .email-actions::-webkit-scrollbar { display: none; }
-    .email-body, .email-attachments { padding: 1rem; }
+    .email-body, .email-attachments { padding: 1rem; max-width: none; }
   }

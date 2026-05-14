@@ -59,10 +59,10 @@ test('shows empty inbox message when no emails', async ({ page }) => {
 test('401 response logs out and shows login screen', async ({ page }) => {
   await useTestApi(page)
   await page.addInitScript(() => {
-    sessionStorage.setItem('hermes_token', 'invalid-token')
-    sessionStorage.setItem('hermes_email', 'user@example.com')
-    sessionStorage.setItem('hermes_role', 'admin')
-    sessionStorage.setItem('hermes_domains', '["example.com"]')
+    sessionStorage.setItem('caduceus_token', 'invalid-token')
+    sessionStorage.setItem('caduceus_email', 'user@example.com')
+    sessionStorage.setItem('caduceus_role', 'admin')
+    sessionStorage.setItem('caduceus_domains', '["example.com"]')
   })
   await page.goto('/')
   await expect(page.getByText('Sign in')).toBeVisible()

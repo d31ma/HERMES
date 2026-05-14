@@ -7,8 +7,8 @@
 export function getSmtpAdapter() {
   const adapter = process.env.SMTP_ADAPTER || 'console'
   if (adapter === 'console' && process.env.NODE_ENV === 'production') {
-    console.error('[hermes] WARNING: SMTP_ADAPTER=console — emails will be logged but NOT delivered.')
-    console.error('[hermes] Set SMTP_ADAPTER to aws, azure, gcp, sendgrid, or smtp for production email delivery.')
+    console.error('[caduceus] WARNING: SMTP_ADAPTER=console — emails will be logged but NOT delivered.')
+    console.error('[caduceus] Set SMTP_ADAPTER to aws, azure, gcp, mailgun, sendgrid, or smtp for production email delivery.')
   }
   switch (adapter) {
     case 'console': return new ConsoleSmtpAdapter()
@@ -16,8 +16,9 @@ export function getSmtpAdapter() {
     case 'azure':   return new AzureEmailAdapter()
     case 'gcp':     return new GcpMailAdapter()
     case 'sendgrid': return new SendGridAdapter()
+    case 'mailgun':  return new MailgunAdapter()
     case 'smtp':    return new SmtpRelayAdapter()
-    default: throw new Error(`Unknown SMTP adapter: ${adapter}. Use aws, azure, gcp, sendgrid, smtp, or console.`)
+    default: throw new Error(`Unknown SMTP adapter: ${adapter}. Use aws, azure, gcp, mailgun, sendgrid, smtp, or console.`)
   }
 }
 
@@ -39,7 +40,7 @@ class ConsoleSmtpAdapter {
 class AwsSesAdapter {
   async sendEmail(from, msg) { return this.send({ ...msg, replyTo: [from] }, from) }
   async send(msg, fromOverride) {
-    const from = fromOverride || process.env.SES_FROM_ADDRESS || 'hermes@localhost'
+    const from = fromOverride || process.env.SES_FROM_ADDRESS || 'caduceus@localhost'
     const region = process.env.AWS_REGION || 'us-east-1'
 
     try {
@@ -131,7 +132,7 @@ class AzureEmailAdapter {
     const key = process.env.AZURE_COMMUNICATION_KEY
     if (!endpoint || !key) throw new Error('AZURE_COMMUNICATION_ENDPOINT and AZURE_COMMUNICATION_KEY required for Azure Email')
 
-    const from = fromOverride || process.env.AZURE_EMAIL_FROM || 'hermes@localhost'
+    const from = fromOverride || process.env.AZURE_EMAIL_FROM || 'caduceus@localhost'
     const res = await fetch(`${endpoint}/emails?api-version=2023-03-31`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${key}` },
@@ -155,7 +156,7 @@ class AzureEmailAdapter {
 class GcpMailAdapter {
   async sendEmail(from, msg) { return this.send({ ...msg, replyTo: [from] }, from) }
   async send(msg, fromOverride) {
-    const from = fromOverride || process.env.GCP_MAIL_FROM || 'hermes@localhost'
+    const from = fromOverride || process.env.GCP_MAIL_FROM || 'caduceus@localhost'
     const key = process.env.GCP_SERVICE_ACCOUNT_KEY
 
     if (key) {
@@ -192,7 +193,7 @@ class SendGridAdapter {
   async send(msg, fromOverride) {
     const apiKey = process.env.SENDGRID_API_KEY
     if (!apiKey) throw new Error('SENDGRID_API_KEY is required')
-    const from = fromOverride || process.env.SENDGRID_FROM || 'hermes@localhost'
+    const from = fromOverride || process.env.SENDGRID_FROM || 'caduceus@localhost'
 
     const res = await fetch('https://api.sendgrid.com/v3/mail/send', {
       method: 'POST',
@@ -213,6 +214,45 @@ class SendGridAdapter {
   }
 }
 
+// ── Mailgun ────────────────────────────────────────────────────────────────
+
+class MailgunAdapter {
+  async sendEmail(from, msg) { return this.send({ ...msg, replyTo: [from] }, from) }
+  async send(msg, fromOverride) {
+    const apiKey = process.env.MAILGUN_API_KEY
+    const domain = process.env.MAILGUN_DOMAIN
+    if (!apiKey || !domain) throw new Error('MAILGUN_API_KEY and MAILGUN_DOMAIN are required')
+    const from = fromOverride || process.env.MAILGUN_FROM || `caduceus@${domain}`
+
+    const form = new URLSearchParams()
+    form.set('from', from)
+    msg.to.forEach(addr => form.append('to', addr))
+    if (msg.cc) msg.cc.forEach(addr => form.append('cc', addr))
+    if (msg.bcc) msg.bcc.forEach(addr => form.append('bcc', addr))
+    form.set('subject', msg.subject)
+    if (msg.text) form.set('text', msg.text)
+    if (msg.html) form.set('html', msg.html)
+
+    const res = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Basic ${btoa(`api:${apiKey}`)}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: form.toString(),
+    })
+    const text = await res.text()
+    let data = {}
+    try { data = text ? JSON.parse(text) : {} } catch { data = { message: text } }
+    if (!res.ok) {
+      const message = data.message || data.error || text || `HTTP ${res.status}`
+      throw new Error(`Mailgun send failed: ${message}`)
+    }
+    if (!data.id) throw new Error('Mailgun send failed: missing message id')
+    return { messageId: data.id.replace(/^<|>$/g, '') }
+  }
+}
+
 // ── Generic SMTP Relay ─────────────────────────────────────────────────────
 
 class SmtpRelayAdapter {
@@ -222,7 +262,7 @@ class SmtpRelayAdapter {
     const port = parseInt(process.env.SMTP_PORT || '587')
     const user = process.env.SMTP_USER
     const pass = process.env.SMTP_PASS
-    const from = fromOverride || process.env.SMTP_FROM || 'hermes@localhost'
+    const from = fromOverride || process.env.SMTP_FROM || 'caduceus@localhost'
 
     try {
       const nodemailer = await import('nodemailer')
@@ -252,7 +292,7 @@ class SmtpRelayAdapter {
 // ── MIME message builder (for Gmail API) ────────────────────────────────────
 
 function buildMimeMessage(from, msg) {
-  const boundary = `_=_hermes_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}=_`
+  const boundary = `_=_caduceus_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 10)}=_`
   const lines = []
   lines.push(`From: ${from}`)
   lines.push(`To: ${msg.to.join(', ')}`)

@@ -1,18 +1,18 @@
 /// <reference types="mousetrap" />
 /**
- * HERMES Keyboard Shortcut Manager.
+ * CADUCEUS Keyboard Shortcut Manager.
  *
  * Uses Mousetrap for keybinding (loaded as a global before this script).
  *
  * This module loads a JSON keymap from `/shared/data/keymap.json`,
  * groups actions that share the same keybinding, registers them with
- * Mousetrap, and dispatches `hermes:shortcut:<action>` custom events.
+ * Mousetrap, and dispatches `caduceus:shortcut:<action>` custom events.
  *
  * Input-aware: shortcuts are suppressed when focus is inside an input,
  * textarea, or contenteditable element, except for a configurable
  * whitelist (e.g. `mod+enter` for send).
  *
- * Exposes `window._hermesKeyboard = { init, destroy }`.
+ * Exposes `window._caduceusKeyboard = { init, destroy }`.
  *
  * @module keyboard
  */
@@ -72,15 +72,15 @@
   }
 
   /**
-   * Dispatch a custom `hermes:shortcut:<action>` event on `window`.
+   * Dispatch a custom `caduceus:shortcut:<action>` event on `window`.
    *
    * The rest of the application listens for these events to trigger
    * navigation, compose, send, and other keyboard-driven workflows.
    *
-   * @param {string} action - The action name (without the `hermes:shortcut:` prefix).
+   * @param {string} action - The action name (without the `caduceus:shortcut:` prefix).
    */
   function dispatch(action) {
-    window.dispatchEvent(new CustomEvent('hermes:shortcut:' + action))
+    window.dispatchEvent(new CustomEvent('caduceus:shortcut:' + action))
     if (isDev()) {
       console.log('[keyboard] shortcut: ' + action)
     }
@@ -97,7 +97,7 @@
    * 1. If focus is in a text input and the shortcut is not whitelisted,
    *    the event is passed through so the user can type normally.
    * 2. Otherwise the default is prevented and each associated action is
-   *    dispatched as a `hermes:shortcut:<action>` custom event.
+   *    dispatched as a `caduceus:shortcut:<action>` custom event.
    *
    * @param {string} keys - Mousetrap key-combination string (e.g. `'mod+enter'`, `'g i'`).
    * @param {string|string[]} actions - Single action name or array of action names to dispatch.
@@ -181,7 +181,7 @@
       Mousetrap.bind('?', function (e) {
         if (isInputFocused()) return true
         e.preventDefault()
-        window.dispatchEvent(new CustomEvent('hermes:shortcut:show-help'))
+        window.dispatchEvent(new CustomEvent('caduceus:shortcut:show-help'))
         if (isDev()) {
           console.log(
             '[keyboard] Show shortcut help panel — press ? to see all shortcuts'
@@ -214,7 +214,7 @@
   }
 
   // Exports
-  window._hermesKeyboard = { init: init, destroy: destroy }
+  window._caduceusKeyboard = { init: init, destroy: destroy }
 
   // Auto-init after DOM ready (in case the init call from imports.js
   // somehow missed us — belt and suspenders)

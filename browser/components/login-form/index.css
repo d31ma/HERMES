@@ -1,18 +1,19 @@
 .login-card {
-    background: var(--ms-surface-container-low, #f7f2fa);
-    border-radius: 28px;
-    padding: 3rem 2.5rem;
+    background: color-mix(in srgb, var(--ms-surface, #f8faf9) 94%, white);
+    border: 1px solid var(--ms-outline-variant, #d8e0de);
+    border-radius: 8px;
+    padding: 2.5rem 2.25rem;
     width: 100%;
     max-width: 420px;
-    box-shadow: 0 4px 16px var(--ms-shadow, rgba(0,0,0,0.12));
+    box-shadow: 0 18px 48px var(--ms-shadow, rgba(24,33,37,0.12));
   }
 
   .login-logo {
     font-size: var(--ms-font-3xl, 2.25rem);
     font-weight: var(--ms-font-weight-bold, 700);
-    letter-spacing: var(--ms-letter-spacing-tight, -0.02em);
+    letter-spacing: 0;
     margin-bottom: 2.5rem;
-    color: var(--ms-primary, #6750a4);
+    color: var(--ms-primary, #26667f);
     text-align: center;
   }
 
@@ -33,7 +34,7 @@
     margin: 0 0 1rem;
     padding: 0.75rem 1rem;
     background: var(--ms-error-container, #f9dedc);
-    border-radius: 12px;
+    border-radius: 8px;
     text-align: center;
   }
 
@@ -45,7 +46,7 @@
     display: flex;
     justify-content: center;
     margin-bottom: 1.25rem;
-    color: var(--ms-primary, #6750a4);
+    color: var(--ms-primary, #26667f);
   }
 
   .oauth-buttons {
@@ -80,7 +81,7 @@
     .login-card {
       max-width: none;
       padding: 2rem 1.5rem;
-      border-radius: 20px;
+      border-radius: 8px;
     }
     .login-logo {
       font-size: var(--ms-font-2xl, 1.5rem);

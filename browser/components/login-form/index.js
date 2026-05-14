@@ -43,10 +43,10 @@ export default class extends Tac {
   $providers = []
 
   /**
-   * @description Base API URL from the global HERMES_CONFIG.
+   * @description Base API URL from the global CADUCEUS_CONFIG.
    * @returns {string}
    */
-  get _api() { return window.HERMES_CONFIG?.apiUrl || '' }
+  get _api() { return window.CADUCEUS_CONFIG?.apiUrl || '' }
 
   /**
    * Fetch the list of available OAuth identity providers on mount.
@@ -83,8 +83,8 @@ export default class extends Tac {
       })
       const data = await res.json()
       if (!res.ok) { this.$error = data.error || 'OAuth unavailable'; return }
-      sessionStorage.setItem('hermes_oauth_state', data.state)
-      sessionStorage.setItem('hermes_oauth_provider', provider)
+      sessionStorage.setItem('caduceus_oauth_state', data.state)
+      sessionStorage.setItem('caduceus_oauth_provider', provider)
       location.href = data.url
     } catch { this.$error = 'Network error. Check your connection.' }
     finally { this.$loading = false }

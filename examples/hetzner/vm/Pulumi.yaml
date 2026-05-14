@@ -1,0 +1,7 @@
+name: caduceus-hetzner
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on Hetzner Cloud CX instance with Docker and block volume

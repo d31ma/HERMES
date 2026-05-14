@@ -1,6 +1,6 @@
 # db/
 
-This folder is the database layer for HERMES.
+This folder is the database layer for CADUCEUS.
 
 ## Layout
 

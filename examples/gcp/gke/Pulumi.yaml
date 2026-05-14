@@ -1,0 +1,7 @@
+name: caduceus-gke
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on GCP GKE (Kubernetes) with GCP load balancer and GCS Fuse

@@ -1,0 +1,7 @@
+name: caduceus-do-kubernetes
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on DigitalOcean DOKS (Kubernetes) with DO Block Storage CSI

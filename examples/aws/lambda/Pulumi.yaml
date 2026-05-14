@@ -1,0 +1,7 @@
+name: caduceus-lambda
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on AWS Lambda (container image) with EFS and Function URL

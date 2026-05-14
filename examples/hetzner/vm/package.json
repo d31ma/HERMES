@@ -1,0 +1,8 @@
+{
+  "name": "caduceus-hetzner-infra",
+  "private": true,
+  "dependencies": {
+    "@pulumi/hetzner": "^1.0.0",
+    "@pulumi/pulumi": "^3.0.0"
+  }
+}

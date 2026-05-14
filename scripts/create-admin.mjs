@@ -11,9 +11,9 @@ const args = Object.fromEntries(
   })
 )
 
-const email = normalizeEmailAddress(String(args.email ?? process.env.HERMES_ADMIN_EMAIL ?? ''))
-const domain = normalizeDomain(String(args.domain ?? process.env.HERMES_ADMIN_DOMAIN ?? ''))
-const phone = String(args.phone ?? process.env.HERMES_ADMIN_PHONE ?? '').trim()
+const email = normalizeEmailAddress(String(args.email ?? process.env.CADUCEUS_ADMIN_EMAIL ?? ''))
+const domain = normalizeDomain(String(args.domain ?? process.env.CADUCEUS_ADMIN_DOMAIN ?? ''))
+const phone = String(args.phone ?? process.env.CADUCEUS_ADMIN_PHONE ?? '').trim()
 
 if (!email || !domain || !phone) {
   console.error('Usage: bun scripts/create-admin.mjs --email=admin@example.com --phone=+14165550100 --domain=example.com')

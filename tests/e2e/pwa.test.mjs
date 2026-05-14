@@ -23,5 +23,5 @@ test('exposes installable PWA metadata and registers the service worker', async 
 
   expect(registration.scope).toBe('http://localhost:3000/')
   expect(registration.scriptURL).toBe('http://localhost:3000/sw.js')
-  expect(registration.cacheKeys).toContain('hermes-pwa-v1')
+  expect(registration.cacheKeys).toContain('caduceus-pwa-v1')
 })

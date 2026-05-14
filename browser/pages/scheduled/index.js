@@ -17,14 +17,14 @@ export default class extends Tac {
    * Whether the current user is authenticated and the app can be used.
    * @type {boolean}
    */
-  get canUseApp() { return !!window._hermes?.auth?.isLoggedIn }
+  get canUseApp() { return !!window._caduceus?.auth?.isLoggedIn }
 
   /**
    * Whether the login prompt should be shown (app is loaded but user is not
    * authenticated).
    * @type {boolean}
    */
-  get canShowLogin() { return !!window._hermes && !this.canUseApp }
+  get canShowLogin() { return !!window._caduceus && !this.canUseApp }
 
   /**
    * Lifecycle hook — fetches the scheduled email list on mount.
@@ -45,7 +45,7 @@ export default class extends Tac {
    */
   async load() {
     this.$loading = true
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) { this.$loading = false; return }
     try {
       const res = await apiFetch('/send/scheduled')
       if (res?.ok) this.$items = await res.json()
@@ -65,17 +65,17 @@ export default class extends Tac {
    */
   async cancelScheduled(id) {
     if (!confirm('Cancel this scheduled send?')) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     try {
       const res = await apiFetch('/send/scheduled', { method: 'DELETE', body: JSON.stringify({ id }) })
       if (res?.ok) {
-        window._hermes?.toast('Scheduled send cancelled.')
+        window._caduceus?.toast('Scheduled send cancelled.')
         this.$items = this.$items.filter(item => item.id !== id)
       } else {
-        window._hermes?.toast('Failed to cancel.')
+        window._caduceus?.toast('Failed to cancel.')
       }
     } catch {
-      window._hermes?.toast('Network error.')
+      window._caduceus?.toast('Network error.')
     }
   }
 }

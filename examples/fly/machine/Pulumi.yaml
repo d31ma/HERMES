@@ -1,0 +1,7 @@
+name: caduceus-fly
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on Fly.io — Docker-native global container runtime

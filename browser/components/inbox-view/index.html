@@ -68,12 +68,12 @@
   <logic :if="!$threadedMode">
     <loop :for="email of emails">
       <div :class="'email-row ' + (!email.read ? 'unread' : 'read') + ($selectedId === email.id ? ' selected' : '')" @click="selectEmail(email.id)" draggable="true" @dragstart="dragStart(email.id, $event)">
-        <div class="email-avatar">{window._hermes.initials(email.sender)}</div>
+        <div class="email-avatar">{window._caduceus.initials(email.sender)}</div>
         <div class="email-meta">
           <div class="email-sender md-typescale-body-medium">{email.starred ? '★ ' : ''}{email.sender}</div>
           <div class="email-subject md-typescale-body-small">{email.subject}</div>
         </div>
-        <span class="email-time md-typescale-label-small">{window._hermes.formatDate(email.receivedAt)}</span>
+        <span class="email-time md-typescale-label-small">{window._caduceus.formatDate(email.receivedAt)}</span>
         <div class="email-quick-actions">
           <button class="quick-action" @click="quickStar(email.id, $event)" :title="email.starred ? 'Unstar' : 'Star'" aria-label="Toggle star">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="16" height="16"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -92,24 +92,24 @@
   <logic :if="$threadedMode">
     <loop :for="thread of $threads">
       <div class="thread-summary" @click="toggleThread(thread.subject)">
-        <div class="email-avatar">{window._hermes.initials(thread.latestEmail.sender)}</div>
+        <div class="email-avatar">{window._caduceus.initials(thread.latestEmail.sender)}</div>
         <div class="email-meta">
           <div class="email-sender md-typescale-body-medium">{thread.latestEmail.sender}</div>
           <div class="email-subject md-typescale-body-small">{thread.subject}</div>
         </div>
         <span class="thread-count">{thread.count}</span>
-        <span class="email-time md-typescale-label-small">{window._hermes.formatDate(thread.latestEmail.receivedAt)}</span>
+        <span class="email-time md-typescale-label-small">{window._caduceus.formatDate(thread.latestEmail.receivedAt)}</span>
       </div>
       <logic :if="$expandedThreads[thread.subject]">
         <loop :for="email of thread.emails">
           <div :class="'thread-email-row ' + (!email.read ? 'unread' : 'read') + ($selectedId === email.id ? ' selected' : '')" @click="selectEmail(email.id)">
             <div class="thread-email-indent">
-              <div class="email-avatar" style="width:32px;height:32px;font-size:12px;">{window._hermes.initials(email.sender)}</div>
+              <div class="email-avatar" style="width:32px;height:32px;font-size:12px;">{window._caduceus.initials(email.sender)}</div>
               <div class="email-meta">
                 <div class="email-sender md-typescale-body-small">{email.starred ? '★ ' : ''}{email.sender}</div>
                 <div class="email-subject md-typescale-body-small">{email.subject}</div>
               </div>
-              <span class="email-time md-typescale-label-small">{window._hermes.formatDate(email.receivedAt)}</span>
+              <span class="email-time md-typescale-label-small">{window._caduceus.formatDate(email.receivedAt)}</span>
             </div>
           </div>
         </loop>

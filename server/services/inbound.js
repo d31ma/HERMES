@@ -146,7 +146,7 @@ async function forwardEmail(fylo, to, payload) {
 async function triggerWebhook(url, secret, payload) {
   const body = JSON.stringify(payload)
   const headers = { 'Content-Type': 'application/json' }
-  if (secret) { headers['X-Hermes-Signature'] = hmacSha256Hex(body, secret) }
+  if (secret) { headers['X-Caduceus-Signature'] = hmacSha256Hex(body, secret) }
   await fetch(url, { method: 'POST', headers, body })
   return { ok: true }
 }

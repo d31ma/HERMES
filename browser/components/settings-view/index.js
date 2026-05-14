@@ -3,7 +3,7 @@
 /**
  * Settings / administration panel component.
  *
- * Provides a tabbed interface for managing the Hermes email system:
+ * Provides a tabbed interface for managing the Caduceus email system:
  * - **Domains** — list of configured email domains
  * - **Users** — admin-only user management (add users with roles, phones, domains)
  * - **Rules** — server-side email processing rules with conditions and actions
@@ -75,14 +75,14 @@ export default class extends Tac {
   _condSeq = 0; /** @type {number} Internal sequence counter for action IDs */
   _actSeq = 0
   /** @type {string} Key used to persist MFA setup state on the window object */
-  _mfaSetupStateKey = '__hermes_mfa_setup_state'
+  _mfaSetupStateKey = '__caduceus_mfa_setup_state'
 
   /**
    * @description Whether the current browser supports the Web Push and
    * Service Worker APIs required for push notifications.
    * @returns {boolean}
    */
-  get canUseNotifications() { return !window.__HERMES_DISABLE_SW && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window }
+  get canUseNotifications() { return !window.__CADUCEUS_DISABLE_SW && 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window }
 
   /**
    * @description Human-readable label summarising the current notification status.
@@ -101,7 +101,7 @@ export default class extends Tac {
    * @returns {string}
    */
   get notificationHelpText() {
-    if (!this.$notificationSupported) return 'Install Hermes with a browser that supports Web Push to receive new mail alerts.'
+    if (!this.$notificationSupported) return 'Install Caduceus with a browser that supports Web Push to receive new mail alerts.'
     if (this.$notificationPermission === 'denied') return 'Notifications are blocked in this browser. Allow them in site settings to turn alerts on.'
     if (this.$notificationPermission === 'granted' && this.$pushSubscriptions.length > 0) return 'This device will alert you when new mail arrives.'
     return 'Turn this on for an installed desktop or mobile app feel when mail arrives.'
@@ -120,8 +120,8 @@ export default class extends Tac {
   @onMount
   async loadAll() {
     this.$loading = true; this.syncNotificationState()
-    this.$isAdmin = sessionStorage.getItem('hermes_role') === 'admin'
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) { this.$loading = false; return }
+    this.$isAdmin = sessionStorage.getItem('caduceus_role') === 'admin'
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) { this.$loading = false; return }
     const [dr, rr, mr, nr, sr] = await Promise.all([apiFetch('/domains'), apiFetch('/rules'), apiFetch('/mfa/devices'), apiFetch('/notifications/subscriptions'), apiFetch('/signatures')])
     this.$domains = dr?.ok ? await dr.json() : []; this.$rules = rr?.ok ? await rr.json() : []
     this.$mfaDevices = mr?.ok ? await mr.json() : []; this.$signatures = sr?.ok ? await sr.json() : []; this.$pushSubscriptions = nr?.ok ? await nr.json() : []
@@ -189,7 +189,7 @@ export default class extends Tac {
    * @returns {Promise<void>}
    */
   async refreshPushSubscriptions() {
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch('/notifications/subscriptions'); this.$pushSubscriptions = res?.ok ? await res.json() : []; this.syncNotificationState()
   }
 
@@ -206,7 +206,7 @@ export default class extends Tac {
     this.$notificationError = ''; this.syncNotificationState()
     if (!this.$notificationSupported) { this.$notificationError = 'This browser cannot receive Web Push notifications.'; return }
     this.$notificationLoading = true
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) { this.$notificationLoading = false; return }
     try {
       const permission = await Notification.requestPermission(); this.$notificationPermission = permission
@@ -218,7 +218,7 @@ export default class extends Tac {
       const sub = (await reg.pushManager.getSubscription()) || await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: cb(publicKey) })
       const saveRes = await apiFetch('/notifications/subscriptions', { method: 'POST', body: JSON.stringify(sub.toJSON()) })
       if (!saveRes?.ok) throw new Error('Unable to save notification subscription')
-      await this.refreshPushSubscriptions(); window._hermes?.toast('Notifications enabled.')
+      await this.refreshPushSubscriptions(); window._caduceus?.toast('Notifications enabled.')
     } catch { this.$notificationError = 'Unable to enable notifications on this device.' }
     finally { this.$notificationLoading = false }
   }
@@ -234,12 +234,12 @@ export default class extends Tac {
    */
   async disableNotifications() {
     this.$notificationError = ''; this.syncNotificationState(); if (!this.$notificationSupported) return
-    this.$notificationLoading = true; const apiFetch = window._hermes?.apiFetch
+    this.$notificationLoading = true; const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) { this.$notificationLoading = false; return }
     try {
       const reg = await navigator.serviceWorker.ready; const sub = await reg.pushManager.getSubscription()
       if (sub) { await apiFetch('/notifications/subscriptions', { method: 'DELETE', body: JSON.stringify({ endpoint: sub.endpoint }) }); await sub.unsubscribe() }
-      await this.refreshPushSubscriptions(); window._hermes?.toast('Notifications disabled.')
+      await this.refreshPushSubscriptions(); window._caduceus?.toast('Notifications disabled.')
     } catch { this.$notificationError = 'Unable to disable notifications on this device.' }
     finally { this.$notificationLoading = false }
   }
@@ -254,10 +254,10 @@ export default class extends Tac {
    */
   async addUser() {
     if (!this.$newEmail || !this.$newPhones || !this.$newDomains) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch('/users', { method: 'POST', body: JSON.stringify({ email: this.$newEmail, phones: this.$newPhones.split(',').map(p => p.trim()).filter(Boolean), domains: this.$newDomains.split(',').map(d => d.trim()).filter(Boolean), role: this.$newRole }) })
-    if (res?.ok) { this.$showAddUser = false; this.$newEmail = this.$newPhones = this.$newDomains = ''; this.$newRole = 'viewer'; const ur = await apiFetch('/users'); this.$users = ur?.ok ? await ur.json() : []; window._hermes?.toast('User added.') }
-    else { const data = await res?.json(); window._hermes?.toast(data?.error || 'Failed to add user.') }
+    if (res?.ok) { this.$showAddUser = false; this.$newEmail = this.$newPhones = this.$newDomains = ''; this.$newRole = 'viewer'; const ur = await apiFetch('/users'); this.$users = ur?.ok ? await ur.json() : []; window._caduceus?.toast('User added.') }
+    else { const data = await res?.json(); window._caduceus?.toast(data?.error || 'Failed to add user.') }
   }
 
   /**
@@ -312,11 +312,11 @@ export default class extends Tac {
    * @returns {Promise<void>}
    */
   async saveRule() {
-    if (!this.$newRuleName || !this.$newRuleDomain || this.$newActions.length === 0) { window._hermes?.toast('Name, domain, and at least one action are required.'); return }
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    if (!this.$newRuleName || !this.$newRuleDomain || this.$newActions.length === 0) { window._caduceus?.toast('Name, domain, and at least one action are required.'); return }
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch('/rules', { method: 'POST', body: JSON.stringify({ name: this.$newRuleName, domain: this.$newRuleDomain, enabled: true, conditionMatch: this.$newConditionMatch, conditions: this.$newConditions.map(({ _id, ...c }) => c), actions: this.$newActions.map(({ _id, ...a }) => a) }) })
-    if (res?.ok) { const rr = await apiFetch('/rules'); this.$rules = rr?.ok ? await rr.json() : []; window._hermes?.toast('Rule saved.'); this.resetRuleForm() }
-    else { const data = await res?.json(); window._hermes?.toast(data?.error || 'Failed to save rule.') }
+    if (res?.ok) { const rr = await apiFetch('/rules'); this.$rules = rr?.ok ? await rr.json() : []; window._caduceus?.toast('Rule saved.'); this.resetRuleForm() }
+    else { const data = await res?.json(); window._caduceus?.toast(data?.error || 'Failed to save rule.') }
   }
 
   /**
@@ -328,7 +328,7 @@ export default class extends Tac {
    * @param {string} id - The rule ID to delete
    * @returns {Promise<void>}
    */
-  async deleteRule(id) { if (!confirm('Delete this rule?')) return; const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return; const res = await apiFetch(`/rules/${id}`, { method: 'DELETE' }); if (res?.ok) { this.$rules = this.$rules.filter(r => r.id !== id); window._hermes?.toast('Rule deleted.') } }
+  async deleteRule(id) { if (!confirm('Delete this rule?')) return; const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return; const res = await apiFetch(`/rules/${id}`, { method: 'DELETE' }); if (res?.ok) { this.$rules = this.$rules.filter(r => r.id !== id); window._caduceus?.toast('Rule deleted.') } }
 
   /**
    * Toggle a rule's enabled / disabled state.
@@ -338,7 +338,7 @@ export default class extends Tac {
    * @param {boolean} enabled - The current enabled state (will be toggled)
    * @returns {Promise<void>}
    */
-  async toggleRule(id, enabled) { const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return; await apiFetch(`/rules/${id}`, { method: 'PUT', body: JSON.stringify({ enabled: !enabled }) }); const rr = await apiFetch('/rules'); this.$rules = rr?.ok ? await rr.json() : [] }
+  async toggleRule(id, enabled) { const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return; await apiFetch(`/rules/${id}`, { method: 'PUT', body: JSON.stringify({ enabled: !enabled }) }); const rr = await apiFetch('/rules'); this.$rules = rr?.ok ? await rr.json() : [] }
 
   /**
    * Build a human-readable description of a rule's conditions.
@@ -368,10 +368,10 @@ export default class extends Tac {
   async startAddDevice() {
     if (this.$showAddDevice) { this.$showAddDevice = false; this.$deviceProvision = null; this.$newDeviceName = this.$newDeviceCode = this.$deviceError = ''; this.clearMfaSetupState(); return }
     this.$showAddDevice = true; this.$deviceProvision = null; this.saveMfaSetupState()
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch('/mfa/provision', { method: 'POST' })
     if (res?.ok) { this.$deviceProvision = await res.json(); this.saveMfaSetupState() }
-    else { window._hermes?.toast('Failed to start device setup.'); this.$showAddDevice = false; this.clearMfaSetupState() }
+    else { window._caduceus?.toast('Failed to start device setup.'); this.$showAddDevice = false; this.clearMfaSetupState() }
   }
 
   /**
@@ -387,10 +387,10 @@ export default class extends Tac {
   async confirmDevice() {
     if (!this.$deviceProvision || !this.$newDeviceCode || this.$newDeviceCode.length !== 6) { this.$deviceError = 'Enter the 6-digit code from your authenticator.'; this.saveMfaSetupState(); return }
     this.$deviceLoading = true; this.$deviceError = ''
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     try {
       const res = await apiFetch('/auth/mfa/setup', { method: 'POST', body: JSON.stringify({ setupToken: /** @type {{setupToken: string}} */ (this.$deviceProvision).setupToken, code: this.$newDeviceCode, name: this.$newDeviceName.trim() || 'Authenticator' }) })
-      if (res?.ok) { window._hermes?.toast('Device added.'); this.$showAddDevice = false; this.$deviceProvision = null; this.$newDeviceName = this.$newDeviceCode = ''; this.clearMfaSetupState(); const mr = await apiFetch('/mfa/devices'); this.$mfaDevices = mr?.ok ? await mr.json() : [] }
+      if (res?.ok) { window._caduceus?.toast('Device added.'); this.$showAddDevice = false; this.$deviceProvision = null; this.$newDeviceName = this.$newDeviceCode = ''; this.clearMfaSetupState(); const mr = await apiFetch('/mfa/devices'); this.$mfaDevices = mr?.ok ? await mr.json() : [] }
       else { const data = await res?.json(); this.$deviceError = data?.error || 'Invalid code.'; this.saveMfaSetupState() }
     } catch { this.$deviceError = 'Network error.'; this.saveMfaSetupState() } finally { this.$deviceLoading = false }
   }
@@ -404,7 +404,7 @@ export default class extends Tac {
    * @param {string} id - The MFA device ID to remove
    * @returns {Promise<void>}
    */
-  async deleteMfaDevice(id) { if (!confirm('Remove this MFA device?')) return; const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return; const res = await apiFetch(`/mfa/devices/${id}`, { method: 'DELETE' }); if (res?.ok) { this.$mfaDevices = this.$mfaDevices.filter(d => d.id !== id); window._hermes?.toast('Device removed.') } }
+  async deleteMfaDevice(id) { if (!confirm('Remove this MFA device?')) return; const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return; const res = await apiFetch(`/mfa/devices/${id}`, { method: 'DELETE' }); if (res?.ok) { this.$mfaDevices = this.$mfaDevices.filter(d => d.id !== id); window._caduceus?.toast('Device removed.') } }
 
   /**
    * Save a new email signature for a domain.
@@ -421,13 +421,13 @@ export default class extends Tac {
       return
     }
     this.$signatureError = ''
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch('/signatures', { method: 'POST', body: JSON.stringify({ domain: this.$newSigDomain.trim(), name: this.$newSigName.trim(), text: this.$newSigText }) })
     if (res?.ok) {
       const sig = await res.json()
       this.$signatures = [...this.$signatures, sig]
       this.$newSigDomain = this.$newSigName = this.$newSigText = ''
-      window._hermes?.toast('Signature saved.')
+      window._caduceus?.toast('Signature saved.')
     } else {
       const data = await res?.json()
       this.$signatureError = data?.error || 'Failed to save signature.'
@@ -445,11 +445,11 @@ export default class extends Tac {
    */
   async deleteSignature(id) {
     if (!confirm('Remove this signature?')) return
-    const apiFetch = window._hermes?.apiFetch; if (!apiFetch) return
+    const apiFetch = window._caduceus?.apiFetch; if (!apiFetch) return
     const res = await apiFetch(`/signatures/${id}`, { method: 'DELETE' })
     if (res?.ok) {
       this.$signatures = this.$signatures.filter(s => s.id !== id)
-      window._hermes?.toast('Signature removed.')
+      window._caduceus?.toast('Signature removed.')
     }
   }
 }

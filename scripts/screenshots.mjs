@@ -43,7 +43,7 @@ const apiServer = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'yon.s
     FYLO_ROOT: fyloRoot,
     JWT_SECRET: 'screenshot-test-secret',
     INBOUND_WEBHOOK_SECRET: 'screenshot-test-secret',
-    HERMES_ENABLE_TEST_ROUTES: 'true',
+    CADUCEUS_ENABLE_TEST_ROUTES: 'true',
     NODE_ENV: 'test',
     SMS_ADAPTER: 'console',
     SMTP_ADAPTER: 'console',
@@ -91,7 +91,7 @@ for (const route of routes) {
   page.on('pageerror', err => errors.push(err.message.substring(0, 200)))
 
   await page.addInitScript(apiUrl => {
-    window.HERMES_CONFIG = { apiUrl }
+    window.CADUCEUS_CONFIG = { apiUrl }
   }, API_URL)
 
   const url = `http://127.0.0.1:${PREVIEW_PORT}${route.path}`

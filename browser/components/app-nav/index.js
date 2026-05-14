@@ -25,8 +25,8 @@ export default class extends Tac {
   @onMount
   init() {
     this.updateActive()
-    if (window._hermesNavInitialised) return
-    window._hermesNavInitialised = true
+    if (window._caduceusNavInitialised) return
+    window._caduceusNavInitialised = true
     window.addEventListener('tachyon:navigate', () => this.updateActive())
   }
 

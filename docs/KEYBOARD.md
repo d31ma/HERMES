@@ -1,6 +1,6 @@
 # Keyboard Shortcuts
 
-HERMES supports 23 Mailspring-style keyboard shortcuts via Mousetrap.
+CADUCEUS supports 23 Mailspring-style keyboard shortcuts via Mousetrap.
 
 ## Navigation
 

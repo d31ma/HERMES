@@ -1,0 +1,7 @@
+name: caduceus-aks
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on Azure AKS (Kubernetes) with Azure Files CSI

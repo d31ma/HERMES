@@ -13,7 +13,7 @@ import { presentEmailForDomainMigrations } from "@/services/domain-migration.js"
 let fylo;
 let testRoot;
 beforeEach(async () => {
-  testRoot = mkdtempSync(join(tmpdir(), "hermes-domain-migration-"));
+  testRoot = mkdtempSync(join(tmpdir(), "caduceus-domain-migration-"));
   fylo = await createDb(testRoot);
 });
 afterEach(() => {

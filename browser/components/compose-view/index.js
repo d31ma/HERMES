@@ -20,7 +20,7 @@
  * - Keyboard shortcut bindings for send and discard
  *
  * Accepts an optional `prefill` prop to seed the To, Subject, and body fields
- * (e.g. when replying or forwarding). It also checks `window._hermes` for a
+ * (e.g. when replying or forwarding). It also checks `window._caduceus` for a
  * route-based prefill payload.
  *
  * @extends Tac
@@ -50,7 +50,7 @@ export default class extends Tac {
   /**
    * Initialise the compose form from route prefill data or component props.
    *
-   * Checks `window._hermes.consumeComposePrefill()` first (route-level prefill),
+   * Checks `window._caduceus.consumeComposePrefill()` first (route-level prefill),
    * then falls back to `this.props.prefill`. After seeding fields it loads
    * templates and the default signature, then syncs the rich-text editor.
    *
@@ -59,7 +59,7 @@ export default class extends Tac {
    */
   @onMount
   async initFromPrefill() {
-    const routePrefill = window._hermes?.consumeComposePrefill?.() || {}
+    const routePrefill = window._caduceus?.consumeComposePrefill?.() || {}
     const prefill = /** @type {{to?: string, subject?: string}} */ ((this.props || {}).prefill || routePrefill)
     this.$to = prefill.to || ''
     this.$subject = prefill.subject || ''
@@ -76,7 +76,7 @@ export default class extends Tac {
    * @returns {Promise<void>}
    */
   async _loadDefaultSignature() {
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) return
     try {
       const res = await apiFetch('/signatures')
@@ -200,7 +200,7 @@ export default class extends Tac {
    * @returns {Promise<void>}
    */
   async loadTemplates() {
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) return
     try {
       const res = await apiFetch('/templates')
@@ -220,17 +220,17 @@ export default class extends Tac {
   async saveTemplate() {
     const name = prompt('Template name:')
     if (!name || !name.trim()) return
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) return
     try {
       const res = await apiFetch('/templates', { method: 'POST', body: JSON.stringify({ name: name.trim(), subject: this.$subject, text: this._getEditorHTML(), to: this.$to, cc: this.$cc }) })
       if (res?.ok) {
-        window._hermes?.toast('Template saved.')
+        window._caduceus?.toast('Template saved.')
         await this.loadTemplates()
       } else {
-        window._hermes?.toast('Failed to save template.')
+        window._caduceus?.toast('Failed to save template.')
       }
-    } catch { window._hermes?.toast('Network error.') }
+    } catch { window._caduceus?.toast('Network error.') }
   }
 
   /**
@@ -292,18 +292,18 @@ export default class extends Tac {
       const custom = prompt('Enter date/time (e.g. 2026-12-31T14:00):')
       if (!custom) return
       sendAt = new Date(Date.parse(custom)).toISOString()
-      if (Date.parse(sendAt) <= Date.now()) { window._hermes?.toast('Please choose a future time.'); return }
+      if (Date.parse(sendAt) <= Date.now()) { window._caduceus?.toast('Please choose a future time.'); return }
     }
     this.$loading = true; this.$error = ''
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) { this.$loading = false; return }
     try {
       const payload = this._buildPayload({ sendAt })
       const res = await apiFetch('/send', { method: 'POST', body: JSON.stringify(payload) })
       if (res?.ok) {
         this.$to = this.$cc = this.$subject = ''; this._clearEditor()
-        window._hermes?.toast('Scheduled for ' + new Date(sendAt).toLocaleString())
-        window._hermes?.navigate('inbox')
+        window._caduceus?.toast('Scheduled for ' + new Date(sendAt).toLocaleString())
+        window._caduceus?.navigate('inbox')
       } else {
         const data = await res?.json(); this.$error = data?.error || 'Schedule failed.'
       }
@@ -314,16 +314,16 @@ export default class extends Tac {
   /**
    * Bind global keyboard-shortcut listeners for the composer.
    *
-   * - `hermes:shortcut:composer:send` triggers {@link send}
-   * - `hermes:shortcut:composer:discard` navigates back to the inbox
+   * - `caduceus:shortcut:composer:send` triggers {@link send}
+   * - `caduceus:shortcut:composer:discard` navigates back to the inbox
    *
    * @returns {void}
    */
   @onMount
   bindShortcuts() {
-    window.addEventListener('hermes:shortcut:composer:send', () => this.send())
-    window.addEventListener('hermes:shortcut:composer:discard', () => {
-      window._hermes?.navigate('inbox')
+    window.addEventListener('caduceus:shortcut:composer:send', () => this.send())
+    window.addEventListener('caduceus:shortcut:composer:discard', () => {
+      window._caduceus?.navigate('inbox')
     })
   }
 
@@ -336,7 +336,7 @@ export default class extends Tac {
    * @returns {{ html: string, trackingId: string }}
    */
   _prepareTrackingBody() {
-    const apiUrl = (window.HERMES_CONFIG?.apiUrl || '').replace(/\/+$/, '')
+    const apiUrl = (window.CADUCEUS_CONFIG?.apiUrl || '').replace(/\/+$/, '')
     let html = this._getEditorHTML()
     let trackingId = ''
 
@@ -396,7 +396,7 @@ export default class extends Tac {
   async send() {
     if (!this.$to || !this.$subject) { this.$error = 'To and Subject are required.'; return }
     this.$loading = true; this.$error = ''
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) { this.$loading = false; return }
     try {
       const payload = this._buildPayload({ delayMs: 10000 })
@@ -404,7 +404,7 @@ export default class extends Tac {
       if (res?.ok) {
         const data = await res.json()
         this.$to = this.$cc = this.$subject = ''; this._clearEditor()
-        window._hermes?.navigate('inbox')
+        window._caduceus?.navigate('inbox')
         this._showUndoToast(data.undoId, 'Message sent. Undo')
       } else { const data = await res?.json(); this.$error = data?.error || 'Send failed.' }
     } catch { this.$error = 'Network error.' }
@@ -422,7 +422,7 @@ export default class extends Tac {
   async sendAndArchive() {
     if (!this.$to || !this.$subject) { this.$error = 'To and Subject are required.'; return }
     this.$loading = true; this.$error = ''
-    const apiFetch = window._hermes?.apiFetch
+    const apiFetch = window._caduceus?.apiFetch
     if (!apiFetch) { this.$loading = false; return }
     try {
       const payload = this._buildPayload({ archive: true, delayMs: 10000 })
@@ -430,7 +430,7 @@ export default class extends Tac {
       if (res?.ok) {
         const data = await res.json()
         this.$to = this.$cc = this.$subject = ''; this._clearEditor()
-        window._hermes?.navigate('inbox')
+        window._caduceus?.navigate('inbox')
         this._showUndoToast(data.undoId, 'Sent & archived. Undo')
       } else { const data = await res?.json(); this.$error = data?.error || 'Send failed.' }
     } catch { this.$error = 'Network error.' }
@@ -449,23 +449,23 @@ export default class extends Tac {
    */
   _showUndoToast(undoId, label) {
     if (!undoId) {
-      window._hermes?.toast(label.replace('Undo', '').trim())
+      window._caduceus?.toast(label.replace('Undo', '').trim())
       return
     }
-    window._hermes?.toastAction(label, {
+    window._caduceus?.toastAction(label, {
       label: 'Undo',
       onClick: async () => {
-        const apiFetch = window._hermes?.apiFetch
+        const apiFetch = window._caduceus?.apiFetch
         if (!apiFetch) return
         try {
           const res = await apiFetch('/send/undo', { method: 'POST', body: JSON.stringify({ undoId }) })
           if (res?.ok) {
-            window._hermes?.toast('Send undone.')
+            window._caduceus?.toast('Send undone.')
           } else {
-            window._hermes?.toast('Could not undo send.')
+            window._caduceus?.toast('Could not undo send.')
           }
         } catch {
-          window._hermes?.toast('Could not undo send.')
+          window._caduceus?.toast('Could not undo send.')
         }
       }
     }, 10000)

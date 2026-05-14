@@ -32,7 +32,7 @@ async function sendPushNotifications(fylo, email) {
     const webPush = await import('web-push')
     const vapidPublicKey = process.env.VAPID_PUBLIC_KEY
     const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY
-    const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:admin@hermes.local'
+    const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:admin@caduceus.local'
 
     const [, user] = await findUserByEmail(fylo, email.recipient)
     const userEmail = user?.email || email.recipient

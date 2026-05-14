@@ -1,0 +1,7 @@
+name: caduceus-do-app-platform
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on DigitalOcean App Platform — simplest DO container deploy

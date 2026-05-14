@@ -1,0 +1,7 @@
+name: caduceus-linode-kubernetes
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on Linode LKE (Kubernetes) with Linode Block Storage CSI

@@ -1,0 +1,7 @@
+name: caduceus-app-runner
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on AWS App Runner — simplest container deployment

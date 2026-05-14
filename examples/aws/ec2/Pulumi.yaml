@@ -1,0 +1,7 @@
+name: caduceus-ec2
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on AWS EC2 (standalone binary) with systemd and EBS

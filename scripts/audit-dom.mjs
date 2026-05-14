@@ -10,19 +10,19 @@ import { tmpdir } from 'node:os'
 
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const projectRoot = resolve(__dirname, '..')
-const fyloRoot = mkdtempSync(join(tmpdir(), 'hermes-audit-dom-'))
+const fyloRoot = mkdtempSync(join(tmpdir(), 'caduceus-audit-dom-'))
 const PROXY_PORT = 9876, PREVIEW_PORT = 3000
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, POST, PUT, PATCH, DELETE, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Hermes-Signature',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Caduceus-Signature',
   'Access-Control-Max-Age': '86400',
 }
 
 const apiProc = spawn('bun', [join(projectRoot, 'node_modules', '.bin', 'yon.serve')], {
   cwd: projectRoot, stdio: 'ignore',
-  env: { ...process.env, FYLO_ROOT: fyloRoot, JWT_SECRET: 'audit', INBOUND_WEBHOOK_SECRET: 'audit', EVENTS_WEBHOOK_SECRET: 'audit', HERMES_ENABLE_TEST_ROUTES: 'true', NODE_ENV: 'test', SMS_ADAPTER: 'console', SMTP_ADAPTER: 'console', PORT: '9877', HOST: '127.0.0.1' },
+  env: { ...process.env, FYLO_ROOT: fyloRoot, JWT_SECRET: 'audit', INBOUND_WEBHOOK_SECRET: 'audit', EVENTS_WEBHOOK_SECRET: 'audit', CADUCEUS_ENABLE_TEST_ROUTES: 'true', NODE_ENV: 'test', SMS_ADAPTER: 'console', SMTP_ADAPTER: 'console', PORT: '9877', HOST: '127.0.0.1' },
 })
 
 let a = 0
@@ -55,8 +55,8 @@ const browser = await chromium.launch({ headless: true })
 async function audit(name, path, { width = 1280, height = 800, auth = false } = {}) {
   const page = await browser.newPage({ viewport: { width, height } })
   await page.addInitScript(({ url, token }) => {
-    window.HERMES_CONFIG = { apiUrl: url }
-    if (token) { sessionStorage.setItem('hermes_token', token); sessionStorage.setItem('hermes_email', 'audit@h.test'); sessionStorage.setItem('hermes_role', 'admin'); sessionStorage.setItem('hermes_domains', JSON.stringify(['h.test'])) }
+    window.CADUCEUS_CONFIG = { apiUrl: url }
+    if (token) { sessionStorage.setItem('caduceus_token', token); sessionStorage.setItem('caduceus_email', 'audit@h.test'); sessionStorage.setItem('caduceus_role', 'admin'); sessionStorage.setItem('caduceus_domains', JSON.stringify(['h.test'])) }
   }, { url: `http://127.0.0.1:${PROXY_PORT}`, token: auth ? jwt : '' })
 
   try { await page.goto(`http://127.0.0.1:${PREVIEW_PORT}${path}`, { waitUntil: 'networkidle', timeout: 15000 }) } catch { await page.waitForTimeout(3000) }

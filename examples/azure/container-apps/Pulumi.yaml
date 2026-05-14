@@ -1,0 +1,7 @@
+name: caduceus-container-apps
+runtime:
+  name: nodejs
+  options:
+    packagemanager: npm
+    typescript: false
+description: CADUCEUS on Azure Container Apps — serverless container deployment
